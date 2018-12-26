@@ -149,16 +149,17 @@ public class MainFrame extends JFrame implements Dialog {
         add(menuMath, setMenuItem(I18n.MENU_FUNCTIONS_SQR), this.showFunctionDialog(Functions.SQR));
         add(menuMath, setMenuItem(I18n.MENU_FUNCTIONS_TAN), this.showFunctionDialog(Functions.TAN));
         JMenu menuTime = add(menuFunctions, setMenu(I18n.MENU_FUNCTIONS_TIME));
-        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_YEARS), this.showFunctionDialog(Functions.ABS));
-        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_MONTHS), this.showFunctionDialog(Functions.ABS));
-        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_WEEKS), this.showFunctionDialog(Functions.ABS));
-        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_DAYS), this.showFunctionDialog(Functions.ABS));
-        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_HOURS), this.showFunctionDialog(Functions.ABS));
-        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_MINUTES), this.showFunctionDialog(Functions.ABS));
-        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_SECONDS), this.showFunctionDialog(Functions.ABS));
-        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_MILLIS), this.showFunctionDialog(Functions.ABS));
-        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_MICROS), this.showFunctionDialog(Functions.ABS));
-        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_NANOS), this.showFunctionDialog(Functions.ABS));
+        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_YEAR), this.showFunctionDialog(Functions.YEARS));
+        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_MONTH), this.showFunctionDialog(Functions.MONTH));
+        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_WEEK), this.showFunctionDialog(Functions.WEEK));
+        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_DAY), this.showFunctionDialog(Functions.DAY));
+        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_HOURS), this.showFunctionDialog(Functions.HOURS));
+        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_MINUTES), this.showFunctionDialog(Functions.MINUTES));
+        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_SECONDS), this.showFunctionDialog(Functions.SECONDS));
+        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_MILLISECONDS), this.showFunctionDialog(Functions.MILLISECONDS));
+        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_MICROSECONDS), this.showFunctionDialog(Functions.MICROSECONDS));
+        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_NANOSECONDS), this.showFunctionDialog(Functions.NANOSECONDS));
+        add(menuTime, setMenuItem(I18n.MENU_FUNCTIONS_NOW), this.showFunctionDialog(Functions.NOW));
 
         JMenu menuParameters = add(menuBar, setMenu(I18n.MENU_SETTINGS));
         add(menuParameters, setCheckBoxMenuItem(Conf.RADIAN, I18n.MENU_SETTINGS_RADIAN), this.setParameter(Conf.RADIAN));

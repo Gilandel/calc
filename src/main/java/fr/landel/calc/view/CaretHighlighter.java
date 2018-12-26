@@ -1,6 +1,9 @@
 package fr.landel.calc.view;
 
 import java.awt.Color;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JTextArea;
 import javax.swing.event.CaretEvent;
@@ -14,11 +17,27 @@ public class CaretHighlighter {
 
     private static final Logger LOGGER = new Logger(CaretHighlighter.class);
 
+    private static final Character[] FUNCTIONS_CHARS;
+    private static final Tree[] FUNCTIONS;
+    static {
+        final Set<Character> chars = new HashSet<>();
+        final Tree tree = new Tree();
+        for (String function : Functions.FUNCTIONS) {
+            final Character[] functionChars = toChars(function);
+            addTree(tree, functionChars, 0);
+            chars.addAll(Arrays.asList(functionChars));
+        }
+        FUNCTIONS = tree.trees;
+        FUNCTIONS_CHARS = chars.toArray(Character[]::new);
+        Arrays.sort(FUNCTIONS_CHARS);
+    }
+
     private final JTextArea textAreaFormula;
 
     private final Highlighter highlighter;
     private final Highlighter.HighlightPainter painterSel;
     private final Highlighter.HighlightPainter painterOk;
+    private final Highlighter.HighlightPainter painterFun;
     private final Highlighter.HighlightPainter painterErr;
 
     // private int textAreaFormulaCaret;
@@ -28,6 +47,7 @@ public class CaretHighlighter {
         this.highlighter = new DefaultHighlighter();
         this.painterSel = new DefaultHighlighter.DefaultHighlightPainter(new Color(200, 100, 200));
         this.painterOk = new DefaultHighlighter.DefaultHighlightPainter(Color.GREEN);
+        this.painterFun = new DefaultHighlighter.DefaultHighlightPainter(new Color(180, 255, 200));
         this.painterErr = new DefaultHighlighter.DefaultHighlightPainter(Color.RED);
     }
 
@@ -66,16 +86,31 @@ public class CaretHighlighter {
         return -1;
     }
 
+    private boolean check(Tree[] validator, char[] array, final int index) {
+        if (array.length > index) {
+            char c = array[index];
+            if (validator.length > c && validator[c] != null) {
+                if (validator[c].trees != null) {
+                    return check(validator[c].trees, array, index + 1);
+                } else {
+                    return array.length == index + 1;
+                }
+            }
+        }
+        return false;
+    }
+
     private void highlightText(final int pos) {
         try {
             highlighter.removeAllHighlights();
 
             final String text = textAreaFormula.getText();
-            final int length = text.length();
+            final char[] array = text.toCharArray();
+            final int length = array.length;
 
             if (pos >= 0 && length > 0 && length >= pos) {
                 if (pos > 0) {
-                    char c = text.charAt(pos - 1);
+                    char c = array[pos - 1];
                     if (c == '(' || c == ')') {
                         int i = getParenthesis(pos - 1, c != ')');
                         if (i >= 0) {
@@ -84,8 +119,20 @@ public class CaretHighlighter {
                         } else {
                             highlighter.addHighlight(pos - 1, pos, painterErr);
                         }
+                    } else if (Arrays.binarySearch(FUNCTIONS_CHARS, c) > -1) {
+                        int start = pos - 1;
+                        int end = start;
+                        for (int i = pos - 1; i >= 0 && Arrays.binarySearch(FUNCTIONS_CHARS, (char) array[i]) > -1; --i) {
+                            start = i;
+                        }
+                        for (int i = pos; i < length && Arrays.binarySearch(FUNCTIONS_CHARS, (char) array[i]) > -1; ++i) {
+                            end = i;
+                        }
+                        if (start > -1 && end >= start && check(FUNCTIONS, Arrays.copyOfRange(array, start, end + 1), 0)) {
+                            highlighter.addHighlight(start, end + 1, painterFun);
+                        }
                     } else if (length > pos) {
-                        c = text.charAt(pos);
+                        c = array[pos];
                         if (c == '(' || c == ')') {
                             int i = getParenthesis(pos, c != ')');
                             if (i >= 0) {
@@ -94,10 +141,22 @@ public class CaretHighlighter {
                             } else {
                                 highlighter.addHighlight(pos, pos + 1, painterErr);
                             }
+                        } else if (Arrays.binarySearch(FUNCTIONS_CHARS, c) > -1) {
+                            int start = pos;
+                            int end = start + 1;
+                            for (int i = pos; i >= 0 && Arrays.binarySearch(FUNCTIONS_CHARS, (char) array[i]) > -1; --i) {
+                                start = i;
+                            }
+                            for (int i = pos + 1; i < length && Arrays.binarySearch(FUNCTIONS_CHARS, (char) array[i]) > -1; ++i) {
+                                end = i;
+                            }
+                            if (start > -1 && end >= start && check(FUNCTIONS, Arrays.copyOfRange(array, start, end + 1), 0)) {
+                                highlighter.addHighlight(start, end + 1, painterFun);
+                            }
                         }
                     }
                 } else {
-                    char c = text.charAt(pos);
+                    char c = array[pos];
                     if (c == '(' || c == ')') {
                         int i = getParenthesis(pos, c != ')');
                         if (i >= 0) {
@@ -135,6 +194,38 @@ public class CaretHighlighter {
         } catch (Exception e) {
             LOGGER.error(e, "Cannot update caret");
         }
-        // textAreaFormulaCaret = textAreaFormula.getSelectionStart();
+    }
+
+    private static void addTree(final Tree tree, final Character[] function, final int index) {
+        if (function.length > index) {
+            final Character c = function[index];
+            if (tree.trees == null) {
+                tree.trees = new Tree[c + 1];
+                final Tree sub = new Tree();
+                tree.trees[c] = sub;
+                addTree(sub, function, index + 1);
+
+            } else if (tree.trees.length <= c || tree.trees[c] == null) {
+                Tree sub = new Tree();
+                if (tree.trees.length <= c) {
+                    Tree[] tmp = new Tree[c + 1];
+                    System.arraycopy(tree.trees, 0, tmp, 0, tree.trees.length);
+                    tree.trees = tmp;
+                }
+                tree.trees[c] = sub;
+                addTree(sub, function, index + 1);
+
+            } else if (function.length > index + 1) {
+                addTree(tree.trees[c], function, index + 1);
+            }
+        }
+    }
+
+    private static Character[] toChars(String string) {
+        return string.chars().mapToObj(i -> (char) i).toArray(Character[]::new);
+    }
+
+    static class Tree {
+        private Tree[] trees;
     }
 }
