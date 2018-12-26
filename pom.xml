@@ -82,6 +82,9 @@
 
 		<application.org.license>apache_v2</application.org.license>
 		<application.org.license.url>http://www.apache.org/licenses/LICENSE-2.0</application.org.license.url>
+		
+		<project.inception.date.fr>22 décembre 2018 (23:53)</project.inception.date.fr>
+		<project.inception.date.us>December 22, 2018 (11:53 PM)</project.inception.date.us>
 
 		<!-- For easy access to license parameters when adding a new module -->
 		<canUpdateCopyright>false</canUpdateCopyright>
@@ -205,6 +208,22 @@
 	</reporting>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+				<filtering>true</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>**/*.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
+	
 		<plugins>
 			<!-- Generate formatted versions, dates... -->
 			<plugin>
@@ -234,7 +253,7 @@
 							<name>project.build.date.fr</name>
 							<pattern>d MMMM yyyy (HH:mm)</pattern>
 							<timeZone>GMT+1</timeZone>
-							<locale>FR</locale>
+							<locale>fr_FR</locale>
 						</configuration>
 					</execution>
 					<execution>
@@ -247,7 +266,7 @@
 							<name>project.build.date.us</name>
 							<pattern>MMMM d, yyyy (hh:mm a)</pattern>
 							<timeZone>GMT+1</timeZone>
-							<locale>US</locale>
+							<locale>en_US</locale>
 						</configuration>
 					</execution>
 				</executions>
@@ -292,7 +311,8 @@
 				</executions>
 			</plugin>
 
-			<plugin>
+			<!-- in this project, we don't need external dependencies -->
+			<!-- <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<executions>
@@ -303,7 +323,7 @@
 						<phase>package</phase>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin> -->
 		</plugins>
 
 		<pluginManagement>
