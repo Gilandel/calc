@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><templates><template autoinsert="true" context="org.eclipse.jsdt.gettercomment_context" deleted="false" description="Comment for getter function" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.gettercomment" name="gettercomment">/**
+ * @return the ${bare_field_name}
+ * @category getter
+ */</template><template autoinsert="true" context="org.eclipse.jsdt.settercomment_context" deleted="false" description="Comment for setter function" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.settercomment" name="settercomment">/**
+ * @param ${param} the ${bare_field_name} to set
+ * @category setter
+ */</template><template autoinsert="false" context="org.eclipse.jsdt.constructorcomment_context" deleted="false" description="Comment for created constructors" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.constructorcomment" name="constructorcomment">/**
+ * Constructor
+ *
+ * ${tags}
+  * @category constructor
+ */</template><template autoinsert="false" context="org.eclipse.jsdt.filecomment_context" deleted="false" description="Comment for created JavaScript files" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.filecomment" name="filecomment"/><template autoinsert="false" context="org.eclipse.jsdt.typecomment_context" deleted="false" description="Comment for created types" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.typecomment" name="typecomment">/**
+ * (Description)
+ *
+ * @since ${date}
+ * @author ${user}
+ */</template><template autoinsert="false" context="org.eclipse.jsdt.fieldcomment_context" deleted="false" description="Comment for vars" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.fieldcomment" name="fieldcomment">/**
+ * ${field}
+ */</template><template autoinsert="true" context="org.eclipse.jsdt.methodcomment_context" deleted="false" description="Comment for non-overriding function" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.methodcomment" name="methodcomment">/**
+ * ${tags}
+ * @category method
+ */</template><template autoinsert="false" context="org.eclipse.jsdt.overridecomment_context" deleted="false" description="Comment for overriding functions" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.overridecomment" name="overridecomment">/*
+ * ${see_to_overridden}
+ * @category overriden_method
+ */</template><template autoinsert="true" context="org.eclipse.jsdt.delegatecomment_context" deleted="false" description="Comment for delegate functions" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.delegatecomment" name="delegatecomment">/**
+ * ${tags}
+ * ${see_to_target}
+ * @category delegate_method
+ */</template><template autoinsert="true" context="org.eclipse.jsdt.newtype_context" deleted="false" description="Newly created files" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.newtype" name="newtype">${filecomment}
+${package_declaration}
+
+${typecomment}
+${type_declaration}</template><template autoinsert="false" context="org.eclipse.jsdt.catchblock_context" deleted="false" description="Code in new catch blocks" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.catchblock" name="catchblock">// Logs ${exception_var}</template><template autoinsert="true" context="org.eclipse.jsdt.methodbody_context" deleted="false" description="Code in created function stubs" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.methodbody" name="methodbody">// ${todo} Auto-generated function stub
+${body_statement}</template><template autoinsert="false" context="org.eclipse.jsdt.constructorbody_context" deleted="false" description="Code in created constructor stubs" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.constructorbody" name="constructorbody">${body_statement}</template><template autoinsert="true" context="org.eclipse.jsdt.getterbody_context" deleted="false" description="Code in created getters" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.getterbody" name="getterbody">return ${field};</template><template autoinsert="true" context="org.eclipse.jsdt.setterbody_context" deleted="false" description="Code in created setters" enabled="true" id="org.eclipse.wst.jsdt.ui.text.codetemplates.setterbody" name="setterbody">${field} = ${param};</template></templates>

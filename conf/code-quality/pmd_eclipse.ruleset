@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="pmd-eclipse"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+  <rule ref="rulesets/java/basic.xml/UnusedNullCheckInEquals">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/strings.xml/StringInstantiation">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/design.xml/ConstructorCallsOverridableMethod">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/strictexception.xml/AvoidCatchingNPE">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/optimizations.xml/AvoidArrayLoops">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/unusedcode.xml/UnusedFormalParameter">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/basic.xml/ClassCastExceptionWithToArray">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/strictexception.xml/AvoidThrowingNullPointerException">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/unusedcode.xml/UnusedPrivateField">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/design.xml/CompareObjectsWithEquals">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/strings.xml/UseIndexOfChar">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/basic.xml/BigIntegerInstantiation">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/design.xml/InstantiationToGetClass">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/unusedcode.xml/UnusedLocalVariable">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/design.xml/SingularField">
+    <priority>4</priority>
+  </rule>
+  <rule ref="rulesets/java/design.xml/CloseResource">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/basic.xml/UselessOperationOnImmutable">
+    <priority>2</priority>
+  </rule>
+  <rule ref="rulesets/java/unusedcode.xml/UnusedModifier">
+    <priority>5</priority>
+  </rule>
+  <rule ref="rulesets/java/optimizations.xml/UseArraysAsList">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/basic.xml/BrokenNullCheck">
+    <priority>2</priority>
+  </rule>
+  <rule ref="rulesets/java/strings.xml/InefficientStringBuffering">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/sunsecure.xml/ArrayIsStoredDirectly">
+    <priority>2</priority>
+  </rule>
+  <rule ref="rulesets/java/design.xml/MissingStaticMethodInNonInstantiatableClass">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/strings.xml/StringBufferInstantiationWithChar">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/strings.xml/StringToString">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/design.xml/SimplifyConditional">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/codesize.xml/NcssTypeCount">
+    <priority>3</priority>
+    <properties>
+      <property name="minimum" value="800" />
+    </properties>
+  </rule>
+  <rule ref="rulesets/java/migrating.xml/IntegerInstantiation">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/migrating.xml/AvoidAssertAsIdentifier">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/design.xml/UnnecessaryLocalBeforeReturn">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/basic.xml/BooleanInstantiation">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/basic.xml/AvoidDecimalLiteralsInBigDecimalConstructor">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/finalizers.xml/EmptyFinalizer">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/design.xml/IdempotentOperations">
+    <priority>3</priority>
+  </rule>
+  <rule ref="rulesets/java/strings.xml/UseStringBufferLength">
+    <priority>4</priority>
+  </rule>
+</ruleset>
+

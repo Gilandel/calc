@@ -1,0 +1,790 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>fr.landel</groupId>
+	<artifactId>calc</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<name>calc</name>
+	<description>Calculator</description>
+	<inceptionYear>2016</inceptionYear>
+	<url>https://github.com/Gilandel/calc.git</url>
+
+	<organization>
+		<name>${application.org.name}</name>
+		<url>${application.org.url}</url>
+	</organization>
+
+	<developers>
+		<developer>
+			<id>Gilandel</id>
+			<name>Gilles Landel</name>
+			<email>gilles@landel.fr</email>
+		</developer>
+	</developers>
+
+	<licenses>
+		<license>
+			<distribution>repo</distribution>
+			<name>${application.org.license}</name>
+			<url>${application.org.license.url}</url>
+		</license>
+	</licenses>
+
+	<prerequisites>
+		<maven>3.3.9</maven>
+	</prerequisites>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+		<site>
+			<id>github</id>
+			<url>scm:git:git@github.com:Gilandel/calc.git</url>
+		</site>
+	</distributionManagement>
+
+	<scm>
+		<url>https://github.com/Gilandel/calc.git</url>
+		<connection>scm:git:git://github.com/Gilandel/calc.git</connection>
+		<developerConnection>scm:git:git@github.com:Gilandel/calc.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<issueManagement>
+		<system>Github</system>
+		<url>http://github.com/Gilandel/calc/issues</url>
+	</issueManagement>
+
+	<ciManagement>
+		<system>Travis</system>
+		<url>https://travis-ci.org/Gilandel/calc</url>
+	</ciManagement>
+
+	<properties>
+		<scm.name>utils</scm.name>
+
+		<!-- Application information -->
+		<application.version>${project.version}</application.version>
+		<application.name>${project.name}</application.name>
+
+		<application.org.name>Gilandel</application.org.name>
+		<application.org.owners>Gilles Landel</application.org.owners>
+		<application.org.url>https://github.com/Gilandel</application.org.url>
+
+		<application.org.license>apache_v2</application.org.license>
+		<application.org.license.url>http://www.apache.org/licenses/LICENSE-2.0</application.org.license.url>
+
+		<!-- For easy access to license parameters when adding a new module -->
+		<canUpdateCopyright>false</canUpdateCopyright>
+		<canUpdateDescription>false</canUpdateDescription>
+
+		<!-- Project information -->
+		<jdk.version>11</jdk.version>
+		<maven.compiler.release>${jdk.version}</maven.compiler.release>
+
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.resourcesEncoding>UTF-8</project.build.resourcesEncoding>
+
+		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+		<sonar.junit.reportsPath>${project.build.directory}/jacoco</sonar.junit.reportsPath>
+		<sonar.jacoco.reportPath>${project.build.directory}/jacoco.exec</sonar.jacoco.reportPath>
+
+		<!-- others -->
+		<gpg.home>${env.HOME}/build/Gilandel/utils/distribution</gpg.home>
+
+		<!-- Plug-ins version -->
+		<dependency.plugin.version>3.1.1</dependency.plugin.version>
+		<source.plugin.version>3.0.1</source.plugin.version>
+		<resources.plugin.version>3.1.0</resources.plugin.version>
+
+		<verifier.plugin.version>1.1</verifier.plugin.version>
+		<clean.plugin.version>3.1.0</clean.plugin.version>
+		<compiler.plugin.version>3.8.0</compiler.plugin.version>
+		<install.plugin.version>3.0.0-M1</install.plugin.version>
+		<deploy.plugin.version>3.0.0-M1</deploy.plugin.version>
+		<site.plugin.version>3.7.1</site.plugin.version>
+		<release.plugin.version>2.5.3</release.plugin.version>
+
+		<jar.plugin.version>3.1.1</jar.plugin.version>
+		<war.plugin.version>3.2.2</war.plugin.version>
+		<shade.plugin.version>3.2.1</shade.plugin.version>
+
+		<assembly.plugin.version>3.1.0</assembly.plugin.version>
+		<buildhelper.plugin.version>3.0.0</buildhelper.plugin.version>
+
+		<failsafe.plugin.version>3.0.0-M2</failsafe.plugin.version>
+		<surefire.plugin.version>3.0.0-M2</surefire.plugin.version>
+		<jacoco.plugin.version>0.8.2</jacoco.plugin.version>
+		<sonar.plugin.version>3.5.0.1254</sonar.plugin.version>
+
+		<gpg.plugin.version>1.6</gpg.plugin.version>
+		<nexus.staging.plugin.version>1.6.8</nexus.staging.plugin.version>
+		<exec.plugin.version>1.6.0</exec.plugin.version>
+
+		<license.plugin.version>1.16</license.plugin.version>
+		<javadoc.plugin.version>3.0.1</javadoc.plugin.version>
+		<changelog.plugin.version>2.3</changelog.plugin.version>
+		<project.reports.plugin.version>3.0.0</project.reports.plugin.version>
+
+		<!-- Dependencies version -->
+		<commons.lang.version>3.8.1</commons.lang.version>
+		<commons.collections.version>4.2</commons.collections.version>
+
+		<javafx.version>11.0.1</javafx.version>
+
+		<logback.version>1.3.0-alpha4</logback.version>
+		<slf4j.version>1.8.0-beta2</slf4j.version>
+
+		<junit.version>5.3.2</junit.version>
+		<hamcrest.version>1.3</hamcrest.version>
+
+		<jmh.version>1.21</jmh.version>
+	</properties>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<!-- select non-aggregate reports -->
+							<report>report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changelog-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<show>package</show>
+					<aggregate>true</aggregate>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>cim</report>
+							<report>dependencies</report>
+							<report>dependency-convergence</report>
+							<report>dependency-info</report>
+							<report>dependency-management</report>
+							<report>issue-tracking</report>
+							<report>license</report>
+							<report>plugin-management</report>
+							<report>plugins</report>
+							<report>project-team</report>
+							<report>scm</report>
+							<report>summary</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<build>
+		<plugins>
+			<!-- Generate formatted versions, dates... -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>set-build-year</id>
+						<goals>
+							<goal>timestamp-property</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<name>project.build.year</name>
+							<pattern>yyyy</pattern>
+							<timeZone>GMT+1</timeZone>
+							<locale>FR</locale>
+						</configuration>
+					</execution>
+					<execution>
+						<id>set-build-date-fr</id>
+						<goals>
+							<goal>timestamp-property</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<name>project.build.date.fr</name>
+							<pattern>d MMMM yyyy (HH:mm)</pattern>
+							<timeZone>GMT+1</timeZone>
+							<locale>FR</locale>
+						</configuration>
+					</execution>
+					<execution>
+						<id>set-build-date-us</id>
+						<goals>
+							<goal>timestamp-property</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<name>project.build.date.us</name>
+							<pattern>MMMM d, yyyy (hh:mm a)</pattern>
+							<timeZone>GMT+1</timeZone>
+							<locale>US</locale>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>fr.landel.calc.Main</mainClass>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+
+			<!-- generates 'argLine' parameter for surefire -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>${clean.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${compiler.plugin.version}</version>
+					<configuration>
+						<release>${maven.compiler.release}</release>
+						<showDeprecation>true</showDeprecation>
+						<showWarnings>true</showWarnings>
+						<encoding>${project.build.sourceEncoding}</encoding>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>${exec.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>${shade.plugin.version}</version>
+					<configuration>
+						<filters>
+							<filter>
+								<!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
+								<artifact>*:*</artifact>
+								<excludes>
+									<exclude>META-INF/*.SF</exclude>
+									<exclude>META-INF/*.DSA</exclude>
+									<exclude>META-INF/*.RSA</exclude>
+								</excludes>
+							</filter>
+						</filters>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>${jar.plugin.version}</version>
+					<configuration>
+						<archive>
+							<manifestEntries>
+								<Date>${maven.build.timestamp}</Date>
+								<Version>${project.version}</Version>
+							</manifestEntries>
+							<manifest>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+								<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+								<packageName>${project.groupId}.${project.artifactId}</packageName>
+								<mainClass>fr.landel.calc.Main</mainClass>
+							</manifest>
+						</archive>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>${war.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${resources.plugin.version}</version>
+					<configuration>
+						<encoding>${project.build.resourcesEncoding}</encoding>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>${dependency.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>${deploy.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>${install.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${source.plugin.version}</version>
+					<configuration>
+						<attach>true</attach>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>${assembly.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>${release.plugin.version}</version>
+					<configuration>
+						<goals>deploy</goals>
+						<useReleaseProfile>false</useReleaseProfile>
+						<tagNameFormat>@{project.version}</tagNameFormat>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>${site.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>${failsafe.plugin.version}</version>
+					<configuration>
+						<argLine>--illegal-access=warn</argLine>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-verifier-plugin</artifactId>
+					<version>${verifier.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${surefire.plugin.version}</version>
+					<configuration>
+						<includes>
+							<include>**/Test*.java</include>
+							<include>**/*Test.java</include>
+							<include>**/*TestCase.java</include>
+
+							<include>**/Perf*.java</include>
+							<include>**/*Perf.java</include>
+							<include>**/*PerfCase.java</include>
+						</includes>
+						<!-- argLine is generated by jacoco (prepare-agent) -->
+						<argLine>@{argLine}
+							-Dfile.encoding=${project.build.resourcesEncoding}
+							--illegal-access=warn</argLine>
+						<forkCount>0</forkCount>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>${jacoco.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-changelog-plugin</artifactId>
+					<version>${changelog.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>${buildhelper.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${javadoc.plugin.version}</version>
+					<configuration>
+						<tags>
+							<tag>
+								<name>category</name>
+								<placement>X</placement>
+								<head>For logically grouping features</head>
+							</tag>
+						</tags>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>sonar-maven-plugin</artifactId>
+					<version>${sonar.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>${gpg.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.sonatype.plugins</groupId>
+					<artifactId>nexus-staging-maven-plugin</artifactId>
+					<version>${nexus.staging.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-project-info-reports-plugin</artifactId>
+					<version>${project.reports.plugin.version}</version>
+				</plugin>
+
+				<!-- Write java header file and generate thrid-party file -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>${license.plugin.version}</version>
+					<configuration>
+						<verbose>false</verbose>
+
+						<projectName>${application.name}</projectName>
+						<inceptionYear>${project.inceptionYear}</inceptionYear>
+						<organizationName>${application.org.name}</organizationName>
+
+						<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+
+						<canUpdateLicense>true</canUpdateLicense>
+						<canUpdateCopyright>${canUpdateCopyright}</canUpdateCopyright>
+						<canUpdateDescription>${canUpdateDescription}</canUpdateDescription>
+
+						<encoding>${project.build.sourceEncoding}</encoding>
+
+						<copyrightOwners>${application.org.owners}</copyrightOwners>
+						<licenseName>${application.org.license}</licenseName>
+
+						<thirdPartyFilename>META-INF/THIRD-PARTY.txt</thirdPartyFilename>
+						<excludedScopes>provided,test</excludedScopes>
+						<sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
+
+						<includes>
+							<include>**/*.java</include>
+						</includes>
+
+						<roots>
+							<root>src/main/java</root>
+							<root>src/test/java</root>
+							<root>src/perf/java</root>
+						</roots>
+					</configuration>
+				</plugin>
+
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>build-helper-maven-plugin</artifactId>
+										<versionRange>[${buildhelper.plugin.version},)</versionRange>
+										<goals>
+											<goal>add-source</goal>
+											<goal>add-resource</goal>
+											<goal>regex-property</goal>
+											<goal>parse-version</goal>
+											<goal>timestamp-property</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[${dependency.plugin.version},)</versionRange>
+										<goals>
+											<goal>unpack-dependencies</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>license-maven-plugin</artifactId>
+										<versionRange>[${license.plugin.version},)</versionRange>
+										<goals>
+											<goal>update-file-header</goal>
+											<goal>add-third-party</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>sign</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<executable>gpg2</executable>
+							<keyname>${env.GPG_KEYNAME}</keyname>
+							<passphrase>${env.GPG_PASSPHRASE}</passphrase>
+							<defaultKeyring>false</defaultKeyring>
+							<homedir>${gpg.home}</homedir>
+							<secretKeyring>${gpg.home}/secring.gpg</secretKeyring>
+							<publicKeyring>${gpg.home}/pubring.gpg</publicKeyring>
+							<useAgent>true</useAgent>
+							<lockMode>never</lockMode>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>build-extras</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<dependencies>
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Unit testing and performance testing -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-generator-annprocess</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Logging in unit tests -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Unit testing -->
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-api</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-engine</artifactId>
+				<version>${junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<!-- Performance testing -->
+			<dependency>
+				<groupId>org.openjdk.jmh</groupId>
+				<artifactId>jmh-core</artifactId>
+				<version>${jmh.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openjdk.jmh</groupId>
+				<artifactId>jmh-generator-annprocess</artifactId>
+				<version>${jmh.version}</version>
+			</dependency>
+
+			<!-- Assert -->
+			<dependency>
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest-all</artifactId>
+				<version>${hamcrest.version}</version>
+			</dependency>
+
+			<!-- Slf4j + Logback -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>jcl-over-slf4j</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback.version}</version>
+			</dependency>
+
+			<!-- Commons -->
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${commons.lang.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-collections4</artifactId>
+				<version>${commons.collections.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+</project>
