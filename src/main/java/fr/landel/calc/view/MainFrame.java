@@ -14,6 +14,10 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Iterator;
@@ -31,6 +35,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -86,6 +91,9 @@ public class MainFrame extends JFrame implements Dialog {
 
     private JMenuItem itemEditCut, itemEditCopy, itemEditDelete, itemEditClear;
 
+    private JPopupMenu popupFormula = new JPopupMenu();
+    private JMenuItem itemFormulaCut, itemFormulaCopy;
+
     private JTextArea textAreaFormula;
     private JList<String> screenList;
 
@@ -109,7 +117,21 @@ public class MainFrame extends JFrame implements Dialog {
 
         this.initMenu();
         this.initComponents();
+        this.initPopupMenu();
         this.initFrame();
+    }
+
+    private void initPopupMenu() {
+        itemFormulaCut = add(popupFormula, setMenuItem(I18n.MENU_EDIT_CUT, false), this::clipboardCut);
+        itemFormulaCopy = add(popupFormula, setMenuItem(I18n.MENU_EDIT_COPY, false), this::clipboardCopy);
+        add(popupFormula, setMenuItem(I18n.MENU_EDIT_PASTE), this::clipboardPaste);
+
+        this.textAreaFormula.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                listMouseClicked(e);
+            }
+        });
     }
 
     private void initMenu() {
@@ -185,7 +207,7 @@ public class MainFrame extends JFrame implements Dialog {
         final JScrollPane screen = new JScrollPane();
 
         screenList = new JList<>();
-        mainFrameList = new MainFrameList(screenList, formulas);
+        mainFrameList = new MainFrameList(this, screenList, formulas);
         mainFrameList.addCounterListener(this::updateList);
         screenList.setBackground(new Color(245, 245, 255));
         screenList.setDragEnabled(true);
@@ -211,6 +233,17 @@ public class MainFrame extends JFrame implements Dialog {
         textAreaFormula.setTabSize(0);
         textAreaFormula.setDragEnabled(true);
         textAreaFormula.setMargin(new Insets(4, 2, 2, 2));
+        textAreaFormula.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                formulaKeyPressed(e);
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                formulaKeyReleased(e);
+            }
+        });
         textAreaFormula.addCaretListener(highlighter::updateCaret);
         textAreaFormula.addCaretListener(this::updateCaret);
         updateI18n(I18n.FRAME_INPUT, textAreaFormula::setToolTipText);
@@ -570,6 +603,14 @@ public class MainFrame extends JFrame implements Dialog {
         return subMenu;
     }
 
+    public JMenuItem add(final JPopupMenu menu, final JMenuItem subMenu, final ActionListener actionListener) {
+        menu.add(subMenu);
+        if (actionListener != null) {
+            subMenu.addActionListener(actionListener);
+        }
+        return subMenu;
+    }
+
     private JCheckBoxMenuItem add(final JMenu menu, final JCheckBoxMenuItem subMenu, final ActionListener actionListener) {
         menu.add(subMenu);
         if (actionListener != null) {
@@ -578,7 +619,7 @@ public class MainFrame extends JFrame implements Dialog {
         return subMenu;
     }
 
-    private JRadioButtonMenuItem add(final JMenu menu, final ButtonGroup group, final JRadioButtonMenuItem subMenu, final ActionListener actionListener) {
+    public JRadioButtonMenuItem add(final JMenu menu, final ButtonGroup group, final JRadioButtonMenuItem subMenu, final ActionListener actionListener) {
 
         menu.add(subMenu);
         group.add(subMenu);
@@ -588,15 +629,15 @@ public class MainFrame extends JFrame implements Dialog {
         return subMenu;
     }
 
-    private JMenu setMenu(final I18n i18n, final String... params) {
+    public JMenu setMenu(final I18n i18n, final String... params) {
         return setMenuItem(new JMenu(), true, i18n, params);
     }
 
-    private JMenuItem setMenuItem(final I18n i18n, final String... params) {
+    public JMenuItem setMenuItem(final I18n i18n, final String... params) {
         return setMenuItem(i18n, true, params);
     }
 
-    private JMenuItem setMenuItem(final I18n i18n, final boolean enabled, final String... params) {
+    public JMenuItem setMenuItem(final I18n i18n, final boolean enabled, final String... params) {
         return setMenuItem(new JMenuItem(), enabled, i18n, params);
     }
 
@@ -642,6 +683,8 @@ public class MainFrame extends JFrame implements Dialog {
 
     private void equalActionListener(final ActionEvent evt) {
         mainFrameList.addFormula(textAreaFormula.getText(), "result", true);
+        // TODO no error
+        textAreaFormula.setText(StringUtils.EMPTY);
     }
 
     private void splitActionListener(final ActionEvent evt) {
@@ -649,6 +692,14 @@ public class MainFrame extends JFrame implements Dialog {
         itemViewKeyboard.setState(!visible);
         bottomPanel.setVisible(!visible);
         Conf.KEYBOARD.set(!visible);
+    }
+
+    public void listMouseClicked(final MouseEvent evt) {
+        if (evt.getButton() == MouseEvent.BUTTON3) {
+            popupFormula.show(evt.getComponent(), evt.getX(), evt.getY());
+            textAreaFormula.requestFocus();
+
+        }
     }
 
     private void clipboardCut(final ActionEvent evt) {
@@ -667,7 +718,7 @@ public class MainFrame extends JFrame implements Dialog {
         insertText(ClipboardUtils.getText());
     }
 
-    private void deleteHistory(final ActionEvent evt) {
+    public void deleteHistory(final ActionEvent evt) {
         if (screenList.isSelectionEmpty()) {
             JOptionPane.showMessageDialog(this, I18n.DIALOG_ERROR_SELECTION_EMPTY.getI18n(), I18n.DIALOG_ERROR.getI18n(), JOptionPane.ERROR_MESSAGE);
         } else {
@@ -675,7 +726,7 @@ public class MainFrame extends JFrame implements Dialog {
         }
     }
 
-    private void clearHistory(final ActionEvent evt) {
+    public void clearHistory(final ActionEvent evt) {
         mainFrameList.clear();
     }
 
@@ -689,6 +740,24 @@ public class MainFrame extends JFrame implements Dialog {
         }
     }
 
+    private void formulaKeyPressed(final KeyEvent evt) {
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER || evt.getKeyCode() == '\r') {
+            mainFrameList.addFormula(textAreaFormula.getText(), "result", true);
+
+        } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_V) {
+            //
+        }
+    }
+
+    private void formulaKeyReleased(final KeyEvent evt) {
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER || evt.getKeyCode() == '\r') {
+            // TODO no error
+            textAreaFormula.setText(StringUtils.EMPTY);
+        } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_V) {
+            //
+        }
+    }
+
     private ActionListener showFunctionDialog(final Functions function) {
         return evt -> this.functionDialog.show(function, evt);
     }
@@ -698,6 +767,9 @@ public class MainFrame extends JFrame implements Dialog {
 
         itemEditCut.setEnabled(hasSelection);
         itemEditCopy.setEnabled(hasSelection);
+
+        itemFormulaCut.setEnabled(hasSelection);
+        itemFormulaCopy.setEnabled(hasSelection);
     }
 
     private void updateListSelection(final ListSelectionEvent evt) {

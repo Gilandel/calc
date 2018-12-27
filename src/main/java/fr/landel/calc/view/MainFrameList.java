@@ -2,6 +2,9 @@ package fr.landel.calc.view;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,12 +13,16 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.border.Border;
 
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Formula;
+import fr.landel.calc.utils.ClipboardUtils;
 
 public class MainFrameList {
 
@@ -38,14 +45,88 @@ public class MainFrameList {
     private static Border aBorder[][];
     private static int aAlignment[];
 
+    private final MainFrame parent;
     private final JList<String> screenList;
     private final List<Formula> formulas;
     private final List<CounterListener> counterListeners;
 
-    public MainFrameList(final JList<String> screenList, final List<Formula> formulas) {
+    private JPopupMenu popupList = new JPopupMenu();
+    private JMenuItem itemCut, itemCopy, itemInsert, itemDelete, itemClear;
+
+    public MainFrameList(final MainFrame parent, final JList<String> screenList, final List<Formula> formulas) {
+        this.parent = parent;
         this.screenList = screenList;
         this.formulas = formulas;
         this.counterListeners = new ArrayList<>();
+
+        this.initPopupMenu();
+
+        this.screenList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                listMouseClicked(e);
+            }
+        });
+    }
+
+    public void listMouseClicked(final MouseEvent evt) {
+        boolean state = false;
+        if (evt.getClickCount() == 2) {
+            parent.insertText(getValue(screenList, screenList.locationToIndex(evt.getPoint())));
+        } else if (evt.getButton() == MouseEvent.BUTTON3) {
+
+            if (screenList.getSelectedIndices().length == 0) {
+                screenList.setSelectedIndex(screenList.locationToIndex(evt.getPoint()));
+            }
+
+            boolean isNotEmpty = getSize(screenList) > 0;
+            state = isNotEmpty && screenList.getSelectedIndices().length > 0;
+            boolean oneElement = isNotEmpty && screenList.getSelectedIndices().length == 1;
+
+            itemCut.setEnabled(state);
+            itemCopy.setEnabled(state);
+            itemDelete.setEnabled(state);
+            itemInsert.setEnabled(oneElement);
+            itemClear.setEnabled(isNotEmpty);
+
+            popupList.show(evt.getComponent(), evt.getX(), evt.getY());
+            screenList.requestFocus();
+
+        } else if (screenList.getSelectedIndices().length > 0) {
+            // Item_Edit_Delete.setEnabled(true);
+
+        } else {
+            // Item_Edit_Delete.setEnabled(false);
+        }
+    }
+
+    private void initPopupMenu() {
+        itemCut = this.parent.add(popupList, this.parent.setMenuItem(I18n.MENU_EDIT_CUT, false), this::clipboardCut);
+        itemCopy = this.parent.add(popupList, this.parent.setMenuItem(I18n.MENU_EDIT_COPY, false), this::clipboardCopy);
+        popupList.add(new JSeparator());
+        itemDelete = this.parent.add(popupList, this.parent.setMenuItem(I18n.MENU_EDIT_DELETE, false), parent::deleteHistory);
+        itemClear = this.parent.add(popupList, this.parent.setMenuItem(I18n.MENU_EDIT_CLEAR, false), parent::clearHistory);
+        popupList.add(new JSeparator());
+        itemInsert = this.parent.add(popupList, this.parent.setMenuItem(I18n.MENU_EDIT_INSERT, false), this::insertElement);
+    }
+
+    private void clipboardCut(final ActionEvent evt) {
+        final String text = screenList.getSelectedValue();
+        if (text != null && !text.isEmpty()) {
+            ClipboardUtils.setText(text);
+            removeSelected();
+        }
+    }
+
+    private void clipboardCopy(final ActionEvent evt) {
+        ClipboardUtils.setText(screenList.getSelectedValue());
+    }
+
+    private void insertElement(final ActionEvent evt) {
+        final String text = screenList.getSelectedValue();
+        if (text != null && !text.isEmpty()) {
+            parent.insertText(text);
+        }
     }
 
     public void addCounterListener(final CounterListener listener) {
@@ -221,6 +302,16 @@ public class MainFrameList {
         return model.getSize();
     }
 
+    public static String getValue(final JList<String> list, int index) {
+        String res = "";
+        final ListModel<String> model = list.getModel();
+        final int len = model.getSize();
+        if (index >= 0 && index < len) {
+            res = model.getElementAt(index).toString();
+        }
+        return res;
+    }
+
     private static void setAlignment(final JList<String> list, final int index, final int alignment) {
         int len = getSize(list);
         int i = index != -1 ? index : len - 1;
@@ -242,8 +333,7 @@ public class MainFrameList {
         }
     }
 
-    private static void setColor(final JList<String> list, final int index, final Color background, final Color front,
-            final Color backgroundSelected, final Color frontSelected) {
+    private static void setColor(final JList<String> list, final int index, final Color background, final Color front, final Color backgroundSelected, final Color frontSelected) {
         int len = getSize(list);
         int i = index != -1 ? index : len - 1;
         if (i >= 0 && i < len) {
@@ -300,8 +390,7 @@ public class MainFrameList {
             setOpaque(true);
         }
 
-        public Component getListCellRendererComponent(final JList<? extends T> list, final T value, final int index,
-                final boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(final JList<? extends T> list, final T value, final int index, final boolean isSelected, boolean cellHasFocus) {
             setText(value.toString());
             if (index < aCellColor.length) {
                 setBackground(isSelected ? aCellColor[index][2] : aCellColor[index][0]);
