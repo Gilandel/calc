@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 public final class StringUtils {
 
     public static final String EMPTY = "";
+    public static final String SPACE = " ";
+    public static final String INJECT_FIELD = "{}";
 
     private static final Pattern PATTERN_PARAM = Pattern.compile("\\{\\}");
 
@@ -41,16 +43,20 @@ public final class StringUtils {
     }
 
     public static String inject(final String text, final String... params) {
+        return inject(text, (Object[]) params);
+    }
+
+    public static String inject(final String text, final Object... params) {
         if (params == null || params.length == 0) {
             return text;
         }
 
-        String result = "";
+        String result = EMPTY;
         final String[] split = PATTERN_PARAM.split(text);
         for (int index = 0; index < split.length; index++) {
             result = result.concat(split[index]);
             if (params.length > index) {
-                result = result.concat(params[index]);
+                result = result.concat(String.valueOf(params[index]));
             }
         }
         return result;
@@ -70,7 +76,7 @@ public final class StringUtils {
     }
 
     public static String field(String text, int index, Pattern regex) {
-        String res = "";
+        String res = EMPTY;
         int i = 0;
         int count = count(text, regex);
         if (index <= count) {
@@ -86,12 +92,12 @@ public final class StringUtils {
                 if (start[0] > 0)
                     res = text.substring(0, start[0]);
                 else
-                    res = "";
+                    res = EMPTY;
             } else if (index == count) {
                 if (end[count - 1] < text.length())
                     res = text.substring(end[count - 1], text.length());
                 else
-                    res = "";
+                    res = EMPTY;
             } else {
                 res = text.substring(end[index - 1], start[index]);
             }

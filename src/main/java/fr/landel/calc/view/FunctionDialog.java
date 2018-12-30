@@ -14,8 +14,14 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -32,18 +38,22 @@ public class FunctionDialog extends JDialog implements Dialog {
      */
     private static final long serialVersionUID = 3551316166351059808L;
 
+    private static final String ERROR_OPEN = "<html><font style='color:red'><b>";
+    private static final String ERROR_CLOSE = "</b></font></html>";
+    private static final String NEWLINE = "<br />";
+
     private MainFrame parent;
 
     private final JPanel panel = new JPanel();
 
+    public static int maxParams = Functions.maxParams();
+
     private final JLabel labelFunction = new JLabel();
     private final JLabel labelDescription = new JLabel();
+    private final JLabel labelError = new JLabel();
 
-    private final JLabel labelP1 = new JLabel();
-    private final JTextField fieldP1 = new JTextField();
-
-    private final JLabel labelP2 = new JLabel();
-    private final JTextField fieldP2 = new JTextField();
+    private final List<JLabel> labels = new ArrayList<>();
+    private final List<JTextField> fields = new ArrayList<>();
 
     private JButton buttonInsert;
     private JButton buttonCancel;
@@ -65,11 +75,18 @@ public class FunctionDialog extends JDialog implements Dialog {
         this.setModal(true);
         this.setResizable(false);
 
+        labelError.setVisible(false);
         labelFunction.setText(StringUtils.EMPTY);
         labelDescription.setText(StringUtils.EMPTY);
 
-        fieldP1.addFocusListener(this.fieldFocus(fieldP1));
-        fieldP2.addFocusListener(this.fieldFocus(fieldP2));
+        function = Functions.ABS;
+
+        for (int i = 0; i < maxParams; ++i) {
+            this.labels.add(new JLabel());
+            JTextField field = new JTextField();
+            this.fields.add(field);
+            this.addFocusListener(field);
+        }
 
         buttonInsert = buildButton(I18n.DIALOG_BUTTON_INSERT, new Dimension(70, BUTTON_HEIGHT), this::buttonInsertActionPerformed);
         buttonCancel = buildButton(I18n.DIALOG_BUTTON_CANCEL, new Dimension(70, BUTTON_HEIGHT), this::buttonCancelActionPerformed);
@@ -110,10 +127,22 @@ public class FunctionDialog extends JDialog implements Dialog {
         final GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
 
+        final ParallelGroup hLabelGroup = layout.createParallelGroup(LEADING);
+        final ParallelGroup hFieldGroup = layout.createParallelGroup(LEADING);
+
+        for (int i = 0; i < maxParams; ++i) {
+            hLabelGroup.addComponent(labels.get(i));
+            hFieldGroup.addComponent(fields.get(i));
+        }
+
         // @formatter:off
         layout.setHorizontalGroup(layout.createParallelGroup(LEADING)
                 .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
+                        .addComponent(labelError)
+                        .addContainerGap())
+                .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
                         .addComponent(labelFunction)
                         .addContainerGap())
                 .addGroup(layout.createSequentialGroup()
@@ -122,27 +151,26 @@ public class FunctionDialog extends JDialog implements Dialog {
                         .addContainerGap())
                 .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(layout.createParallelGroup(LEADING)
-                                .addComponent(labelP1)
-                                .addComponent(labelP2))
+                        .addGroup(hLabelGroup)
                         .addGap(10)
-                        .addGroup(layout.createParallelGroup(LEADING)
-                                .addComponent(fieldP1)
-                                .addComponent(fieldP2))));
+                        .addGroup(hFieldGroup)));
+        
+        final SequentialGroup vGroup = layout.createSequentialGroup()
+                .addComponent(labelError)
+                .addPreferredGap(UNRELATED)
+                .addComponent(labelFunction)
+                .addPreferredGap(UNRELATED)
+                .addComponent(labelDescription);
+        
+        for (int i=0; i < maxParams; ++i) {
+            vGroup.addPreferredGap(UNRELATED)
+                    .addGroup(layout.createParallelGroup(BASELINE)
+                            .addComponent(labels.get(i))
+                            .addComponent(fields.get(i)));
+        }
         
         layout.setVerticalGroup(layout.createParallelGroup(LEADING)
-                .addGroup(TRAILING, layout.createSequentialGroup()
-                        .addComponent(labelFunction)
-                        .addPreferredGap(UNRELATED)
-                        .addComponent(labelDescription)
-                        .addPreferredGap(UNRELATED)
-                        .addGroup(layout.createParallelGroup(BASELINE)
-                                .addComponent(labelP1)
-                                .addComponent(fieldP1))
-                        .addPreferredGap(UNRELATED)
-                        .addGroup(layout.createParallelGroup(BASELINE)
-                                .addComponent(labelP2)
-                                .addComponent(fieldP2))));
+                .addGroup(TRAILING, vGroup));
         // @formatter:on
     }
 
@@ -182,20 +210,17 @@ public class FunctionDialog extends JDialog implements Dialog {
         updateI18n(function.getI18n(), labelDescription::setText);
 
         if (function.hasParams()) {
-            function.getParam1().ifPresent(t -> {
-                labelP1.setText(t.getI18n());
-                fieldP1.setText(StringUtils.EMPTY);
+            IntStream.range(0, maxParams).forEach(i -> {
+                if (i < function.getParamsCount()) {
+                    labels.get(i).setText(function.getParams()[i].getI18n().getI18n());
+                    fields.get(i).setText(StringUtils.EMPTY);
+                    labels.get(i).setVisible(true);
+                    fields.get(i).setVisible(true);
+                } else {
+                    labels.get(i).setVisible(false);
+                    fields.get(i).setVisible(false);
+                }
             });
-
-            if (function.getParam2().isPresent()) {
-                labelP2.setText(function.getParam2().get().getI18n());
-                fieldP2.setText(StringUtils.EMPTY);
-                labelP2.setVisible(true);
-                fieldP2.setVisible(true);
-            } else {
-                labelP2.setVisible(false);
-                fieldP2.setVisible(false);
-            }
 
             this.function = function;
 
@@ -212,41 +237,56 @@ public class FunctionDialog extends JDialog implements Dialog {
     @Override
     public void show(final ActionEvent event) {
         FrameUtils.setCentered(this, parent);
+
+        labelError.setVisible(false);
         this.setVisible(true);
 
-        fieldP1.requestFocus();
+        fields.get(0).requestFocus();
     }
 
-    private FocusListener fieldFocus(final JTextField field) {
-        return new FocusListener() {
+    private void addFocusListener(final JTextField field) {
+        final int index = fields.indexOf(field);
+        field.addFocusListener(new FocusListener() {
             @Override
             public void focusLost(FocusEvent e) {
-                if (!fieldP1.equals(e.getOppositeComponent()) && !fieldP2.equals(e.getOppositeComponent())) {
+                if (!fields.contains(e.getOppositeComponent())) {
                     labelFunction.setText(function.toString());
                 }
             }
 
             @Override
             public void focusGained(FocusEvent e) {
-                final String text;
-                if (fieldP1.equals(field)) {
-                    text = function.getFocusParam1();
-                } else {
-                    text = function.getFocusParam2();
-                }
-                if (text != null) {
+                if (index < function.getParamsCount()) {
+                    final String text = function.getFocusParams()[index];
                     labelFunction.setText(text);
                 }
             }
-        };
+        });
     }
 
     private void buttonInsertActionPerformed(ActionEvent evt) {
+        boolean valid = true;
+
         if (this.function != null) {
-            parent.insertText(this.function.inject(fieldP1.getText(), fieldP2.getText()));
+            final String[] params = fields.subList(0, this.function.getParamsCount()).stream().map(JTextField::getText).toArray(String[]::new);
+
+            final List<I18n> errors = this.function.check(params);
+            valid = errors.isEmpty();
+
+            if (valid) {
+                parent.insertText(this.function.inject(params));
+            } else {
+                labelError.setText(errors.stream().map(e -> e.getI18n()).collect(Collectors.joining(NEWLINE, ERROR_OPEN, ERROR_CLOSE)));
+            }
+
+            labelError.setVisible(!valid);
+
+            if (!valid) {
+                this.pack();
+            }
         }
 
-        this.setVisible(false);
+        this.setVisible(!valid);
     }
 
     private void buttonCancelActionPerformed(ActionEvent evt) {

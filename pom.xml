@@ -75,6 +75,7 @@
 		<!-- Application information -->
 		<application.version>${project.version}</application.version>
 		<application.name>${project.name}</application.name>
+		<application.description>A simple calculator</application.description>
 
 		<application.org.name>Gilandel</application.org.name>
 		<application.org.owners>Gilles Landel</application.org.owners>
@@ -82,6 +83,8 @@
 
 		<application.org.license>apache_v2</application.org.license>
 		<application.org.license.url>http://www.apache.org/licenses/LICENSE-2.0</application.org.license.url>
+		
+		<project.class.main>fr.landel.calc.Main</project.class.main>
 		
 		<project.inception.date.fr>22 décembre 2018 (23:53)</project.inception.date.fr>
 		<project.inception.date.us>December 22, 2018 (11:53 PM)</project.inception.date.us>
@@ -138,6 +141,9 @@
 		<javadoc.plugin.version>3.0.1</javadoc.plugin.version>
 		<changelog.plugin.version>2.3</changelog.plugin.version>
 		<project.reports.plugin.version>3.0.0</project.reports.plugin.version>
+		
+		<launch4j.plugin.version>1.7.25</launch4j.plugin.version>
+		<jsign.plugin.version>2.1</jsign.plugin.version>
 
 		<!-- Dependencies version -->
 		<commons.lang.version>3.8.1</commons.lang.version>
@@ -269,6 +275,16 @@
 							<locale>en_US</locale>
 						</configuration>
 					</execution>
+					<execution>
+						<id>set-build-version</id>
+						<goals>
+							<goal>parse-version</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<propertyPrefix>project</propertyPrefix>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 
@@ -281,7 +297,7 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<mainClass>fr.landel.calc.Main</mainClass>
+							<mainClass>${project.class.main}</mainClass>
 						</configuration>
 					</execution>
 				</executions>
@@ -563,6 +579,17 @@
 						</roots>
 					</configuration>
 				</plugin>
+				
+				<plugin>
+				    <groupId>com.akathist.maven.plugins.launch4j</groupId>
+				    <artifactId>launch4j-maven-plugin</artifactId>
+				    <version>${launch4j.plugin.version}</version>
+				</plugin>
+				<plugin>
+				    <groupId>net.jsign</groupId>
+				    <artifactId>jsign-maven-plugin</artifactId>
+				    <version>${jsign.plugin.version}</version>
+			    </plugin>
 
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
@@ -627,33 +654,78 @@
 
 	<profiles>
 		<profile>
-			<id>sign</id>
+			<id>exe</id>
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<executable>gpg2</executable>
-							<keyname>${env.GPG_KEYNAME}</keyname>
-							<passphrase>${env.GPG_PASSPHRASE}</passphrase>
-							<defaultKeyring>false</defaultKeyring>
-							<homedir>${gpg.home}</homedir>
-							<secretKeyring>${gpg.home}/secring.gpg</secretKeyring>
-							<publicKeyring>${gpg.home}/pubring.gpg</publicKeyring>
-							<useAgent>true</useAgent>
-							<lockMode>never</lockMode>
-						</configuration>
-					</plugin>
+		                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+		                <artifactId>launch4j-maven-plugin</artifactId>
+		                <executions>
+		                    <execution>
+		                        <id>generate-exe</id>
+		                        <phase>package</phase>
+		                        <goals>
+		                            <goal>launch4j</goal>
+		                        </goals>
+		                        <configuration>
+		                            <headerType>gui</headerType>
+		                            <outfile>${project.build.directory}/${project.artifactId}-${project.version}.exe</outfile>
+		                            <jar>${project.build.directory}/${project.artifactId}-${project.version}.jar</jar>
+		                            <!-- if <dontWrapJar>true</dontWrapJar> change to this conf <jar>${project.artifactId}-${project.version}.jar</jar> -->
+		                            <dontWrapJar>false</dontWrapJar>
+		                            <errTitle>${project.description} launch error</errTitle>
+		                            <supportUrl>${application.org.url}/${project.artifactId}/issues</supportUrl>
+		                            <classPath>
+		                                <mainClass>${project.class.main}</mainClass>
+		                            </classPath>
+		                            <icon>src/main/resources/images/calculator.ico</icon>
+		                            <jre>
+		                                <minVersion>9</minVersion>
+		                                <initialHeapSize>32</initialHeapSize>
+		                                <maxHeapSize>256</maxHeapSize>
+		                                <jdkPreference>preferJre</jdkPreference>
+		                                <runtimeBits>64/32</runtimeBits>
+		                            </jre>
+		                            <versionInfo>
+		                                <fileVersion>${project.majorVersion}.${project.minorVersion}.${project.incrementalVersion}.${project.buildNumber}</fileVersion>
+		                                <txtFileVersion>${project.majorVersion}.${project.minorVersion}.${project.incrementalVersion}.${project.buildNumber}</txtFileVersion>
+		                                <fileDescription>${application.description}</fileDescription>
+		                                <copyright>Copyright © ${project.inceptionYear}-${project.build.year}</copyright>
+		                                <companyName>${application.org.name}</companyName>
+		                                <productVersion>${project.majorVersion}.${project.minorVersion}.${project.incrementalVersion}.${project.buildNumber}</productVersion>
+		                                <txtProductVersion>${project.version}</txtProductVersion>
+		                                <productName>${project.description}</productName>
+		                                <internalName>${project.artifactId}</internalName>
+		                                <originalFilename>${project.artifactId}.exe</originalFilename>
+		                                <language>ENGLISH_US|FRENCH</language>
+		                            </versionInfo>
+		                        </configuration>
+		                    </execution>
+		                </executions>
+		            </plugin>
+		            
+		           <!-- <plugin>
+					    <groupId>net.jsign</groupId>
+					    <artifactId>jsign-maven-plugin</artifactId>
+					    <executions>
+					    	<execution>
+					    		<id>sign-exe</id>
+					    		<goals>
+					    			<goal>sign</goal>
+					    		</goals>
+					    		<phase>package</phase>
+					    		<configuration>
+					    			<file>${project.build.directory}/${project.artifactId}-${project.version}.exe</file>
+					    			<name>${project.description}</name>
+					    			<url>${application.org.url}/${application.name}</url>
+					    			<alias>github</alias>
+					    			<keystore>keystore.jks</keystore>
+					    			<storepass>${KEYSTORE_PASSWORD}</storepass>
+					    			<algorithm>SHA-256</algorithm>
+					    		</configuration>
+					    	</execution>
+					    </executions>
+					</plugin> -->
 				</plugins>
 			</build>
 		</profile>

@@ -27,6 +27,9 @@ public enum Conf {
     HEIGHT("frame.height", Integer.class, 300),
     EXTENDED_STATE("frame.extendedState", Integer.class, Frame.NORMAL),
     KEYBOARD("frame.keyboard", Boolean.class, true),
+    LOG_MODE("log.mode", Pattern.compile("^(" + Logger.LOG_MODE_CONSOLE + "|" + Logger.LOG_MODE_FILE + ")$"), Logger.LOG_MODE_CONSOLE),
+    DECIMAL_SEPARATOR("separator.decimal", String.class, "."),
+    THOUSAND_SEPARATOR("separator.thousand", String.class, ","),
 
     HISTORY_MAX("history.max", Integer.class, 100),
     HISTORY_SAVE("history.save", Boolean.class, true),
@@ -39,6 +42,7 @@ public enum Conf {
     private final Class<?> type;
     private final Object defaultValue;
     private final Pattern pattern;
+    private Boolean matches;
 
     private <T> Conf(final String key, final Class<T> type, final T defaultValue) {
         this.key = key;
@@ -92,9 +96,11 @@ public enum Conf {
 
         final String value = Configuration.get(this);
 
-        if (value != null && value.length() > 0 && (this.pattern == null || this.pattern.matcher(value).matches())) {
+        if (value != null && value.length() > 0 && (this.pattern == null || Boolean.TRUE.equals(matches) || this.pattern.matcher(value).matches())) {
+            matches = true;
             return Optional.of(value);
         } else {
+            matches = false;
             return Optional.ofNullable((String) this.defaultValue);
         }
     }
@@ -136,8 +142,7 @@ public enum Conf {
             if (value != null && value.length() > 0) {
                 matcher = key.pattern.matcher(value);
                 if (matcher.find()) {
-                    formulas.add(new Formula(matcher.group(formulaGroup), Boolean.parseBoolean(matcher.group(statusGroup)),
-                            matcher.group(resultGroup)));
+                    formulas.add(new Formula(matcher.group(formulaGroup), Boolean.parseBoolean(matcher.group(statusGroup)), matcher.group(resultGroup)));
                 }
             } else {
                 break;

@@ -1,5 +1,11 @@
 package fr.landel.calc.utils;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -7,7 +13,18 @@ import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import fr.landel.calc.config.Conf;
+
 public class Logger {
+
+    public static final String LOG_MODE_CONSOLE = "console";
+    public static final String LOG_MODE_FILE = "file";
+
+    private static final String PATH = ".calculatrice";
+    private static final String FILENAME = "log.txt";
+
+    private static final File DIRECTORY = new File(System.getProperty("user.home"), PATH);
+    private static final File FILE = new File(DIRECTORY, FILENAME);
 
     // date [level] class - message
     private static final String FORMAT_SIMPLE = "{} [{}] {} - {}";
@@ -15,8 +32,11 @@ public class Logger {
 
     private static final Collector<String, ?, List<String>> COLLECTOR = Collectors.toList();
 
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
     private static Level level = Level.INFO;
     private final String clazz;
+    private static Boolean consoleMode;
 
     public Logger(final Class<?> clazz) {
         this.clazz = clazz.getSimpleName();
@@ -24,13 +44,16 @@ public class Logger {
 
     private void log(final Level level, final Throwable throwable, final String message, final Object... args) {
 
+        if (consoleMode == null) {
+            consoleMode = LOG_MODE_CONSOLE.equals(Conf.LOG_MODE.getString().get());
+        }
+
         if (Logger.level.ordinal() <= level.ordinal()) {
             final String date = DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now());
 
             final String content;
             if (args != null && args.length > 0) {
-                content = StringUtils.inject(message,
-                        Arrays.stream(args).map(String::valueOf).collect(COLLECTOR).toArray(new String[args.length]));
+                content = StringUtils.inject(message, Arrays.stream(args).map(String::valueOf).collect(COLLECTOR).toArray(new String[args.length]));
             } else {
                 content = message;
             }
@@ -42,10 +65,19 @@ public class Logger {
                 log = StringUtils.inject(FORMAT_SIMPLE, date, level.name(), clazz, content);
             }
 
-            if (Level.ERROR.equals(level)) {
-                System.err.println(log);
+            if (consoleMode) {
+                if (Level.ERROR.equals(level)) {
+                    System.err.println(log);
+                } else {
+                    System.out.println(log);
+                }
             } else {
-                System.out.println(log);
+                try (OutputStream os = new BufferedOutputStream(new FileOutputStream(FILE, true))) {
+                    os.write(log.concat(LINE_SEPARATOR).getBytes(StandardCharsets.UTF_8));
+
+                } catch (IOException e) {
+                    System.err.println(StringUtils.inject(FORMAT_EXCEPTION, date, level.name(), clazz, content, e.getMessage()));
+                }
             }
         }
     }

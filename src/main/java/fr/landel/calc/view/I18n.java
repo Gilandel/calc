@@ -181,7 +181,12 @@ public enum I18n {
     DIALOG_FUNCTION_PARAM_DATE("dialog.function.param.date"),
 
     DIALOG_ERROR("dialog.error"),
-    DIALOG_ERROR_SELECTION_EMPTY("dialog.error.selection.empty");
+    DIALOG_ERROR_SELECTION_EMPTY("dialog.error.selection.empty"),
+
+    DIALOG_ERROR_PARAMS_COUNT("dialog.error.params.count"),
+    DIALOG_ERROR_PARAM_VALUE("dialog.error.param.value"),
+    DIALOG_ERROR_PARAM_ANGULAR("dialog.error.param.angular"),
+    DIALOG_ERROR_PARAM_ACCURACY("dialog.error.param.accuracy");
 
     private static final Logger LOGGER = new Logger(I18n.class);
 

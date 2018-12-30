@@ -47,6 +47,8 @@ import javax.swing.event.ListSelectionEvent;
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Configuration;
 import fr.landel.calc.config.Formula;
+import fr.landel.calc.processor.Processor;
+import fr.landel.calc.processor.ProcessorException;
 import fr.landel.calc.utils.ClipboardUtils;
 import fr.landel.calc.utils.FrameUtils;
 import fr.landel.calc.utils.StringUtils;
@@ -78,6 +80,8 @@ public class MainFrame extends JFrame implements Dialog {
     private static final Dimension DIM_BUTTON = new Dimension(45, 29);
 
     private String laf;
+
+    private Processor processor;
 
     private AboutDialog aboutDialog;
     private PreferencesDialog preferencesDialog;
@@ -114,6 +118,8 @@ public class MainFrame extends JFrame implements Dialog {
         this.functionDialog = new FunctionDialog(this);
 
         this.formulas = Conf.getFormulas();
+
+        this.processor = new Processor();
 
         this.initMenu();
         this.initComponents();
@@ -266,13 +272,13 @@ public class MainFrame extends JFrame implements Dialog {
         final JButton button7 = buildButton("7");
         final JButton button8 = buildButton("8");
         final JButton button9 = buildButton("9");
-        final JButton buttonDot = buildButton(".");
-        final JButton buttonAdd = buildButton("+");
-        final JButton buttonSubstract = buildButton("-");
-        final JButton buttonMultiply = buildButton("*");
-        final JButton buttonDevide = buildButton("/");
-        final JButton buttonPercent = buildButton("%");
-        final JButton buttonPower = buildButton("^");
+        final JButton buttonDot = buildButton(I18n.DIALOG_PREFERENCES_FORMAT_DECIMAL_DEFAULT);
+        final JButton buttonAdd = buildButton(Processor.ADD);
+        final JButton buttonSubstract = buildButton(Processor.SUBSTRACT);
+        final JButton buttonMultiply = buildButton(Processor.MULTIPLY);
+        final JButton buttonDevide = buildButton(Processor.DEVIDE);
+        final JButton buttonPercent = buildButton(Processor.MODULO);
+        final JButton buttonPower = buildButton(Processor.POWER);
         final JButton buttonParenthesisOpen = buildButton("(");
         final JButton buttonParenthesisClose = buildButton(")");
 
@@ -475,7 +481,7 @@ public class MainFrame extends JFrame implements Dialog {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setFont(FONT_FRAME);
 
-        screenList.ensureIndexIsVisible(screenList.getModel().getSize() - 1);
+        this.mainFrameList.showLastFormula();
 
         this.show(null);
 
@@ -570,6 +576,12 @@ public class MainFrame extends JFrame implements Dialog {
     private JButton buildButton(final String text) {
         final JButton button = buildButton(DIM_BUTTON, this::buttonActionListener);
         button.setText(text);
+        return button;
+    }
+
+    private JButton buildButton(final I18n i18n) {
+        final JButton button = buildButton(DIM_BUTTON, this::buttonActionListener);
+        updateI18n(i18n, button::setText);
         return button;
     }
 
@@ -682,9 +694,7 @@ public class MainFrame extends JFrame implements Dialog {
     }
 
     private void equalActionListener(final ActionEvent evt) {
-        mainFrameList.addFormula(textAreaFormula.getText(), "result", true);
-        // TODO no error
-        textAreaFormula.setText(StringUtils.EMPTY);
+        processFormula();
     }
 
     private void splitActionListener(final ActionEvent evt) {
@@ -742,7 +752,7 @@ public class MainFrame extends JFrame implements Dialog {
 
     private void formulaKeyPressed(final KeyEvent evt) {
         if (evt.getKeyCode() == KeyEvent.VK_ENTER || evt.getKeyCode() == '\r') {
-            mainFrameList.addFormula(textAreaFormula.getText(), "result", true);
+            evt.consume();
 
         } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_V) {
             //
@@ -751,10 +761,29 @@ public class MainFrame extends JFrame implements Dialog {
 
     private void formulaKeyReleased(final KeyEvent evt) {
         if (evt.getKeyCode() == KeyEvent.VK_ENTER || evt.getKeyCode() == '\r') {
-            // TODO no error
-            textAreaFormula.setText(StringUtils.EMPTY);
+            evt.consume();
+
+            processFormula();
+
         } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_V) {
             //
+        }
+    }
+
+    private void processFormula() {
+        if (!textAreaFormula.getText().isBlank()) {
+            try {
+                final Formula formula = this.processor.process(textAreaFormula.getText());
+
+                this.mainFrameList.addFormula(formula, true);
+                this.mainFrameList.showLastFormula();
+
+                if (formula.getResult().isPresent() && formula.getResult().get().isSuccess()) {
+                    textAreaFormula.setText(StringUtils.EMPTY);
+                }
+            } catch (ProcessorException e) {
+                mainFrameList.addFormula(textAreaFormula.getText(), false, e.getMessage());
+            }
         }
     }
 

@@ -134,6 +134,22 @@ public class MainFrameList {
     }
 
     public void addFormula(final Formula formula) {
+        this.addFormula(formula, false);
+    }
+
+    public void addFormula(final String formula, final boolean success, final String result) {
+        this.formulas.add(new Formula(formula, success, result));
+        this.addFormula(formula);
+        if (success) {
+            this.addResultSuccess(result);
+        } else {
+            this.addResultError(result);
+        }
+        showLastFormula();
+        fireCounter();
+    }
+
+    public void addFormula(final Formula formula, final boolean store) {
         this.addFormula(formula.getFormula());
         formula.getResult().ifPresent(result -> {
             if (result.isSuccess()) {
@@ -142,19 +158,15 @@ public class MainFrameList {
                 this.addResultError(result.getResult());
             }
         });
+        if (store) {
+            this.formulas.add(formula);
+            showLastFormula();
+        }
         fireCounter();
     }
 
-    public void addFormula(final String formula, final String result, final boolean success) {
-        this.formulas.add(new Formula(formula, success, result));
-        this.addFormula(formula);
-        if (success) {
-            this.addResultSuccess(result);
-        } else {
-            this.addResultError(result);
-        }
+    public void showLastFormula() {
         screenList.ensureIndexIsVisible(screenList.getModel().getSize() - 1);
-        fireCounter();
     }
 
     private void addFormula(final String text) {
@@ -162,7 +174,6 @@ public class MainFrameList {
         setColor(screenList, -1, BACKGROUND_FORMULA, Color.BLACK, BACKGROUND_SELECTED_FORMULA, Color.BLACK);
         setBorderColor(screenList, -1, BORDER_FORMULA, BORDER_SELECTED_FORMULA);
         setAlignment(screenList, -1, 2);
-
     }
 
     private void addResultSuccess(final String text) {
