@@ -581,7 +581,7 @@ public class MainFrame extends JFrame implements Dialog {
 
     private JButton buildButton(final I18n i18n) {
         final JButton button = buildButton(DIM_BUTTON, this::buttonActionListener);
-        updateI18n(i18n, button::setText);
+        updateI18n(i18n, t -> button.setText(t.replace("'", StringUtils.EMPTY)));
         return button;
     }
 
@@ -765,6 +765,25 @@ public class MainFrame extends JFrame implements Dialog {
 
             processFormula();
 
+        } else if (evt.getKeyCode() == KeyEvent.VK_UP) {
+            int index = screenList.getSelectedIndex();
+
+            if (index > 0) {
+                screenList.setSelectedIndex(--index);
+            } else if (index == -1) {
+                screenList.setSelectedIndex(screenList.getModel().getSize() - 1);
+            }
+
+            textAreaFormula.setText(screenList.getSelectedValue());
+
+        } else if (evt.getKeyCode() == KeyEvent.VK_DOWN) {
+            int index = screenList.getSelectedIndex();
+
+            if (index > -1 && index < screenList.getModel().getSize() - 1) {
+                screenList.setSelectedIndex(++index);
+
+                textAreaFormula.setText(screenList.getSelectedValue());
+            }
         } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_V) {
             //
         }
