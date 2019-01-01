@@ -39,7 +39,7 @@ public enum I18n {
 
     MENU_EDIT("menu.edit", KeyEvent.VK_E),
     MENU_EDIT_COPY("menu.edit.copy", Images.COPY, KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK),
-    MENU_EDIT_PASTE("menu.edit.paste", Images.PASTE, KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK),
+    MENU_EDIT_PASTE("menu.edit.paste", Images.PASTE, KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK),
     MENU_EDIT_CUT("menu.edit.cut", Images.CUT, KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK),
     MENU_EDIT_DELETE("menu.edit.delete", Images.DELETE, KeyEvent.VK_DELETE, InputEvent.CTRL_DOWN_MASK),
     MENU_EDIT_CLEAR("menu.edit.clear", Images.CLEAR, KeyEvent.VK_DELETE, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK),
@@ -186,7 +186,12 @@ public enum I18n {
     DIALOG_ERROR_PARAMS_COUNT("dialog.error.params.count"),
     DIALOG_ERROR_PARAM_VALUE("dialog.error.param.value"),
     DIALOG_ERROR_PARAM_ANGULAR("dialog.error.param.angular"),
-    DIALOG_ERROR_PARAM_ACCURACY("dialog.error.param.accuracy");
+    DIALOG_ERROR_PARAM_ACCURACY("dialog.error.param.accuracy"),
+    DIALOG_ERROR_PARAM_DATE("dialog.error.param.date"),
+    DIALOG_ERROR_PARAM_COSINUS("dialog.error.param.cosinus"),
+    DIALOG_ERROR_PARAM_SINUS("dialog.error.param.sinus"),
+    DIALOG_ERROR_PARAM_TANGENT("dialog.error.param.tangent"),
+    DIALOG_ERROR_PARAM_EXPONENT("dialog.error.param.exponent");
 
     private static final Logger LOGGER = new Logger(I18n.class);
 

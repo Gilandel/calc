@@ -14,9 +14,9 @@ import fr.landel.calc.utils.StringUtils;
 
 public enum Functions {
     ABS("abs", I18n.DIALOG_FUNCTION_ABS, Params.VALUE),
-    ACOS("acos", I18n.DIALOG_FUNCTION_ACOS, new Params<>(I18n.DIALOG_FUNCTION_PARAM_COSINUS, Double.class, null, null, null)),
-    ASIN("asin", I18n.DIALOG_FUNCTION_ASIN, new Params<>(I18n.DIALOG_FUNCTION_PARAM_SINUS, Double.class, null, null, null)),
-    ATAN("atan", I18n.DIALOG_FUNCTION_ATAN, new Params<>(I18n.DIALOG_FUNCTION_PARAM_TANGENT, Double.class, null, null, null)),
+    ACOS("acos", I18n.DIALOG_FUNCTION_ACOS, Params.COSINUS),
+    ASIN("asin", I18n.DIALOG_FUNCTION_ASIN, Params.SINUS),
+    ATAN("atan", I18n.DIALOG_FUNCTION_ATAN, Params.TANGENT),
     CEIL("ceil", I18n.DIALOG_FUNCTION_CEIL, Params.VALUE, Params.ACCURACY),
     COS("cos", I18n.DIALOG_FUNCTION_COS, Params.ANGULAR),
     EXP("exp", I18n.DIALOG_FUNCTION_EXP, Params.VALUE),
@@ -25,7 +25,7 @@ public enum Functions {
     LOG("log", I18n.DIALOG_FUNCTION_LOG, Params.VALUE),
     LN("ln", I18n.DIALOG_FUNCTION_LN, Params.VALUE),
     PI("pi"),
-    POW("pow", I18n.DIALOG_FUNCTION_POW, Params.VALUE, new Params<>(I18n.DIALOG_FUNCTION_PARAM_EXPONENT, Double.class, null, null, null)),
+    POW("pow", I18n.DIALOG_FUNCTION_POW, Params.VALUE, Params.EXPONENT),
     ROUND("round", I18n.DIALOG_FUNCTION_ROUND, Params.VALUE, Params.ACCURACY),
     SIN("sin", I18n.DIALOG_FUNCTION_SIN, Params.ANGULAR),
     SQR("sqr", I18n.DIALOG_FUNCTION_SQR, Params.VALUE),

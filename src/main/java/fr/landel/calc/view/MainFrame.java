@@ -715,13 +715,13 @@ public class MainFrame extends JFrame implements Dialog {
     private void clipboardCut(final ActionEvent evt) {
         final String text = textAreaFormula.getSelectedText();
         if (text != null && !text.isEmpty()) {
-            ClipboardUtils.setText(text);
+            ClipboardUtils.setText(text.trim());
             insertText(StringUtils.EMPTY);
         }
     }
 
     private void clipboardCopy(final ActionEvent evt) {
-        ClipboardUtils.setText(textAreaFormula.getSelectedText());
+        ClipboardUtils.setText(textAreaFormula.getSelectedText().trim());
     }
 
     private void clipboardPaste(final ActionEvent evt) {
@@ -740,13 +740,21 @@ public class MainFrame extends JFrame implements Dialog {
         mainFrameList.clear();
     }
 
+    public void setText(final String text) {
+        if (text != null & !text.isBlank()) {
+            textAreaFormula.setText(text.trim());
+        }
+    }
+
     public void insertText(final String text) {
-        final int end = textAreaFormula.getSelectionEnd();
-        final int start = textAreaFormula.getSelectionStart();
-        if (end - start > 0) {
-            textAreaFormula.replaceRange(text, start, end);
-        } else {
-            textAreaFormula.insert(text, textAreaFormula.getCaretPosition());
+        if (text != null) {
+            final int end = textAreaFormula.getSelectionEnd();
+            final int start = textAreaFormula.getSelectionStart();
+            if (end - start > 0) {
+                textAreaFormula.replaceRange(text, start, end);
+            } else {
+                textAreaFormula.insert(text, textAreaFormula.getCaretPosition());
+            }
         }
     }
 
@@ -755,7 +763,7 @@ public class MainFrame extends JFrame implements Dialog {
             evt.consume();
 
         } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_V) {
-            //
+            evt.consume();
         }
     }
 
@@ -767,31 +775,64 @@ public class MainFrame extends JFrame implements Dialog {
 
         } else if (evt.getKeyCode() == KeyEvent.VK_UP) {
             int index = screenList.getSelectedIndex();
+            int type;
 
             if (index > 0) {
                 screenList.setSelectedIndex(--index);
             } else if (index == -1) {
-                screenList.setSelectedIndex(screenList.getModel().getSize() - 1);
+                index = screenList.getModel().getSize() - 1;
+                screenList.setSelectedIndex(index);
             }
 
-            textAreaFormula.setText(screenList.getSelectedValue());
+            type = mainFrameList.getFormulaType(screenList.getSelectedIndex());
 
+            if (type != 0 && type != 1 && index > 0) {
+                screenList.setSelectedIndex(--index);
+
+                type = mainFrameList.getFormulaType(screenList.getSelectedIndex());
+            }
+
+            if (type == 0 || type == 1) {
+                setText(screenList.getSelectedValue());
+            }
         } else if (evt.getKeyCode() == KeyEvent.VK_DOWN) {
             int index = screenList.getSelectedIndex();
+            int size = screenList.getModel().getSize();
 
-            if (index > -1 && index < screenList.getModel().getSize() - 1) {
+            if (index > -1 && index < size - 1) {
                 screenList.setSelectedIndex(++index);
 
-                textAreaFormula.setText(screenList.getSelectedValue());
+                int type = mainFrameList.getFormulaType(screenList.getSelectedIndex());
+
+                if (type == 0 || type == 1) {
+                    setText(screenList.getSelectedValue());
+                } else if (index < size - 1) {
+                    screenList.setSelectedIndex(++index);
+
+                    type = mainFrameList.getFormulaType(screenList.getSelectedIndex());
+
+                    if (type == 0 || type == 1) {
+                        setText(screenList.getSelectedValue());
+                    }
+                } else {
+                    screenList.setSelectedIndex(--index);
+
+                    setText(screenList.getSelectedValue());
+                }
             }
         } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_V) {
-            //
+            insertText(ClipboardUtils.getText());
         }
     }
 
     private void processFormula() {
         if (!textAreaFormula.getText().isBlank()) {
             try {
+                this.processor.setRadian(Conf.RADIAN.getBoolean().get());
+                this.processor.setExact(Conf.EXACT.getBoolean().get());
+                this.processor.setScientific(Conf.SCIENTIFIC.getBoolean().get());
+                this.processor.setPrecision(Conf.PRECISION.getInt().get());
+
                 final Formula formula = this.processor.process(textAreaFormula.getText());
 
                 this.mainFrameList.addFormula(formula, true);

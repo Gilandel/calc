@@ -23,6 +23,7 @@ import javax.swing.border.Border;
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Formula;
 import fr.landel.calc.utils.ClipboardUtils;
+import fr.landel.calc.utils.StringUtils;
 
 public class MainFrameList {
 
@@ -72,7 +73,12 @@ public class MainFrameList {
     public void listMouseClicked(final MouseEvent evt) {
         boolean state = false;
         if (evt.getClickCount() == 2) {
-            parent.insertText(getValue(screenList, screenList.locationToIndex(evt.getPoint())));
+            int index = screenList.locationToIndex(evt.getPoint());
+            int type = getFormulaType(index);
+
+            if (type == 0 || type == 1) {
+                parent.insertText(getValue(screenList, index).trim());
+            }
         } else if (evt.getButton() == MouseEvent.BUTTON3) {
 
             if (screenList.getSelectedIndices().length == 0) {
@@ -113,13 +119,13 @@ public class MainFrameList {
     private void clipboardCut(final ActionEvent evt) {
         final String text = screenList.getSelectedValue();
         if (text != null && !text.isEmpty()) {
-            ClipboardUtils.setText(text);
+            ClipboardUtils.setText(text.trim());
             removeSelected();
         }
     }
 
     private void clipboardCopy(final ActionEvent evt) {
-        ClipboardUtils.setText(screenList.getSelectedValue());
+        ClipboardUtils.setText(screenList.getSelectedValue().trim());
     }
 
     private void insertElement(final ActionEvent evt) {
@@ -147,6 +153,27 @@ public class MainFrameList {
         }
         showLastFormula();
         fireCounter();
+    }
+
+    public int getFormulaType(final int index) {
+        int formula;
+        if (index % 2 == 0) {
+            formula = index;
+        } else {
+            formula = index - 1;
+        }
+
+        if (formula == index) {
+            return 0;
+        }
+
+        final int subIndex = formula / 2;
+        if (subIndex > -1 && this.formulas.size() > subIndex) {
+            Formula f = this.formulas.get(subIndex);
+            return f.getResult().isPresent() && f.getResult().get().isSuccess() ? 1 : 2;
+        }
+
+        return -1;
     }
 
     public void addFormula(final Formula formula, final boolean store) {
@@ -192,14 +219,10 @@ public class MainFrameList {
 
     private static void add(final JList<String> list, final int index, final String text) {
         int j = 0;
-        String content = text;
-        if (text.isBlank()) {
-            content = " ";
-        } else {
-            content = text;
-        }
-        ListModel<String> model = list.getModel();
-        int len = model.getSize();
+        final String content = StringUtils.SPACE + text + StringUtils.SPACE;
+        final ListModel<String> model = list.getModel();
+        final int len = model.getSize();
+
         if (index >= -1 && index < len) {
             String aList[] = new String[len + 1];
             Color aCellColorTmp[][] = new Color[len + 1][4];
