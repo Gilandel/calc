@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import fr.landel.calc.config.Conf;
@@ -30,7 +31,7 @@ public class Processor {
     public static final char PARENTHESIS_OPEN = '(';
     public static final char PARENTHESIS_CLOSE = ')';
 
-    private static final String ERROR_SEPARATOR = ", ";
+    private static final Collector<CharSequence, ?, String> ERRORS_COLLECTOR = Collectors.joining(", ");
 
     private String decimalSeparator = ".";
     private String thousandSeparator = ",";
@@ -40,6 +41,7 @@ public class Processor {
     private boolean scientific = false;
     private int precision = 3;
 
+    // PI/180
     private static final double DEGREE_CONVERTER = 0.017453292519943295D;
 
     public Processor() {
@@ -78,20 +80,20 @@ public class Processor {
         return input.replace(StringUtils.SPACE, StringUtils.EMPTY);
     }
 
-    private String applyAngularFunction(final Functions function, final double d, final Function<Double, Double> angularFunction) {
+    private double applyAngularFunction(final Functions function, final double d, final Function<Double, Double> angularFunction) {
         double angular = angularFunction.apply(d);
         if (!radian) {
             angular = angular * DEGREE_CONVERTER;
         }
-        return stringify(angular);
+        return angular;
     }
 
-    private String applyInverseAngularFunction(final Functions function, final double d, final Function<Double, Double> angularFunction) {
+    private double applyInverseAngularFunction(final Functions function, final double d, final Function<Double, Double> angularFunction) {
         double angular = angularFunction.apply(d);
         if (!radian) {
             angular = angular / DEGREE_CONVERTER;
         }
-        return stringify(angular);
+        return angular;
     }
 
     private Formula checkParenthesis(final String input) throws ProcessorException {
@@ -112,9 +114,9 @@ public class Processor {
         final Optional<Functions> function = getFunction(input, parenthesisOpen);
 
         final List<I18n> errors = new ArrayList<>();
-        String result = StringUtils.EMPTY;
+        double result = 0;
         if (function.isPresent()) {
-            Functions f = function.get();
+            final Functions f = function.get();
 
             errors.addAll(f.check(segments));
 
@@ -124,34 +126,70 @@ public class Processor {
 
                         final Double d = (Double) f.getParams()[0].getConverter().apply(segments[0]);
 
-                        if (Functions.ABS.equals(f)) {
-                            result = stringify(Math.abs(d));
-                        } else if (Functions.ACOS.equals(f)) {
+                        switch (f) {
+                        case ABS:
+                            result = Math.abs(d);
+                            break;
+                        case ACOS:
                             result = applyInverseAngularFunction(f, d, Math::acos);
-                        } else if (Functions.ASIN.equals(f)) {
+                            break;
+                        case ASIN:
                             result = applyInverseAngularFunction(f, d, Math::asin);
-                        } else if (Functions.ATAN.equals(f)) {
+                            break;
+                        case ATAN:
                             result = applyInverseAngularFunction(f, d, Math::atan);
-                        } else if (Functions.COS.equals(f)) {
+                            break;
+                        case COS:
                             result = applyAngularFunction(f, d, Math::cos);
-                        } else if (Functions.SIN.equals(f)) {
+                            break;
+                        case SIN:
                             result = applyAngularFunction(f, d, Math::sin);
-                        } else if (Functions.TAN.equals(f)) {
+                            break;
+                        case TAN:
                             result = applyAngularFunction(f, d, Math::tan);
+                            break;
+                        case EXP:
+                            result = Math.exp(d);
+                            break;
+                        case LN:
+                            result = Math.log(d);
+                            break;
+                        case LOG:
+                            result = Math.log10(d);
+                            break;
+                        case SQR:
+                            result = Math.sqrt(d);
+                            break;
+                        case FACT:
+                            result = Processor.fact(d.longValue());
+                            break;
+                        default:
                         }
                     }
                 } else if (f.getParamsCount() == 0) {
-                    if (Functions.PI.equals(f)) {
-                        result = stringify(Math.PI);
+
+                    switch (f) {
+                    case PI:
+                        result = Math.PI;
+                        break;
+                    default:
                     }
                 }
             }
         }
 
         if (errors.isEmpty()) {
-            return new Formula(input, true, result);
+            return new Formula(input, true, stringify(result));
         } else {
-            return new Formula(input, false, errors.stream().map(I18n::getI18n).collect(Collectors.joining(ERROR_SEPARATOR)));
+            return new Formula(input, false, errors.stream().map(I18n::getI18n).collect(ERRORS_COLLECTOR));
+        }
+    }
+
+    private static long fact(long n) {
+        if (n == 0L) {
+            return 1L;
+        } else {
+            return n * fact(n - 1L);
         }
     }
 
