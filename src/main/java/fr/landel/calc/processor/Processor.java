@@ -19,14 +19,21 @@ public class Processor {
 
     private static final Logger LOGGER = new Logger(Processor.class);
 
-    public static final String ADD = "+";
-    public static final String SUBSTRACT = "-";
-    public static final String MULTIPLY = "*";
-    public static final String DEVIDE = "/";
-    public static final String MODULO = "%";
-    public static final String POWER = "^";
+    public static final char ADD = '+';
+    public static final char SUBSTRACT = '-';
+    public static final char MULTIPLY = '*';
+    public static final char DEVIDE = '/';
+    public static final char MODULO = '%';
+    public static final char POWER = '^';
+    public static final char CONVERT = '>';
 
-    public static final String CONVERT = ">";
+    private static final char MAX_OPERATOR;
+    private static final Character[] OPERATORS_PRIORITIES = {CONVERT, POWER, MULTIPLY, DEVIDE, MODULO, ADD, SUBSTRACT};
+    private static final Character[] OPERATORS = Arrays.copyOf(OPERATORS_PRIORITIES, OPERATORS_PRIORITIES.length);
+    static {
+        Arrays.sort(OPERATORS);
+        MAX_OPERATOR = OPERATORS[OPERATORS.length - 1];
+    }
 
     public static final char PARENTHESIS_OPEN = '(';
     public static final char PARENTHESIS_CLOSE = ')';
@@ -73,7 +80,9 @@ public class Processor {
             throw new ProcessorException("Input formula cannot be null, empty or blank");
         }
 
-        return checkParenthesis(removeAllSpaces(input));
+        processFormula(removeAllSpaces(input));
+
+        return null;
     }
 
     private String removeAllSpaces(final String input) {
@@ -96,23 +105,133 @@ public class Processor {
         return angular;
     }
 
-    private Formula checkParenthesis(final String input) throws ProcessorException {
-        final int parenthesisOpen = input.lastIndexOf(PARENTHESIS_OPEN);
-        final int parenthesisClose = input.indexOf(PARENTHESIS_CLOSE, parenthesisOpen + 1);
+    private String processFormula(final String input) throws ProcessorException {
+        int parenthesisOpen = input.lastIndexOf(PARENTHESIS_OPEN);
+        int parenthesisClose = input.indexOf(PARENTHESIS_CLOSE, parenthesisOpen + 1);
 
-        final String block;
+        final String[] segments;
+        String block;
         if (parenthesisOpen > -1 && parenthesisClose > parenthesisOpen) {
             block = input.substring(parenthesisOpen + 1, parenthesisClose);
+            segments = block.split(Functions.SEPARATOR);
+            for (int i = 0; i < segments.length; ++i) {
+                segments[i] = this.processBlock(segments[i]);
+            }
         } else if (parenthesisOpen < 0 && parenthesisClose < 0) {
-            block = input;
+            return processBlock(input);
         } else {
             throw new ProcessorException("Parenthesis error");
         }
 
-        final String[] segments = block.split(Functions.SEPARATOR);
+        final StringBuilder result = new StringBuilder();
+        if (parenthesisOpen > 0) {
+            final String prefix = input.substring(0, parenthesisOpen);
+            Optional<Functions> function = getFunction(prefix);
+            if (function.isPresent()) {
+                block = processFunction(function, segments);
+                result.append(input.substring(0, parenthesisOpen - function.get().getFunction().length()));
+                result.append(block);
+            } else {
+                result.append(prefix).append(block);
+            }
+        } else {
+            result.append(block);
+        }
 
-        final Optional<Functions> function = getFunction(input, parenthesisOpen);
+        if (++parenthesisClose > -1 && parenthesisClose < input.length()) {
+            result.append(input.substring(parenthesisClose, input.length()));
+        }
+        return processFormula(result.toString());
+    }
 
+    private String processCalc(final String v1, final String v2, final char operator) throws ProcessorException {
+        return null;
+    }
+
+    private String[] processSegment(final String[] segments, final char operator) throws ProcessorException {
+
+        boolean move = false;
+        for (int i = 0; i < segments.length; ++i) {
+            if (segments[i].length() == 1) {
+                char c = segments[i].charAt(0);
+                if (c == operator && !move) {
+                    if (i > 0 && i < segments.length) {
+                        segments[i - 1] = processCalc(segments[i - 1], segments[i + 1], operator);
+                        i += 2;
+                        move = true;
+                    }
+                }
+            }
+
+            if (move) {
+                segments[i - 2] = segments[i];
+            }
+        }
+
+        if (move) {
+            return Arrays.copyOf(segments, segments.length - 2);
+        } else {
+            throw new ProcessorException("");
+        }
+    }
+
+    private String processBlock(final String block) throws ProcessorException {
+        final char[] chars = block.toCharArray();
+        String[] output = new String[chars.length];
+
+        int[] count = new int[MAX_OPERATOR];
+
+        int max = 0;
+        int previous = 0;
+        boolean isPreviousOperator = true;
+        boolean isPreviousParenthesisOpen = false;
+        for (int i = 0; i < chars.length; ++i) {
+            if (Arrays.binarySearch(OPERATORS, chars[i]) > -1) {
+                if (i > 0) {
+                    output[max++] = new String(Arrays.copyOfRange(chars, previous, i));
+                    output[max++] = String.valueOf(chars[i]);
+                    ++count[chars[i]];
+
+                } else if (chars[i] == SUBSTRACT && (isPreviousOperator || isPreviousParenthesisOpen)) {
+                    output[max++] = new String(Arrays.copyOfRange(chars, previous, i + 1));
+
+                } else {
+                    output[max++] = String.valueOf(chars[i]);
+                    ++count[chars[i]];
+                }
+                isPreviousOperator = true;
+                isPreviousParenthesisOpen = false;
+                previous = i + 1;
+            } else {
+                if (chars[i] == '(') {
+                    isPreviousParenthesisOpen = true;
+                } else {
+                    isPreviousParenthesisOpen = false;
+                }
+                isPreviousOperator = false;
+            }
+        }
+        if (previous <= chars.length) {
+            output[max++] = new String(Arrays.copyOfRange(chars, previous, chars.length));
+        }
+
+        String[] segments = Arrays.copyOf(output, max);
+        for (int j = 0; j < OPERATORS_PRIORITIES.length; ++j) {
+            for (int i = 0; i < count[j]; ++i) {
+                segments = processSegment(segments, (char) i);
+            }
+        }
+
+        return segments[0];
+    }
+
+    public static void main(String[] args) throws ProcessorException {
+        Processor processor = new Processor();
+
+        System.out.println(processor.processFormula("((3+2)*pow(9/abs(3);1-5))-2"));
+    }
+
+    private String processFunction(final Optional<Functions> function, final String[] segments) throws ProcessorException {
         final List<I18n> errors = new ArrayList<>();
         double result = 0;
         if (function.isPresent()) {
@@ -163,6 +282,28 @@ public class Processor {
                         case FACT:
                             result = Processor.fact(d.longValue());
                             break;
+                        case FLOOR:
+                            result = Math.floor(d);
+                            break;
+                        case CEIL:
+                            result = Math.ceil(d);
+                            break;
+                        case ROUND:
+                            result = Math.round(d);
+                            break;
+                        default:
+                        }
+                    }
+                } else if (f.getParamsCount() == 2) {
+                    if (f.getParams()[0].getConverter() != null && f.getParams()[1].getConverter() != null) {
+
+                        final Double d1 = (Double) f.getParams()[0].getConverter().apply(segments[0]);
+                        final Double d2 = (Double) f.getParams()[1].getConverter().apply(segments[1]);
+
+                        switch (f) {
+                        case POW:
+                            result = Math.pow(d1, d2);
+                            break;
                         default:
                         }
                     }
@@ -178,11 +319,7 @@ public class Processor {
             }
         }
 
-        if (errors.isEmpty()) {
-            return new Formula(input, true, stringify(result));
-        } else {
-            return new Formula(input, false, errors.stream().map(I18n::getI18n).collect(ERRORS_COLLECTOR));
-        }
+        return stringify(result);
     }
 
     private static long fact(long n) {
@@ -217,23 +354,23 @@ public class Processor {
         return result;
     }
 
-    private Optional<Functions> getFunction(final String input, final int parenthesisOpen) throws ProcessorException {
-        if (parenthesisOpen > 0) {
-            int pos = parenthesisOpen - 1;
-            char[] chars = input.toCharArray();
-            while (pos >= 0 && Arrays.binarySearch(Functions.CHARS, chars[pos--]) > -1) {
-            }
+    private Optional<Functions> getFunction(final String input) throws ProcessorException {
+        int len = input.length();
+        int pos = len;
+        char[] chars = input.toCharArray();
+        while (pos >= 0 && Arrays.binarySearch(Functions.CHARS, chars[--pos]) > -1) {
+        }
 
-            if (pos + 1 < parenthesisOpen) {
-                final char[] inputFunction = Arrays.copyOfRange(chars, pos + 1, parenthesisOpen);
-                final Optional<Functions> function = Functions.check(inputFunction);
-                if (function.isPresent()) {
-                    return function;
-                } else {
-                    throw new ProcessorException("Function not found: {}", new String(inputFunction));
-                }
+        if (pos + 1 < len) {
+            final char[] inputFunction = Arrays.copyOfRange(chars, pos + 1, len);
+            final Optional<Functions> function = Functions.check(inputFunction);
+            if (function.isPresent()) {
+                return function;
+            } else {
+                throw new ProcessorException("Function not found: {}", new String(inputFunction));
             }
         }
+
         return Optional.empty();
     }
 }

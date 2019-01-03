@@ -573,6 +573,10 @@ public class MainFrame extends JFrame implements Dialog {
         Configuration.save();
     }
 
+    private JButton buildButton(final char character) {
+        return buildButton(String.valueOf(character));
+    }
+
     private JButton buildButton(final String text) {
         final JButton button = buildButton(DIM_BUTTON, this::buttonActionListener);
         button.setText(text);
