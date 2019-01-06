@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import fr.landel.calc.processor.Processor;
+import fr.landel.calc.processor.MainProcessor;
 import fr.landel.calc.utils.StringUtils;
 
 public enum Functions {
@@ -91,9 +91,9 @@ public enum Functions {
 
         this.focusParams = new String[this.params.length];
 
-        final StringBuilder builderInjectable = new StringBuilder(function).append(Processor.PARENTHESIS_OPEN);
+        final StringBuilder builderInjectable = new StringBuilder(function).append(MainProcessor.PARENTHESIS_OPEN);
         builderInjectable.append(Arrays.stream(this.params).map(p -> StringUtils.INJECT_FIELD).collect(Collectors.joining(DELIMITER)));
-        this.injectable = builderInjectable.append(Processor.PARENTHESIS_CLOSE).toString();
+        this.injectable = builderInjectable.append(MainProcessor.PARENTHESIS_CLOSE).toString();
 
         this.updateI18n();
 

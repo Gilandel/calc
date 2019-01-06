@@ -47,7 +47,7 @@ import javax.swing.event.ListSelectionEvent;
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Configuration;
 import fr.landel.calc.config.Formula;
-import fr.landel.calc.processor.Processor;
+import fr.landel.calc.processor.MainProcessor;
 import fr.landel.calc.processor.ProcessorException;
 import fr.landel.calc.utils.ClipboardUtils;
 import fr.landel.calc.utils.FrameUtils;
@@ -81,7 +81,7 @@ public class MainFrame extends JFrame implements Dialog {
 
     private String laf;
 
-    private Processor processor;
+    private MainProcessor processor;
 
     private AboutDialog aboutDialog;
     private PreferencesDialog preferencesDialog;
@@ -119,7 +119,7 @@ public class MainFrame extends JFrame implements Dialog {
 
         this.formulas = Conf.getFormulas();
 
-        this.processor = new Processor();
+        this.processor = new MainProcessor();
 
         this.initMenu();
         this.initComponents();
@@ -273,12 +273,12 @@ public class MainFrame extends JFrame implements Dialog {
         final JButton button8 = buildButton("8");
         final JButton button9 = buildButton("9");
         final JButton buttonDot = buildButton(I18n.DIALOG_PREFERENCES_FORMAT_DECIMAL_DEFAULT);
-        final JButton buttonAdd = buildButton(Processor.ADD);
-        final JButton buttonSubstract = buildButton(Processor.SUBSTRACT);
-        final JButton buttonMultiply = buildButton(Processor.MULTIPLY);
-        final JButton buttonDevide = buildButton(Processor.DEVIDE);
-        final JButton buttonPercent = buildButton(Processor.MODULO);
-        final JButton buttonPower = buildButton(Processor.POWER);
+        final JButton buttonAdd = buildButton(MainProcessor.ADD);
+        final JButton buttonSubstract = buildButton(MainProcessor.SUBSTRACT);
+        final JButton buttonMultiply = buildButton(MainProcessor.MULTIPLY);
+        final JButton buttonDevide = buildButton(MainProcessor.DEVIDE);
+        final JButton buttonPercent = buildButton(MainProcessor.MODULO);
+        final JButton buttonPower = buildButton(MainProcessor.POWER);
         final JButton buttonParenthesisOpen = buildButton("(");
         final JButton buttonParenthesisClose = buildButton(")");
 
@@ -837,7 +837,8 @@ public class MainFrame extends JFrame implements Dialog {
                 this.processor.setScientific(Conf.SCIENTIFIC.getBoolean().get());
                 this.processor.setPrecision(Conf.PRECISION.getInt().get());
 
-                final Formula formula = this.processor.process(textAreaFormula.getText());
+                // XXX
+                final Formula formula = this.processor.process();// textAreaFormula.getText());
 
                 this.mainFrameList.addFormula(formula, true);
                 this.mainFrameList.showLastFormula();

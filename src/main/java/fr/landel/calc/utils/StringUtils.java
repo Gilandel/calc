@@ -14,6 +14,18 @@ public final class StringUtils {
     private StringUtils() {
     }
 
+    public static String requireNonBlank(final CharSequence text) {
+        if (text == null) {
+            throw new IllegalArgumentException("Input text cannot be null");
+        } else {
+            String toString = text.toString();
+            if (toString.isBlank()) {
+                throw new IllegalArgumentException("Input text cannot be empty or blank");
+            }
+            return toString;
+        }
+    }
+
     public static int count(final String text, final String stringToFind) {
         int fromIndex = 0;
         int count = 0;
