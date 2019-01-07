@@ -15,7 +15,7 @@ import fr.landel.calc.utils.StringUtils;
 import fr.landel.calc.view.Functions;
 import fr.landel.calc.view.I18n;
 
-public class MainProcessor implements Processor {
+public class MainProcessor {
 
     private static final Logger LOGGER = new Logger(MainProcessor.class);
 
@@ -75,16 +75,12 @@ public class MainProcessor implements Processor {
         this.thousandSeparator = Conf.THOUSAND_SEPARATOR.getString().get();
     }
 
-    public Formula process() throws ProcessorException {
-        String input = null;
-
+    public Formula process(final String input) throws ProcessorException {
         if (input == null || input.isBlank()) {
             throw new ProcessorException("Input formula cannot be null, empty or blank");
         }
 
-        processFormula(removeAllSpaces(input));
-
-        return null;
+        return new Formula(input, true, processFormula(removeAllSpaces(input)));
     }
 
     private String removeAllSpaces(final String input) {
@@ -111,16 +107,33 @@ public class MainProcessor implements Processor {
         int parenthesisOpen = input.lastIndexOf(PARENTHESIS_OPEN);
         int parenthesisClose = input.indexOf(PARENTHESIS_CLOSE, parenthesisOpen + 1);
 
+        Entity entity;
         final String[] segments;
         String block;
         if (parenthesisOpen > -1 && parenthesisClose > parenthesisOpen) {
             block = input.substring(parenthesisOpen + 1, parenthesisClose);
-            segments = block.split(Functions.SEPARATOR);
-            for (int i = 0; i < segments.length; ++i) {
-                segments[i] = this.processBlock(segments[i]);
+            if (block.isEmpty()) {
+                segments = new String[0];
+            } else {
+                segments = block.split(Functions.SEPARATOR);
+                for (int i = 0; i < segments.length; ++i) {
+                    if (!segments[i].isEmpty()) {
+                        entity = new SimpleFormulaProcessor(segments[i]).process();
+                        if (entity.isNumber()) {
+                            segments[i] = stringify(entity.getValue());
+                        } else {
+                            segments[i] = entity.toString();
+                        }
+                    }
+                }
             }
         } else if (parenthesisOpen < 0 && parenthesisClose < 0) {
-            return processBlock(input);
+            entity = new SimpleFormulaProcessor(input).process();
+            if (entity.isNumber()) {
+                return stringify(entity.getValue());
+            } else {
+                return entity.toString();
+            }
         } else {
             throw new ProcessorException("Parenthesis error");
         }
@@ -146,93 +159,6 @@ public class MainProcessor implements Processor {
         return processFormula(result.toString());
     }
 
-    private String processCalc(final String v1, final String v2, final char operator) throws ProcessorException {
-        return null;
-    }
-
-    private String[] processSegment(final String[] segments, final char operator) throws ProcessorException {
-
-        boolean move = false;
-        for (int i = 0; i < segments.length; ++i) {
-            if (segments[i].length() == 1) {
-                char c = segments[i].charAt(0);
-                if (c == operator && !move) {
-                    if (i > 0 && i < segments.length) {
-                        segments[i - 1] = processCalc(segments[i - 1], segments[i + 1], operator);
-                        i += 2;
-                        move = true;
-                    }
-                }
-            }
-
-            if (move) {
-                segments[i - 2] = segments[i];
-            }
-        }
-
-        if (move) {
-            return Arrays.copyOf(segments, segments.length - 2);
-        } else {
-            throw new ProcessorException("");
-        }
-    }
-
-    private String processBlock(final String block) throws ProcessorException {
-        final char[] chars = block.toCharArray();
-        String[] output = new String[chars.length];
-
-        int[] count = new int[MAX_OPERATOR];
-
-        int max = 0;
-        int previous = 0;
-        boolean isPreviousOperator = true;
-        boolean isPreviousParenthesisOpen = false;
-        for (int i = 0; i < chars.length; ++i) {
-            if (Arrays.binarySearch(OPERATORS, chars[i]) > -1) {
-                if (i > 0) {
-                    output[max++] = new String(Arrays.copyOfRange(chars, previous, i));
-                    output[max++] = String.valueOf(chars[i]);
-                    ++count[chars[i]];
-
-                } else if (chars[i] == SUBSTRACT && (isPreviousOperator || isPreviousParenthesisOpen)) {
-                    output[max++] = new String(Arrays.copyOfRange(chars, previous, i + 1));
-
-                } else {
-                    output[max++] = String.valueOf(chars[i]);
-                    ++count[chars[i]];
-                }
-                isPreviousOperator = true;
-                isPreviousParenthesisOpen = false;
-                previous = i + 1;
-            } else {
-                if (chars[i] == '(') {
-                    isPreviousParenthesisOpen = true;
-                } else {
-                    isPreviousParenthesisOpen = false;
-                }
-                isPreviousOperator = false;
-            }
-        }
-        if (previous <= chars.length) {
-            output[max++] = new String(Arrays.copyOfRange(chars, previous, chars.length));
-        }
-
-        String[] segments = Arrays.copyOf(output, max);
-        for (int j = 0; j < OPERATORS_PRIORITIES.length; ++j) {
-            for (int i = 0; i < count[j]; ++i) {
-                segments = processSegment(segments, (char) i);
-            }
-        }
-
-        return segments[0];
-    }
-
-    public static void main(String[] args) throws ProcessorException {
-        MainProcessor processor = new MainProcessor();
-
-        System.out.println(processor.processFormula("((3+2)*pow(9/abs(3);1-5))-2"));
-    }
-
     private String processFunction(final Optional<Functions> function, final String[] segments) throws ProcessorException {
         final List<I18n> errors = new ArrayList<>();
         double result = 0;
@@ -245,7 +171,7 @@ public class MainProcessor implements Processor {
                 if (f.getParamsCount() == 1) {
                     if (f.getParams()[0].getConverter() != null) {
 
-                        final Double d = (Double) f.getParams()[0].getConverter().apply(segments[0]);
+                        final Double d = new SimpleFormulaProcessor(segments[0]).process().getValue();
 
                         switch (f) {
                         case ABS:
@@ -299,8 +225,8 @@ public class MainProcessor implements Processor {
                 } else if (f.getParamsCount() == 2) {
                     if (f.getParams()[0].getConverter() != null && f.getParams()[1].getConverter() != null) {
 
-                        final Double d1 = (Double) f.getParams()[0].getConverter().apply(segments[0]);
-                        final Double d2 = (Double) f.getParams()[1].getConverter().apply(segments[1]);
+                        final Double d1 = new SimpleFormulaProcessor(segments[0]).process().getValue();
+                        final Double d2 = new SimpleFormulaProcessor(segments[1]).process().getValue();
 
                         switch (f) {
                         case POW:
@@ -360,11 +286,11 @@ public class MainProcessor implements Processor {
         int len = input.length();
         int pos = len;
         char[] chars = input.toCharArray();
-        while (pos >= 0 && Arrays.binarySearch(Functions.CHARS, chars[--pos]) > -1) {
+        while (pos > 0 && Arrays.binarySearch(Functions.CHARS, chars[--pos]) > -1) {
         }
 
-        if (pos + 1 < len) {
-            final char[] inputFunction = Arrays.copyOfRange(chars, pos + 1, len);
+        if (pos < len) {
+            final char[] inputFunction = Arrays.copyOfRange(chars, pos, len);
             final Optional<Functions> function = Functions.check(inputFunction);
             if (function.isPresent()) {
                 return function;
@@ -374,5 +300,11 @@ public class MainProcessor implements Processor {
         }
 
         return Optional.empty();
+    }
+
+    public static void main(String[] args) throws ProcessorException {
+        MainProcessor processor = new MainProcessor();
+
+        System.out.println(processor.processFormula("((3+2)*pow(9/abs(3);1-5))-2"));
     }
 }

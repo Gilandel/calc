@@ -838,7 +838,7 @@ public class MainFrame extends JFrame implements Dialog {
                 this.processor.setPrecision(Conf.PRECISION.getInt().get());
 
                 // XXX
-                final Formula formula = this.processor.process();// textAreaFormula.getText());
+                final Formula formula = this.processor.process(textAreaFormula.getText());
 
                 this.mainFrameList.addFormula(formula, true);
                 this.mainFrameList.showLastFormula();

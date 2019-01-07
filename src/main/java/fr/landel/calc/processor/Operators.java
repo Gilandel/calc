@@ -7,18 +7,19 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import fr.landel.calc.utils.MapUtils;
 
-public enum Operators {
-    ADD("+", 3, (a, b) -> new Entity(a.getIndex(), b.getIndex(), a.getValue() + b.getValue())),
-    SUBSTRACT("-", 3, (a, b) -> new Entity(a.getIndex(), b.getIndex(), a.getValue() - b.getValue())),
-    MULTIPLY("*", 2, (a, b) -> new Entity(a.getIndex(), b.getIndex(), a.getValue() * b.getValue())),
-    DEVIDE("/", 2, (a, b) -> new Entity(a.getIndex(), b.getIndex(), a.getValue() / b.getValue())),
-    MODULO("%", 2, (a, b) -> new Entity(a.getIndex(), b.getIndex(), a.getValue() % b.getValue())),
-    POWER("^", 1, (a, b) -> new Entity(a.getIndex(), b.getIndex(), Math.pow(a.getValue(), b.getValue()))),
-    CONVERT(">>", 0, (a, b) -> new Entity(a.getIndex(), b.getIndex(), 0d)); // TODO
+public enum Operators implements OperatorConstants {
+    ADD("+", 3, IS_SAME_TYPE_AND_NOT_UNITY, (a, b) -> new Entity(a.getIndex(), a.getValue() + b.getValue(), a.getUnity())),
+    SUBSTRACT("-", 3, IS_SAME_TYPE_AND_NOT_UNITY, (a, b) -> new Entity(a.getIndex(), a.getValue() - b.getValue(), a.getUnity())),
+    MULTIPLY("*", 2, IS_ANY_NUMBER, FUN_MULTIPLY),
+    DEVIDE("/", 2, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, FUN_DEVIDE),
+    MODULO("%", 2, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, (a, b) -> new Entity(a.getIndex(), a.getUnity().fromUnity(a.toUnity() % b.getValue()), a.getUnity())),
+    POWER("^", 1, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, (a, b) -> new Entity(a.getIndex(), a.getUnity().fromUnity(Math.pow(a.toUnity(), b.getValue())), a.getUnity())),
+    CONVERT(">>", 0, IS_CONVERTIBLE, (a, b) -> a.setUnity(b.getUnity()));
 
     public static final List<Operators> BY_LENGTH_DESC = Arrays.stream(Operators.values()).sorted((a, b) -> Integer.compare(b.getLength(), a.getLength())).collect(Collectors.toList());
     public static final SortedMap<Integer, List<Operators>> BY_PRIORITY;
@@ -33,12 +34,14 @@ public enum Operators {
     private final String operator;
     private final int length;
     private final int priority;
+    private final BiPredicate<Entity, Entity> validator;
     private final BiFunction<Entity, Entity, Entity> processor;
 
-    private Operators(final String operator, final int priority, final BiFunction<Entity, Entity, Entity> processor) {
+    private Operators(final String operator, final int priority, final BiPredicate<Entity, Entity> validator, final BiFunction<Entity, Entity, Entity> processor) {
         this.operator = operator;
         this.length = operator.length();
         this.priority = priority;
+        this.validator = validator;
         this.processor = processor;
     }
 
@@ -72,8 +75,13 @@ public enum Operators {
      * @param right
      *            the right entity
      * @return the calculated entity
+     * @throws ProcessorException
+     *             if inputs don't match the validator
      */
-    public Entity process(final Entity left, final Entity right) {
+    public Entity process(final Entity left, final Entity right) throws ProcessorException {
+        if (!this.validator.test(left, right)) {
+            throw new ProcessorException("At least one value ({}, {}) doesn't match the predicate for operator {}", left, right, this.operator);
+        }
         return this.processor.apply(left, right);
     }
 

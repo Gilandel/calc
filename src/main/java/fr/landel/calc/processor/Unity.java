@@ -1,10 +1,14 @@
 package fr.landel.calc.processor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+
+import fr.landel.calc.utils.StringUtils;
 
 public enum Unity {
     NUMBER(Type.NUMBER, "d"),
@@ -29,6 +33,11 @@ public enum Unity {
             v -> (v - Unity.FAHRENHEIT_ZERO) / Unity.FAHRENHEIT_DEVIDER + Unity.CELCIUS_ZERO_IN_KELVIN,
             v -> (v - Unity.CELCIUS_ZERO_IN_KELVIN) * Unity.FAHRENHEIT_DEVIDER + Unity.FAHRENHEIT_ZERO,
             "F");
+
+    public static final List<Unity> DATES = new ArrayList<>(
+            Arrays.asList(DATE_YEARS, DATE_MONTHS, DATE_DAYS, DATE_HOURS, DATE_MINUTES, DATE_SECONDS, DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS));
+    public static final List<Unity> DATES_LEAP = new ArrayList<>(
+            Arrays.asList(DATE_YEARS_LEAP, DATE_MONTHS_LEAP, DATE_DAYS, DATE_HOURS, DATE_MINUTES, DATE_SECONDS, DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS));
 
     private static final double NANO_PER_MICROSECOND = 1_000;
     private static final double NANO_PER_MILLISECOND = NANO_PER_MICROSECOND * 1_000;
@@ -68,12 +77,16 @@ public enum Unity {
         return this.type;
     }
 
-    public Function<Double, Double> getFromUnity() {
-        return this.fromUnity;
+    public Double fromUnity(final Double value) {
+        return this.fromUnity.apply(value);
     }
 
-    public Function<Double, Double> getToUnity() {
-        return this.toUnity;
+    public Double toUnity(final Double value) {
+        return this.toUnity.apply(value);
+    }
+
+    public String firstSymbol() {
+        return this.symbols[0];
     }
 
     public static Optional<Unity> getUnity(final String unity) {
@@ -85,8 +98,58 @@ public enum Unity {
     }
 
     static enum Type {
-        NUMBER,
-        DATE,
-        TEMPERATURE;
+        NUMBER(v -> Double.toString(v.getValue())),
+        DATE(v -> {
+            final StringBuilder builder = new StringBuilder();
+            if (!v.isUnity()) {
+                double value = v.getValue();
+                value = appendDate(builder, value, Unity.NANO_PER_YEAR, Unity.DATE_YEARS.firstSymbol());
+                value = appendDate(builder, value, Unity.NANO_PER_MONTH, Unity.DATE_MONTHS.firstSymbol());
+                value = appendDate(builder, value, Unity.NANO_PER_DAY, Unity.DATE_DAYS.firstSymbol());
+                value = appendDate(builder, value, Unity.NANO_PER_HOUR, Unity.DATE_HOURS.firstSymbol());
+                value = appendDate(builder, value, Unity.NANO_PER_MINUTE, Unity.DATE_MINUTES.firstSymbol());
+                value = appendDate(builder, value, Unity.NANO_PER_SECOND, Unity.DATE_SECONDS.firstSymbol());
+                value = appendDate(builder, value, Unity.NANO_PER_MILLISECOND, Unity.DATE_MILLISECONDS.firstSymbol());
+                value = appendDate(builder, value, Unity.NANO_PER_MICROSECOND, Unity.DATE_MICROSECONDS.firstSymbol());
+                if (value > 0) {
+                    builder.append(Double.valueOf(value).longValue()).append(Unity.DATE_NANOSECONDS.firstSymbol());
+                }
+                return builder.toString();
+            } else {
+                return builder.append(v.getUnity().firstSymbol()).toString();
+            }
+        }),
+        TEMPERATURE(v -> {
+            final StringBuilder builder = new StringBuilder();
+            if (!v.isUnity()) {
+                builder.append(Double.toString(v.getValue())).append(StringUtils.SPACE);
+            }
+            return builder.append(v.getUnity().firstSymbol()).toString();
+        });
+
+        private final Function<Entity, String> formatter;
+
+        private Type(final Function<Entity, String> formatter) {
+            this.formatter = formatter;
+        }
+
+        public Function<Entity, String> getFormatter() {
+            return this.formatter;
+        }
+
+        public String format(final Entity entity) {
+            return this.formatter.apply(entity);
+        }
+
+        private static double appendDate(final StringBuilder builder, final double value, final double unity, final String symbol) {
+            double v = value;
+            double intermediate;
+            if (v > unity) {
+                intermediate = Math.floor(v / unity);
+                builder.append(Double.valueOf(intermediate).longValue()).append(symbol);
+                v -= intermediate * unity;
+            }
+            return v;
+        }
     }
 }

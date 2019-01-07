@@ -14,7 +14,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
-import fr.landel.calc.config.Formula;
 import fr.landel.calc.utils.MapUtils;
 import fr.landel.calc.utils.StringUtils;
 
@@ -42,12 +41,15 @@ public class SimpleFormulaProcessor implements Processor {
     }
 
     @Override
-    public Formula process() throws ProcessorException {
+    public Entity process() throws ProcessorException {
         loadOperatorsAndSegments();
 
-        calculate().ifPresent(System.out::println);
-
-        return null;
+        final Optional<Entity> result = calculate();
+        if (result.isPresent()) {
+            return result.get();
+        } else {
+            return new Entity(0, this.formula);
+        }
     }
 
     private void loadOperatorsAndSegments() throws ProcessorException {
@@ -94,7 +96,7 @@ public class SimpleFormulaProcessor implements Processor {
                 lastPos = pos;
                 lastOperator = operator;
             }
-            if (lastRealPos + lastRealOperator.getLength() < this.chars.length) {
+            if (lastRealPos > -1 && lastRealPos + lastRealOperator.getLength() < this.chars.length) {
                 this.segments.put(lastRealPos, new Entity(lastRealPos, this.formula.substring(lastRealPos + lastRealOperator.getLength(), this.chars.length)));
             }
 
@@ -110,7 +112,7 @@ public class SimpleFormulaProcessor implements Processor {
         }
     }
 
-    private Optional<Entity> calculate() {
+    private Optional<Entity> calculate() throws ProcessorException {
         Entity result = null;
 
         if (!this.segments.isEmpty()) {
@@ -147,7 +149,8 @@ public class SimpleFormulaProcessor implements Processor {
                     used.put(right.getIndex(), result);
                 }
 
-                System.out.println(left + " " + entry.getValue() + " " + right + " = " + result);
+                // System.out.println(left + " " + entry.getValue() + " " +
+                // right + " = " + result);
             }
         }
 
@@ -155,36 +158,8 @@ public class SimpleFormulaProcessor implements Processor {
     }
 
     public static void main(String[] args) throws ProcessorException {
-        long start = System.currentTimeMillis();
+        Processor processor = new SimpleFormulaProcessor("15");
 
-        Processor processor = new SimpleFormulaProcessor("-1+5++1-25^14.56h12m/78>>6914E+15");
-
-        Formula formula = processor.process();
-
-        System.out.println(System.currentTimeMillis() - start + " ms");
-    }
-
-    private static class Operation {
-        private final Operators operator;
-        private final Entity left;
-        private final Entity right;
-
-        public Operation(final Operators operator, final Entity left, final Entity right) {
-            this.operator = operator;
-            this.left = left;
-            this.right = right;
-        }
-
-        public Operation addLeft(final Operators operator, final Entity left) {
-            return new Operation(operator, left, this.process());
-        }
-
-        public Operation addRight(final Operators operator, final Entity right) {
-            return new Operation(operator, this.process(), right);
-        }
-
-        public Entity process() {
-            return this.operator.process(this.left, this.right);
-        }
+        System.out.println(processor.process());
     }
 }

@@ -49,7 +49,7 @@ public class Params<T> {
     public static final Params<Double> COSINUS = new Params<>(I18n.DIALOG_FUNCTION_PARAM_COSINUS, Double.class, IS_DOUBLE, I18n.DIALOG_ERROR_PARAM_COSINUS, Double::parseDouble);
     public static final Params<Double> SINUS = new Params<>(I18n.DIALOG_FUNCTION_PARAM_SINUS, Double.class, IS_DOUBLE, I18n.DIALOG_ERROR_PARAM_SINUS, Double::parseDouble);
     public static final Params<Double> TANGENT = new Params<>(I18n.DIALOG_FUNCTION_PARAM_TANGENT, Double.class, IS_DOUBLE, I18n.DIALOG_ERROR_PARAM_TANGENT, Double::parseDouble);
-    public static final Params<Double> EXPONENT = new Params<>(I18n.DIALOG_FUNCTION_PARAM_EXPONENT, Double.class, IS_INTEGER, I18n.DIALOG_ERROR_PARAM_EXPONENT, Double::parseDouble);
+    public static final Params<Double> EXPONENT = new Params<>(I18n.DIALOG_FUNCTION_PARAM_EXPONENT, Double.class, IS_DOUBLE, I18n.DIALOG_ERROR_PARAM_EXPONENT, Double::parseDouble);
 
     private final I18n i18n;
     private final Class<T> type;
