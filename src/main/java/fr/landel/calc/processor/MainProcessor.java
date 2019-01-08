@@ -285,7 +285,7 @@ public class MainProcessor {
     public static void main(String[] args) throws ProcessorException {
         MainProcessor processor = new MainProcessor();
 
-        // System.out.println(processor.processFormula("((3+2)*pow(9/abs(3);1-5))-2"));
+        System.out.println(processor.processFormula("((3+2)*pow(9/abs(3);1-5))-2"));
         System.out.println(processor.processFormula("15in>>m/1000"));
         System.out.println(processor.processFormula("(15h+12s)>>his"));
         System.out.println(processor.processFormula("5K>>C"));
