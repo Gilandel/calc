@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 import fr.landel.calc.utils.MapUtils;
 
 public enum Operators implements OperatorConstants {
-    ADD("+", 3, IS_SAME_TYPE_AND_NOT_UNITY, (a, b) -> new Entity(a.getIndex(), a.getValue() + b.getValue(), a.getUnity())),
-    SUBSTRACT("-", 3, IS_SAME_TYPE_AND_NOT_UNITY, (a, b) -> new Entity(a.getIndex(), a.getValue() - b.getValue(), a.getUnity())),
+    ADD("+", 3, IS_SAME_TYPE_AND_NOT_UNITY, (a, b) -> new Entity(a.getIndex(), a.getValue() + b.getValue(), Unity.min(a.getUnities(), b.getUnities()))),
+    SUBSTRACT("-", 3, IS_SAME_TYPE_AND_NOT_UNITY, (a, b) -> new Entity(a.getIndex(), a.getValue() - b.getValue(), Unity.min(a.getUnities(), b.getUnities()))),
     MULTIPLY("*", 2, IS_ANY_NUMBER, FUN_MULTIPLY),
     DEVIDE("/", 2, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, FUN_DEVIDE),
-    MODULO("%", 2, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, (a, b) -> new Entity(a.getIndex(), a.getUnity().fromUnity(a.toUnity() % b.getValue()), a.getUnity())),
-    POWER("^", 1, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, (a, b) -> new Entity(a.getIndex(), a.getUnity().fromUnity(Math.pow(a.toUnity(), b.getValue())), a.getUnity())),
-    CONVERT(">>", 0, IS_CONVERTIBLE, (a, b) -> a.setUnity(b.getUnity()));
+    MODULO("%", 2, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, (a, b) -> new Entity(a.getIndex(), a.fromUnity(a.toUnity() % b.getValue()), a.getUnities())),
+    POWER("^", 1, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, (a, b) -> new Entity(a.getIndex(), a.fromUnity(Math.pow(a.toUnity(), b.getValue())), a.getUnities())),
+    CONVERT(">>", 0, IS_CONVERTIBLE, (a, b) -> a.setUnities(b.getUnities()));
 
     public static final List<Operators> BY_LENGTH_DESC = Arrays.stream(Operators.values()).sorted((a, b) -> Integer.compare(b.getLength(), a.getLength())).collect(Collectors.toList());
     public static final SortedMap<Integer, List<Operators>> BY_PRIORITY;

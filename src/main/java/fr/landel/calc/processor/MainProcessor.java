@@ -5,40 +5,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Formula;
-import fr.landel.calc.utils.Logger;
 import fr.landel.calc.utils.StringUtils;
 import fr.landel.calc.view.Functions;
 import fr.landel.calc.view.I18n;
 
 public class MainProcessor {
 
-    private static final Logger LOGGER = new Logger(MainProcessor.class);
-
-    public static final char ADD = '+';
-    public static final char SUBSTRACT = '-';
-    public static final char MULTIPLY = '*';
-    public static final char DEVIDE = '/';
-    public static final char MODULO = '%';
-    public static final char POWER = '^';
-    public static final char CONVERT = '>';
-
-    private static final char MAX_OPERATOR;
-    private static final Character[] OPERATORS_PRIORITIES = {CONVERT, POWER, MULTIPLY, DEVIDE, MODULO, ADD, SUBSTRACT};
-    private static final Character[] OPERATORS = Arrays.copyOf(OPERATORS_PRIORITIES, OPERATORS_PRIORITIES.length);
-    static {
-        Arrays.sort(OPERATORS);
-        MAX_OPERATOR = OPERATORS[OPERATORS.length - 1];
-    }
-
     public static final char PARENTHESIS_OPEN = '(';
     public static final char PARENTHESIS_CLOSE = ')';
-
-    private static final Collector<CharSequence, ?, String> ERRORS_COLLECTOR = Collectors.joining(", ");
 
     private String decimalSeparator = ".";
     private String thousandSeparator = ",";
@@ -125,6 +102,9 @@ public class MainProcessor {
                             segments[i] = entity.toString();
                         }
                     }
+                }
+                if (segments.length == 1) {
+                    block = segments[0];
                 }
             }
         } else if (parenthesisOpen < 0 && parenthesisClose < 0) {
@@ -286,11 +266,11 @@ public class MainProcessor {
         int len = input.length();
         int pos = len;
         char[] chars = input.toCharArray();
-        while (pos > 0 && Arrays.binarySearch(Functions.CHARS, chars[--pos]) > -1) {
+        while (--pos >= 0 && Arrays.binarySearch(Functions.CHARS, chars[pos]) > -1) {
         }
 
-        if (pos < len) {
-            final char[] inputFunction = Arrays.copyOfRange(chars, pos, len);
+        if (pos < len - 1) {
+            final char[] inputFunction = Arrays.copyOfRange(chars, pos + 1, len);
             final Optional<Functions> function = Functions.check(inputFunction);
             if (function.isPresent()) {
                 return function;
@@ -305,6 +285,11 @@ public class MainProcessor {
     public static void main(String[] args) throws ProcessorException {
         MainProcessor processor = new MainProcessor();
 
-        System.out.println(processor.processFormula("((3+2)*pow(9/abs(3);1-5))-2"));
+        // System.out.println(processor.processFormula("((3+2)*pow(9/abs(3);1-5))-2"));
+        System.out.println(processor.processFormula("15in>>m/1000"));
+        System.out.println(processor.processFormula("(15h+12s)>>his"));
+        System.out.println(processor.processFormula("5K>>C"));
+        System.out.println(processor.processFormula("5C>>K"));
+        System.out.println(processor.processFormula("15/(1200/3937/12)"));
     }
 }

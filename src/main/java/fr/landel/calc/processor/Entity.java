@@ -1,5 +1,8 @@
 package fr.landel.calc.processor;
 
+import java.util.Arrays;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,17 +27,23 @@ public class Entity {
 
     private final int index;
     private Double value;
-    private Unity unity;
+    private SortedSet<Unity> unities = new TreeSet<>(Unity.COMPARATOR_UNITIES);
 
     public Entity(final int index, final String input) throws ProcessorException {
         this.index = index;
         parse(input);
     }
 
-    public Entity(final int index, final Double value, final Unity unity) {
+    public Entity(final int index, final Double value, final SortedSet<Unity> unities) {
         this.index = index;
         this.value = value;
-        this.unity = unity;
+        this.setUnities(unities);
+    }
+
+    public Entity(final int index, final Double value, final Unity... unities) {
+        this.index = index;
+        this.value = value;
+        this.setUnities(unities);
     }
 
     public Entity(final int index, final Double value) {
@@ -43,22 +52,27 @@ public class Entity {
 
     private void parse(final String input) throws ProcessorException {
         Double value;
+        SortedSet<Unity> unities;
         Unity unity;
         int index, indexLeap;
 
-        final Matcher matcher = PATTERN_NUMBER.matcher(input);
+        Matcher matcher = PATTERN_NUMBER.matcher(input);
         while (matcher.find()) {
-            if (this.unity == null || Unity.Type.DATE.equals(this.getUnityType())) {
+            if (!this.hasUnity() || this.getUnityType().isAccumulable()) {
                 try {
                     value = Double.parseDouble(matcher.group(GROUP_NUMBER_INTEGER));
 
                     final String unityGroup = matcher.group(GROUP_NUMBER_UNITY);
-                    unity = Unity.getUnity(unityGroup).orElseThrow(() -> new ProcessorException(ERROR_UNITY, unityGroup));
+                    unities = Unity.getUnities(unityGroup);
+                    if (unities.isEmpty() || unities.size() > 1) {
+                        throw new ProcessorException(ERROR_UNITY, unityGroup);
+                    }
+                    unity = unities.first();
 
-                    if (this.unity != null) {
+                    if (this.hasUnity()) { // XXX manage all conversions
                         boolean isNumber = Unity.Type.NUMBER.equals(unity.getType());
-                        index = Unity.DATES.indexOf(this.unity);
-                        indexLeap = Unity.DATES_LEAP.indexOf(this.unity);
+                        index = Unity.DATES.indexOf(this.firstUnity());
+                        indexLeap = Unity.DATES_LEAP.indexOf(this.firstUnity());
 
                         if (isNumber && index > -1 && index < Unity.DATES.size() - 1) {
                             unity = Unity.DATES.get(index + 1);
@@ -72,10 +86,10 @@ public class Entity {
                     }
 
                     if (unity != null) {
-                        this.unity = unity;
+                        this.setUnities(unity);
                     }
 
-                    value = this.unity.fromUnity(value);
+                    value = this.fromUnity(value);
 
                     if (this.value == null) {
                         this.value = value;
@@ -91,14 +105,26 @@ public class Entity {
             }
         }
 
-        if (this.unity == null) {
+        if (!this.hasUnity()) {
             if (PATTERN_UNITY.matcher(input).matches()) {
-                this.unity = Unity.getUnity(input).orElseThrow(() -> new ProcessorException(ERROR_UNITY, input));
-            } else {
+                final SortedSet<Unity> list = Unity.getUnities(input);
+                if (!list.isEmpty() && !this.hasUnity()) {
+                    this.setUnities(list.toArray(Unity[]::new));
+                }
+            }
+            if (!this.hasUnity()) {
                 LOGGER.error(ERROR_PARSE, input);
                 throw new ProcessorException(ERROR_PARSE, input);
             }
         }
+    }
+
+    public Unity firstUnity() {
+        return this.unities.first();
+    }
+
+    public boolean hasUnity() {
+        return !this.unities.isEmpty();
     }
 
     public Double getValue() {
@@ -106,28 +132,42 @@ public class Entity {
     }
 
     public boolean isNumber() {
-        return this.value != null && Unity.NUMBER.equals(this.getUnity());
+        return this.value != null && Unity.NUMBER.equals(this.firstUnity());
     }
 
     public boolean isUnity() {
         return this.value == null;
     }
 
-    public Unity getUnity() {
-        return this.unity;
+    public SortedSet<Unity> getUnities() {
+        return this.unities;
     }
 
-    public Entity setUnity(final Unity unity) {
-        this.unity = unity;
+    public Entity setUnities(final SortedSet<Unity> unities) {
+        this.unities = unities;
+        return this;
+    }
+
+    public Entity setUnities(final Unity... unities) {
+        this.unities = new TreeSet<>(Unity.COMPARATOR_UNITIES);
+        this.unities.addAll(Arrays.asList(unities));
         return this;
     }
 
     public Unity.Type getUnityType() {
-        return this.getUnity().getType();
+        return this.firstUnity().getType();
     }
 
     public Double toUnity() {
-        return this.getUnity().toUnity(this.value);
+        return this.firstUnity().toUnity(this.value);
+    }
+
+    public Double toUnity(final Double value) {
+        return this.firstUnity().toUnity(value);
+    }
+
+    public Double fromUnity(final Double value) {
+        return this.firstUnity().fromUnity(value);
     }
 
     public int getIndex() {

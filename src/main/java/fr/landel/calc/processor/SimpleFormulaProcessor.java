@@ -117,7 +117,7 @@ public class SimpleFormulaProcessor implements Processor {
 
         if (!this.segments.isEmpty()) {
 
-            Map<Integer, Entity> used = new HashMap<>();
+            final Map<Integer, Entity> used = new HashMap<>();
 
             int index;
             Entity left, right;
@@ -148,9 +148,6 @@ public class SimpleFormulaProcessor implements Processor {
                     result = entry.getValue().process(leftResult, right);
                     used.put(right.getIndex(), result);
                 }
-
-                // System.out.println(left + " " + entry.getValue() + " " +
-                // right + " = " + result);
             }
         }
 
