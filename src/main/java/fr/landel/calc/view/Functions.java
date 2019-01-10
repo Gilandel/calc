@@ -13,6 +13,9 @@ import fr.landel.calc.processor.MainProcessor;
 import fr.landel.calc.utils.StringUtils;
 
 public enum Functions {
+
+    // TODO add calculation (array de params) Function<Entity[], Entity>
+
     ABS("abs", I18n.DIALOG_FUNCTION_ABS, Params.VALUE),
     ACOS("acos", I18n.DIALOG_FUNCTION_ACOS, Params.COSINUS),
     ASIN("asin", I18n.DIALOG_FUNCTION_ASIN, Params.SINUS),
@@ -25,6 +28,8 @@ public enum Functions {
     LOG("log", I18n.DIALOG_FUNCTION_LOG, Params.VALUE),
     LN("ln", I18n.DIALOG_FUNCTION_LN, Params.VALUE),
     PI("pi"),
+    E("e"),
+    RANDOM("rand"),
     POW("pow", I18n.DIALOG_FUNCTION_POW, Params.VALUE, Params.EXPONENT),
     ROUND("round", I18n.DIALOG_FUNCTION_ROUND, Params.VALUE, Params.ACCURACY),
     SIN("sin", I18n.DIALOG_FUNCTION_SIN, Params.ANGULAR),
@@ -199,7 +204,7 @@ public enum Functions {
                 tree.trees[c] = sub;
                 addTree(sub, chars, index + 1, function);
 
-            } else if (chars.length > index + 1) {
+            } else if (chars.length > index) {
                 addTree(tree.trees[c], chars, index + 1, function);
             }
         } else if (index > 0 && chars.length == index) {
@@ -220,7 +225,12 @@ public enum Functions {
             char c = array[index];
             if (validator.length > c && validator[c] != null) {
                 if (validator[c].getTrees() != null) {
-                    return check(validator[c].getTrees(), array, index + 1);
+                    final Optional<Functions> function = check(validator[c].getTrees(), array, index + 1);
+                    if (function.isPresent()) {
+                        return function;
+                    } else {
+                        return Optional.ofNullable(validator[c].getFunction());
+                    }
                 } else if (array.length == index + 1) {
                     return Optional.of(validator[c].getFunction());
                 }

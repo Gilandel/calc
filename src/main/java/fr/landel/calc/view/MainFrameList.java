@@ -77,7 +77,12 @@ public class MainFrameList {
             int type = getFormulaType(index);
 
             if (type == 0 || type == 1) {
-                parent.insertText(getValue(screenList, index).trim());
+                final String text = getValue(screenList, index).trim();
+                if (parent.isControlDown()) {
+                    parent.setText(text);
+                } else {
+                    parent.insertText(text);
+                }
             }
         } else if (evt.getButton() == MouseEvent.BUTTON3) {
 
@@ -153,6 +158,11 @@ public class MainFrameList {
         }
         showLastFormula();
         fireCounter();
+    }
+
+    public void setSelectedIndex(final int index) {
+        this.screenList.setSelectedIndex(index);
+        this.screenList.ensureIndexIsVisible(index);
     }
 
     public int getFormulaType(final int index) {

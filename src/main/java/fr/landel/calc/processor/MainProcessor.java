@@ -1,18 +1,19 @@
 package fr.landel.calc.processor;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Formula;
+import fr.landel.calc.utils.MathUtils;
 import fr.landel.calc.utils.StringUtils;
 import fr.landel.calc.view.Functions;
-import fr.landel.calc.view.I18n;
 
 public class MainProcessor {
+
+    // TODO corriger detection des caraceteres avant fonction (2e())
+    // TODO gerer radian / exact / scientific
+    // TODO remonter les erreurs traduites
 
     public static final char PARENTHESIS_OPEN = '(';
     public static final char PARENTHESIS_CLOSE = ')';
@@ -24,9 +25,6 @@ public class MainProcessor {
     private boolean exact = false;
     private boolean scientific = false;
     private int precision = 3;
-
-    // PI/180
-    private static final double DEGREE_CONVERTER = 0.017453292519943295D;
 
     public MainProcessor() {
     }
@@ -64,22 +62,6 @@ public class MainProcessor {
         return input.replace(StringUtils.SPACE, StringUtils.EMPTY);
     }
 
-    private double applyAngularFunction(final Functions function, final double d, final Function<Double, Double> angularFunction) {
-        double angular = angularFunction.apply(d);
-        if (!radian) {
-            angular = angular * DEGREE_CONVERTER;
-        }
-        return angular;
-    }
-
-    private double applyInverseAngularFunction(final Functions function, final double d, final Function<Double, Double> angularFunction) {
-        double angular = angularFunction.apply(d);
-        if (!radian) {
-            angular = angular / DEGREE_CONVERTER;
-        }
-        return angular;
-    }
-
     private String processFormula(final String input) throws ProcessorException {
         int parenthesisOpen = input.lastIndexOf(PARENTHESIS_OPEN);
         int parenthesisClose = input.indexOf(PARENTHESIS_CLOSE, parenthesisOpen + 1);
@@ -95,7 +77,7 @@ public class MainProcessor {
                 segments = block.split(Functions.SEPARATOR);
                 for (int i = 0; i < segments.length; ++i) {
                     if (!segments[i].isEmpty()) {
-                        entity = new SimpleFormulaProcessor(segments[i]).process();
+                        entity = new FormulaProcessor(segments[i]).process();
                         if (entity.isNumber()) {
                             segments[i] = stringify(entity.getValue());
                         } else {
@@ -108,7 +90,7 @@ public class MainProcessor {
                 }
             }
         } else if (parenthesisOpen < 0 && parenthesisClose < 0) {
-            entity = new SimpleFormulaProcessor(input).process();
+            entity = new FormulaProcessor(input).process();
             if (entity.isNumber()) {
                 return stringify(entity.getValue());
             } else {
@@ -123,9 +105,9 @@ public class MainProcessor {
             final String prefix = input.substring(0, parenthesisOpen);
             final Optional<Functions> function = getFunction(prefix);
             if (function.isPresent()) {
-                block = processFunction(function, segments);
+                entity = new FunctionProcessor(function.get(), segments, radian).process();
                 result.append(input.substring(0, parenthesisOpen - function.get().getFunction().length()));
-                result.append(block);
+                result.append(entity);
             } else {
                 result.append(prefix).append(block);
             }
@@ -139,108 +121,8 @@ public class MainProcessor {
         return processFormula(result.toString());
     }
 
-    private String processFunction(final Optional<Functions> function, final String[] segments) throws ProcessorException {
-        final List<I18n> errors = new ArrayList<>();
-        double result = 0;
-        if (function.isPresent()) {
-            final Functions f = function.get();
-
-            errors.addAll(f.check(segments));
-
-            if (errors.isEmpty()) {
-                if (f.getParamsCount() == 1) {
-                    if (f.getParams()[0].getConverter() != null) {
-
-                        final Double d = new SimpleFormulaProcessor(segments[0]).process().getValue();
-
-                        switch (f) {
-                        case ABS:
-                            result = Math.abs(d);
-                            break;
-                        case ACOS:
-                            result = applyInverseAngularFunction(f, d, Math::acos);
-                            break;
-                        case ASIN:
-                            result = applyInverseAngularFunction(f, d, Math::asin);
-                            break;
-                        case ATAN:
-                            result = applyInverseAngularFunction(f, d, Math::atan);
-                            break;
-                        case COS:
-                            result = applyAngularFunction(f, d, Math::cos);
-                            break;
-                        case SIN:
-                            result = applyAngularFunction(f, d, Math::sin);
-                            break;
-                        case TAN:
-                            result = applyAngularFunction(f, d, Math::tan);
-                            break;
-                        case EXP:
-                            result = Math.exp(d);
-                            break;
-                        case LN:
-                            result = Math.log(d);
-                            break;
-                        case LOG:
-                            result = Math.log10(d);
-                            break;
-                        case SQR:
-                            result = Math.sqrt(d);
-                            break;
-                        case FACT:
-                            result = MainProcessor.fact(d.longValue());
-                            break;
-                        case FLOOR:
-                            result = Math.floor(d);
-                            break;
-                        case CEIL:
-                            result = Math.ceil(d);
-                            break;
-                        case ROUND:
-                            result = Math.round(d);
-                            break;
-                        default:
-                        }
-                    }
-                } else if (f.getParamsCount() == 2) {
-                    if (f.getParams()[0].getConverter() != null && f.getParams()[1].getConverter() != null) {
-
-                        final Double d1 = new SimpleFormulaProcessor(segments[0]).process().getValue();
-                        final Double d2 = new SimpleFormulaProcessor(segments[1]).process().getValue();
-
-                        switch (f) {
-                        case POW:
-                            result = Math.pow(d1, d2);
-                            break;
-                        default:
-                        }
-                    }
-                } else if (f.getParamsCount() == 0) {
-
-                    switch (f) {
-                    case PI:
-                        result = Math.PI;
-                        break;
-                    default:
-                    }
-                }
-            }
-        }
-
-        return stringify(result);
-    }
-
-    private static long fact(long n) {
-        if (n == 0L) {
-            return 1L;
-        } else {
-            return n * fact(n - 1L);
-        }
-    }
-
     private String stringify(final double d) {
-        double pow = Math.pow(10, precision);
-        double r = Math.round(d * pow) / pow;
+        double r = MathUtils.round(d, precision);
 
         final String value = Double.toString(r);
         final int dot = value.indexOf('.');
@@ -263,9 +145,10 @@ public class MainProcessor {
     }
 
     private Optional<Functions> getFunction(final String input) throws ProcessorException {
-        int len = input.length();
-        int pos = len;
         char[] chars = input.toCharArray();
+        int len = chars.length;
+        int pos = len;
+
         while (--pos >= 0 && Arrays.binarySearch(Functions.CHARS, chars[pos]) > -1) {
         }
 

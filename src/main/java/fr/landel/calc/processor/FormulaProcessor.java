@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 import fr.landel.calc.utils.MapUtils;
 import fr.landel.calc.utils.StringUtils;
 
-public class SimpleFormulaProcessor implements Processor {
+public class FormulaProcessor implements Processor {
 
     // private static final Logger LOGGER =
     // new Logger(SimpleFormulaProcessor.class);
@@ -35,7 +35,7 @@ public class SimpleFormulaProcessor implements Processor {
     private final Map<Integer, Entity> segments = new HashMap<>();
     private SortedMap<Integer, Operators> sortedOperators;
 
-    public SimpleFormulaProcessor(final String formula) {
+    public FormulaProcessor(final String formula) {
         this.formula = StringUtils.requireNonBlank(formula);
         this.chars = this.formula.toCharArray();
     }
@@ -155,7 +155,7 @@ public class SimpleFormulaProcessor implements Processor {
     }
 
     public static void main(String[] args) throws ProcessorException {
-        Processor processor = new SimpleFormulaProcessor("15");
+        Processor processor = new FormulaProcessor("15");
 
         System.out.println(processor.process());
     }
