@@ -86,7 +86,7 @@ public class Entity {
                     }
 
                     if (unity != null) {
-                        this.setUnities(unity);
+                        this.getUnities().add(unity);
                     }
 
                     value = this.fromUnity(value);

@@ -18,39 +18,44 @@ import java.util.function.Supplier;
 import fr.landel.calc.utils.StringUtils;
 
 public enum Unity {
+
+    // TODO creer arbre unite comme fonction pour retrouner l'unite qui
+    // correspond le mieux
+
     NUMBER(Type.NUMBER, "d"),
 
-    DATE_YEARS(Type.DATE, v -> v * Unity.NANO_PER_YEAR, v -> v / Unity.NANO_PER_YEAR, "Y"),
-    DATE_YEARS_LEAP(Type.DATE, v -> v * Unity.NANO_PER_YEAR_LEAP, v -> v / Unity.NANO_PER_YEAR_LEAP, "YL"),
-    DATE_MONTHS(Type.DATE, v -> v * Unity.NANO_PER_MONTH, v -> v / Unity.NANO_PER_MONTH, "M"),
-    DATE_MONTHS_LEAP(Type.DATE, v -> v * Unity.NANO_PER_MONTH_LEAP, v -> v / Unity.NANO_PER_MONTH_LEAP, "ML"),
-    DATE_WEEKS(Type.DATE, v -> v * Unity.NANO_PER_WEEK, v -> v / Unity.NANO_PER_WEEK, "W"),
-    DATE_DAYS(Type.DATE, v -> v * Unity.NANO_PER_DAY, v -> v / Unity.NANO_PER_DAY, "D"),
-    DATE_HOURS(Type.DATE, v -> v * Unity.NANO_PER_HOUR, v -> v / Unity.NANO_PER_HOUR, "h"),
-    DATE_MINUTES(Type.DATE, v -> v * Unity.NANO_PER_MINUTE, v -> v / Unity.NANO_PER_MINUTE, "i"),
-    DATE_SECONDS(Type.DATE, v -> v * Unity.NANO_PER_SECOND, v -> v / Unity.NANO_PER_SECOND, "s"),
-    DATE_MILLISECONDS(Type.DATE, v -> v * Unity.NANO_PER_MILLISECOND, v -> v / Unity.NANO_PER_MILLISECOND, "S"),
-    DATE_MICROSECONDS(Type.DATE, v -> v * Unity.NANO_PER_MICROSECOND, v -> v / Unity.NANO_PER_MICROSECOND, "O"),
-    DATE_NANOSECONDS(Type.DATE, "N"),
+    DATE_YEARS(Type.DATE, v -> v * Unity.NANO_PER_YEAR, v -> v / Unity.NANO_PER_YEAR, "Y", "year"),
+    DATE_YEARS_LEAP(Type.DATE, v -> v * Unity.NANO_PER_YEAR_LEAP, v -> v / Unity.NANO_PER_YEAR_LEAP, "YL", "yearleap"),
+    DATE_MONTHS(Type.DATE, v -> v * Unity.NANO_PER_MONTH, v -> v / Unity.NANO_PER_MONTH, "M", "month"),
+    DATE_MONTHS_LEAP(Type.DATE, v -> v * Unity.NANO_PER_MONTH_LEAP, v -> v / Unity.NANO_PER_MONTH_LEAP, "ML", "monthleap"),
+    DATE_WEEKS(Type.DATE, v -> v * Unity.NANO_PER_WEEK, v -> v / Unity.NANO_PER_WEEK, "W", "week"),
+    DATE_DAYS(Type.DATE, v -> v * Unity.NANO_PER_DAY, v -> v / Unity.NANO_PER_DAY, "D", "day"),
+    DATE_HOURS(Type.DATE, v -> v * Unity.NANO_PER_HOUR, v -> v / Unity.NANO_PER_HOUR, "h", "hour"),
+    DATE_MINUTES(Type.DATE, v -> v * Unity.NANO_PER_MINUTE, v -> v / Unity.NANO_PER_MINUTE, "i", "minute"),
+    DATE_SECONDS(Type.DATE, v -> v * Unity.NANO_PER_SECOND, v -> v / Unity.NANO_PER_SECOND, "s", "second"),
+    DATE_MILLISECONDS(Type.DATE, v -> v * Unity.NANO_PER_MILLISECOND, v -> v / Unity.NANO_PER_MILLISECOND, "S", "millisecond"),
+    DATE_MICROSECONDS(Type.DATE, v -> v * Unity.NANO_PER_MICROSECOND, v -> v / Unity.NANO_PER_MICROSECOND, "O", "microsecond"),
+    DATE_NANOSECONDS(Type.DATE, "N", "nanosecond"),
 
-    TEMP_KELVIN(Type.TEMPERATURE, "K"),
-    TEMP_CELCIUS(Type.TEMPERATURE, v -> v + Unity.CELCIUS_ZERO_IN_KELVIN, v -> v - Unity.CELCIUS_ZERO_IN_KELVIN, "C"),
+    TEMP_KELVIN(Type.TEMPERATURE, "K", "kelvin"),
+    TEMP_CELCIUS(Type.TEMPERATURE, v -> v + Unity.CELCIUS_ZERO_IN_KELVIN, v -> v - Unity.CELCIUS_ZERO_IN_KELVIN, "C", "celcius"),
     TEMP_FARENHEIT(
             Type.TEMPERATURE,
             v -> (v - Unity.FAHRENHEIT_ZERO) / Unity.FAHRENHEIT_DEVIDER + Unity.CELCIUS_ZERO_IN_KELVIN,
             v -> (v - Unity.CELCIUS_ZERO_IN_KELVIN) * Unity.FAHRENHEIT_DEVIDER + Unity.FAHRENHEIT_ZERO,
-            "F"),
+            "F",
+            "farhenheit"),
 
-    LENGTH_METER(Type.LENGTH, "m"),
-    LENGTH_IMPERIAL_LEAGUE(Type.LENGTH, v -> v * Unity.LEAGUE_M, v -> v / Unity.LEAGUE_M, "lea"),
-    LENGTH_IMPERIAL_MILE(Type.LENGTH, v -> v * Unity.MILE_M, v -> v / Unity.MILE_M, "mi"),
-    LENGTH_IMPERIAL_FURLONG(Type.LENGTH, v -> v * Unity.FURLONG_M, v -> v / Unity.FURLONG_M, "fur"),
-    LENGTH_IMPERIAL_CHAIN(Type.LENGTH, v -> v * Unity.CHAIN_M, v -> v / Unity.CHAIN_M, "ch"),
-    LENGTH_IMPERIAL_YARD(Type.LENGTH, v -> v * Unity.YARD_M, v -> v / Unity.YARD_M, "yd"),
-    LENGTH_IMPERIAL_FOOT(Type.LENGTH, v -> v * Unity.FOOT_M, v -> v / Unity.FOOT_M, "ft"),
-    LENGTH_IMPERIAL_INCH(Type.LENGTH, v -> v * Unity.INCH_M, v -> v / Unity.INCH_M, "in"),
-    LENGTH_IMPERIAL_DIGIT(Type.LENGTH, v -> v * Unity.DIGIT_M, v -> v / Unity.DIGIT_M, "di"),
-    LENGTH_IMPERIAL_THOU(Type.LENGTH, v -> v * Unity.THOU_M, v -> v / Unity.THOU_M, "th");
+    LENGTH_METER(Type.LENGTH, "m", "meter"),
+    LENGTH_IMPERIAL_LEAGUE(Type.LENGTH, v -> v * Unity.LEAGUE_M, v -> v / Unity.LEAGUE_M, "lea", "league"),
+    LENGTH_IMPERIAL_MILE(Type.LENGTH, v -> v * Unity.MILE_M, v -> v / Unity.MILE_M, "mi", "mile"),
+    LENGTH_IMPERIAL_FURLONG(Type.LENGTH, v -> v * Unity.FURLONG_M, v -> v / Unity.FURLONG_M, "fur", "furlong"),
+    LENGTH_IMPERIAL_CHAIN(Type.LENGTH, v -> v * Unity.CHAIN_M, v -> v / Unity.CHAIN_M, "ch", "chain"),
+    LENGTH_IMPERIAL_YARD(Type.LENGTH, v -> v * Unity.YARD_M, v -> v / Unity.YARD_M, "yd", "yard"),
+    LENGTH_IMPERIAL_FOOT(Type.LENGTH, v -> v * Unity.FOOT_M, v -> v / Unity.FOOT_M, "ft", "foot"),
+    LENGTH_IMPERIAL_INCH(Type.LENGTH, v -> v * Unity.INCH_M, v -> v / Unity.INCH_M, "in", "inch"),
+    LENGTH_IMPERIAL_DIGIT(Type.LENGTH, v -> v * Unity.DIGIT_M, v -> v / Unity.DIGIT_M, "di", "digit"),
+    LENGTH_IMPERIAL_THOU(Type.LENGTH, v -> v * Unity.THOU_M, v -> v / Unity.THOU_M, "th", "thou");
 
     public static final List<Unity> DATES = new ArrayList<>(
             Arrays.asList(DATE_YEARS, DATE_MONTHS, DATE_DAYS, DATE_HOURS, DATE_MINUTES, DATE_SECONDS, DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS));
