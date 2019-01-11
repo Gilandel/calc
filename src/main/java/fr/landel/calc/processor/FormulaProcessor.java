@@ -12,6 +12,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import fr.landel.calc.utils.MapUtils;
@@ -27,19 +28,36 @@ public class FormulaProcessor implements Processor {
         Arrays.sort(POW_10);
     }
     private static final Supplier<SortedSet<Integer>> SUPPLIER_SORTED_SET = () -> new TreeSet<>(Integer::compareTo);
+    private static final Supplier<List<Integer>> SUPPLIER_LIST = ArrayList::new;
+    private static final BiConsumer<List<Integer>, ? super SortedSet<Integer>> ACCUMULATOR = (a, b) -> a.addAll(b);
+    private static final BiConsumer<List<Integer>, List<Integer>> COMBINER = (a, b) -> a.addAll(b);
 
     private static final String ERROR_PARSE = "the expression cannot be parsed";
+    private static final String ERROR_OPERATOR_POSITION = "the operator '{}' cannot be placed at: {}";
+    private static final String ERROR_OPERATOR_MISSING = "the operator is missing between: {} and {}";
 
     private final String formula;
+    private final int length;
     private final char[] chars;
+    private final ResultBuilder result;
 
     private final List<Integer> positions = new ArrayList<>();
     private final Map<Integer, Entity> segments = new HashMap<>();
     private SortedMap<Integer, Operators> sortedOperators;
 
-    public FormulaProcessor(final String formula) {
+    public FormulaProcessor(final String formula, final ResultBuilder result) {
         this.formula = StringUtils.requireNonBlank(formula);
+        this.length = this.formula.length();
         this.chars = this.formula.toCharArray();
+        this.result = result;
+    }
+
+    public FormulaProcessor(final String formula) {
+        this(formula, null);
+    }
+
+    public FormulaProcessor(final ResultBuilder result) {
+        this(result.getFormula(), result);
     }
 
     @Override
@@ -65,7 +83,11 @@ public class FormulaProcessor implements Processor {
             final int length = o.getLength();
             int pos = -length;
             while ((pos = this.formula.indexOf(operator, pos + length)) > -1) {
-                positions.put(pos, o);
+                if (o.getPositionChecker().test(pos, this.length)) {
+                    positions.put(pos, o);
+                } else {
+                    throw new ProcessorException(ERROR_OPERATOR_POSITION, o, pos);
+                }
             }
         }
 
@@ -84,9 +106,9 @@ public class FormulaProcessor implements Processor {
                 if (pos > 0 && (lastPos == -1 || lastPos + lastOperator.getLength() < pos) && Arrays.binarySearch(POW_10, this.chars[pos - 1]) < 0) {
                     this.positions.add(pos);
                     if (lastRealPos > -1) {
-                        this.segments.put(lastRealPos, new Entity(lastRealPos, this.formula.substring(lastRealPos + lastRealOperator.getLength(), pos)));
+                        addSegment(lastRealPos, lastRealPos + lastRealOperator.getLength(), pos);
                     } else {
-                        this.segments.put(0, new Entity(0, this.formula.substring(0, pos)));
+                        addSegment(0, 0, pos);
                     }
                     realOperatorsByPosition.put(pos, operator);
                     MapUtils.getOrPutIfAbsent(sortedOperatorsByPriority, operator.getPriority(), SUPPLIER_SORTED_SET).add(pos);
@@ -99,18 +121,45 @@ public class FormulaProcessor implements Processor {
                 lastOperator = operator;
             }
             if (lastRealPos > -1 && lastRealPos + lastRealOperator.getLength() < this.chars.length) {
-                this.segments.put(lastRealPos, new Entity(lastRealPos, this.formula.substring(lastRealPos + lastRealOperator.getLength(), this.chars.length)));
+                addSegment(lastRealPos, lastRealPos + lastRealOperator.getLength(), this.chars.length);
             }
 
             // merge sorted operators into a list following priority and
             // position
-            final List<Integer> sortedOperators = sortedOperatorsByPriority.values().stream().collect(ArrayList::new, (a, b) -> a.addAll(b), (a, b) -> a.addAll(b));
+            final List<Integer> sortedOperators = sortedOperatorsByPriority.values().stream().collect(SUPPLIER_LIST, ACCUMULATOR, COMBINER);
 
             // rebuild map following sorted operators
             this.sortedOperators = new TreeMap<>((a, b) -> Integer.compare(sortedOperators.indexOf(a), sortedOperators.indexOf(b)));
             this.sortedOperators.putAll(realOperatorsByPosition);
+
+        } else if (this.result != null && this.result.innerLength() > 0 && this.result.hasEntities()) {
+            final int pos = this.result.indexOf(StringUtils.ID_OPEN);
+            final String value1, value2;
+            if (pos > 0) {
+                value1 = this.result.substring(0, pos);
+                value2 = this.result.firstEntity().toString();
+            } else {
+                value1 = this.result.firstEntity().toString();
+                value2 = this.result.substring(pos + value1.length());
+            }
+            throw new ProcessorException(ERROR_OPERATOR_MISSING, value1, value2);
+
         } else {
             this.sortedOperators = Collections.emptySortedMap();
+        }
+    }
+
+    private void addSegment(final int index, final int start, final int end) throws ProcessorException {
+        final Optional<Entity> entity;
+        if (result != null) {
+            entity = result.subEntity(start, end);
+        } else {
+            entity = Optional.empty();
+        }
+        if (entity.isPresent()) {
+            this.segments.put(index, entity.get());
+        } else {
+            this.segments.put(index, new Entity(index, this.formula.substring(start, end)));
         }
     }
 
@@ -151,6 +200,8 @@ public class FormulaProcessor implements Processor {
                     used.put(right.getIndex(), result);
                 }
             }
+        } else {
+            result = new Entity(0, this.formula);
         }
 
         return Optional.ofNullable(result);

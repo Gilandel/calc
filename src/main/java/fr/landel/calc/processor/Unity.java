@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
+import fr.landel.calc.utils.MathUtils;
 import fr.landel.calc.utils.StringUtils;
 
 public enum Unity {
@@ -174,11 +175,17 @@ public enum Unity {
     }
 
     public static Unity min(final SortedSet<Unity> left, final SortedSet<Unity> right) {
-        return REDUCER.apply(left.last(), right.last());
+        if (left.isEmpty() && right.isEmpty()) {
+            return Unity.NUMBER;
+        } else {
+            return REDUCER.apply(left.last(), right.last());
+        }
     }
 
     static enum Type {
-        NUMBER(false, v -> Double.toString(v.getValue())),
+        // TODO manage output conf (exact, scientific, precision) remove
+        // stringify
+        NUMBER(false, v -> stringify(v.getValue())),
         DATE(true, v -> {
             final StringBuilder builder = new StringBuilder();
             if (!v.isUnity()) {
@@ -244,6 +251,29 @@ public enum Unity {
                 }
                 ++i;
             }
+        }
+
+        private static String stringify(final double d) {
+            double r = MathUtils.round(d, MainProcessor.getPrecision());
+
+            final String value = Double.toString(r);
+            final int dot = value.indexOf('.');
+            int length = dot + 1 + MainProcessor.getPrecision();
+            final String result;
+
+            if (length > value.length()) {
+                char[] chars = new char[length - value.length()];
+                Arrays.fill(chars, '0');
+                result = value + new String(chars);
+            } else if (MainProcessor.getPrecision() > 0) {
+                result = value.substring(0, length);
+            } else if (dot > -1) {
+                result = value.substring(0, dot);
+            } else {
+                result = value;
+            }
+
+            return result;
         }
     }
 

@@ -1,11 +1,12 @@
 package fr.landel.calc.processor;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Formula;
-import fr.landel.calc.utils.MathUtils;
+import fr.landel.calc.function.FunctionThrowable;
 import fr.landel.calc.utils.StringUtils;
 
 public class MainProcessor {
@@ -14,13 +15,20 @@ public class MainProcessor {
     // TODO gerer radian / exact / scientific
     // TODO remonter les erreurs traduites
 
-    private String decimalSeparator = ".";
-    private String thousandSeparator = ",";
+    private static final List<String> RESTRICTED_LIST = Arrays.asList(StringUtils.ID_OPEN, StringUtils.ID_CLOSE);
+
+    private static final String ERROR_RESTRICTED = "expression cannot contains restricted characters: {}";
+    private static final String RESTRICTED_TEXT = RESTRICTED_LIST.stream().collect(StringUtils.COMMA_JOINING_COLLECTOR);
+
+    private static final FunctionThrowable<String, Entity, ProcessorException> PROCESSOR = s -> new FormulaProcessor(s).process();
 
     private static boolean radian = true;
     private static boolean exact = false;
     private static boolean scientific = false;
     private static int precision = 3;
+
+    private static String decimalSeparator = ".";
+    private static String thousandSeparator = ",";
 
     public MainProcessor() {
     }
@@ -58,8 +66,8 @@ public class MainProcessor {
     }
 
     public void updateI18n() {
-        this.decimalSeparator = Conf.DECIMAL_SEPARATOR.getString().get();
-        this.thousandSeparator = Conf.THOUSAND_SEPARATOR.getString().get();
+        decimalSeparator = Conf.DECIMAL_SEPARATOR.getString().get();
+        thousandSeparator = Conf.THOUSAND_SEPARATOR.getString().get();
     }
 
     public Formula process(final String input) throws ProcessorException {
@@ -74,86 +82,57 @@ public class MainProcessor {
         return input.replace(StringUtils.SPACE, StringUtils.EMPTY);
     }
 
-    // must return an entity (3h/2)>>i
     private String processFormula(final String input) throws ProcessorException {
+        if (RESTRICTED_LIST.stream().filter(input::contains).findAny().isPresent()) {
+            throw new ProcessorException(ERROR_RESTRICTED, input, RESTRICTED_TEXT);
+        }
+
+        return processFormula(new ResultBuilder().append(input));
+    }
+
+    // must return an entity (3h/2)>>i
+    private String processFormula(final ResultBuilder input) throws ProcessorException {
         int parenthesisOpen = input.lastIndexOf(StringUtils.PARENTHESIS_OPEN);
         int parenthesisClose = input.indexOf(StringUtils.PARENTHESIS_CLOSE, parenthesisOpen + 1);
 
-        Entity entity;
-        final String[] segments;
-        final Entity[] entities;
-        String block;
-        if (parenthesisOpen > -1 && parenthesisClose > parenthesisOpen) {
-            block = input.substring(parenthesisOpen + 1, parenthesisClose);
-            if (block.isEmpty()) {
-                segments = new String[0];
-                entities = new Entity[0];
-            } else {
-                segments = block.split(StringUtils.SEMICOLON);
-                entities = new Entity[segments.length];
-
-                for (int i = 0; i < segments.length; ++i) {
-                    if (!segments[i].isEmpty()) {
-                        entities[i] = new FormulaProcessor(segments[i]).process();
-                    }
-                }
-                if (segments.length == 1) {
-                    block = segments[0];
-                }
-            }
-        } else if (parenthesisOpen < 0 && parenthesisClose < 0) {
-            entity = new FormulaProcessor(input).process();
-            if (entity.isNumber()) {
-                return stringify(entity.getValue());
-            } else {
+        if (parenthesisOpen < 0 && parenthesisClose < 0) {
+            final Entity entity = input.firstEntity();
+            if (input.innerLength() == 0 && input != null) {
                 return entity.toString();
+            } else {
+                return new FormulaProcessor(input).process().toString();
             }
-        } else {
+
+        } else if (parenthesisOpen < 0 || parenthesisClose <= parenthesisOpen) {
             throw new ProcessorException("Parenthesis error");
         }
 
-        final StringBuilder result = new StringBuilder();
-        if (parenthesisOpen > 0) {
+        final ResultBuilder result = new ResultBuilder();
+        final String block = input.substring(parenthesisOpen + 1, parenthesisClose);
+
+        if (parenthesisOpen > -1) {
+
             final String prefix = input.substring(0, parenthesisOpen);
             final Optional<Functions> function = getFunction(prefix);
+
             if (function.isPresent()) {
-                entity = new FunctionProcessor(function.get(), entities).process();
+                final Entity[] entities = Arrays.stream(block.split(StringUtils.SEMICOLON)).filter(StringUtils::isNotEmpty).map(PROCESSOR).toArray(Entity[]::new);
+
+                Entity entity = new FunctionProcessor(function.get(), entities).process();
                 result.append(input.substring(0, parenthesisOpen - function.get().getFunction().length()));
                 result.append(entity);
             } else {
-                result.append(prefix).append(block);
+                result.append(prefix).append(PROCESSOR.apply(block));
             }
         } else {
             result.append(block);
         }
 
         if (++parenthesisClose > -1 && parenthesisClose < input.length()) {
-            result.append(input.substring(parenthesisClose, input.length()));
+            final String suffix = input.substring(parenthesisClose, input.length());
+            result.append(suffix);
         }
-        return processFormula(result.toString());
-    }
-
-    private String stringify(final double d) {
-        double r = MathUtils.round(d, getPrecision());
-
-        final String value = Double.toString(r);
-        final int dot = value.indexOf('.');
-        int length = dot + 1 + getPrecision();
-        final String result;
-
-        if (length > value.length()) {
-            char[] chars = new char[length - value.length()];
-            Arrays.fill(chars, '0');
-            result = value + new String(chars);
-        } else if (getPrecision() > 0) {
-            result = value.substring(0, length);
-        } else if (dot > -1) {
-            result = value.substring(0, dot);
-        } else {
-            result = value;
-        }
-
-        return result;
+        return processFormula(result);
     }
 
     private Optional<Functions> getFunction(final String input) throws ProcessorException {
@@ -179,13 +158,19 @@ public class MainProcessor {
     }
 
     public static void main(String[] args) throws ProcessorException {
+        long start = System.currentTimeMillis();
+
         MainProcessor processor = new MainProcessor();
 
+        System.out.println(processor.processFormula("3*(3+2)"));
         System.out.println(processor.processFormula("((3+2)*pow(9/abs(3);1-5))-2"));
         System.out.println(processor.processFormula("15in>>m/1000"));
         System.out.println(processor.processFormula("(15h+12s)>>his"));
         System.out.println(processor.processFormula("5K>>C"));
         System.out.println(processor.processFormula("5C>>K"));
         System.out.println(processor.processFormula("15/(1200/3937/12)"));
+        System.out.println(processor.processFormula("15m>>in"));
+
+        System.out.printf("%n%d ms", System.currentTimeMillis() - start);
     }
 }

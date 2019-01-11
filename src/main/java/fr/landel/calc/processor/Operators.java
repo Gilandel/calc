@@ -13,15 +13,16 @@ import java.util.stream.Collectors;
 import fr.landel.calc.utils.MapUtils;
 
 public enum Operators implements OperatorConstants {
-    ADD("+", 3, IS_SAME_TYPE_AND_NOT_UNITY, (a, b) -> new Entity(a.getIndex(), a.getValue() + b.getValue(), Unity.min(a.getUnities(), b.getUnities()))),
-    SUBSTRACT("-", 3, IS_SAME_TYPE_AND_NOT_UNITY, (a, b) -> new Entity(a.getIndex(), a.getValue() - b.getValue(), Unity.min(a.getUnities(), b.getUnities()))),
-    MULTIPLY("*", 2, IS_ANY_NUMBER, FUN_MULTIPLY),
-    DEVIDE("/", 2, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, FUN_DEVIDE),
-    MODULO("%", 2, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, (a, b) -> new Entity(a.getIndex(), a.fromUnity(a.toUnity() % b.getValue()), a.getUnities())),
-    POWER("^", 1, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, (a, b) -> new Entity(a.getIndex(), a.fromUnity(Math.pow(a.toUnity(), b.getValue())), a.getUnities())),
-    CONVERT(">>", 0, IS_CONVERTIBLE, (a, b) -> a.setUnities(b.getUnities()));
+    ADD("+", 3, ALL_EXCEPT_LAST, IS_SAME_TYPE_AND_NOT_UNITY, FUN_ADD),
+    SUBSTRACT("-", 3, ALL_EXCEPT_LAST, IS_SAME_TYPE_AND_NOT_UNITY, FUN_SUBSTRACT),
+    MULTIPLY("*", 2, ALL_EXCEPT_FIRST_AND_LAST, IS_ANY_NUMBER, FUN_MULTIPLY),
+    DEVIDE("/", 2, ALL_EXCEPT_FIRST_AND_LAST, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, FUN_DEVIDE),
+    MODULO("%", 2, ALL_EXCEPT_FIRST_AND_LAST, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, FUN_MODULO),
+    POWER("^", 1, ALL_EXCEPT_FIRST_AND_LAST, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, FUN_POWER),
+    CONVERT(">>", 0, ALL_EXCEPT_FIRST_AND_LAST, IS_CONVERTIBLE, FUN_CONVERT);
 
-    public static final List<Operators> BY_LENGTH_DESC = Arrays.stream(Operators.values()).sorted((a, b) -> Integer.compare(b.getLength(), a.getLength())).collect(Collectors.toList());
+    public static final List<Operators> BY_LENGTH_DESC = Arrays.stream(Operators.values()).sorted((a, b) -> Integer.compare(b.getLength(), a.getLength()))
+            .collect(Collectors.toList());
     public static final SortedMap<Integer, List<Operators>> BY_PRIORITY;
     public static final List<Integer> PRIORITIES;
     static {
@@ -34,13 +35,16 @@ public enum Operators implements OperatorConstants {
     private final String operator;
     private final int length;
     private final int priority;
+    private final BiPredicate<Integer, Integer> positionChecker;
     private final BiPredicate<Entity, Entity> validator;
     private final BiFunction<Entity, Entity, Entity> processor;
 
-    private Operators(final String operator, final int priority, final BiPredicate<Entity, Entity> validator, final BiFunction<Entity, Entity, Entity> processor) {
+    private Operators(final String operator, final int priority, final BiPredicate<Integer, Integer> positionChecker, final BiPredicate<Entity, Entity> validator,
+            final BiFunction<Entity, Entity, Entity> processor) {
         this.operator = operator;
         this.length = operator.length();
         this.priority = priority;
+        this.positionChecker = positionChecker;
         this.validator = validator;
         this.processor = processor;
     }
@@ -67,6 +71,14 @@ public enum Operators implements OperatorConstants {
      */
     public int getPriority() {
         return this.priority;
+    }
+
+    /**
+     * @return the position checker
+     * @category getter
+     */
+    public BiPredicate<Integer, Integer> getPositionChecker() {
+        return this.positionChecker;
     }
 
     /**

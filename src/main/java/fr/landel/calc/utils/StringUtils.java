@@ -11,12 +11,18 @@ public final class StringUtils {
     public static final char PARENTHESIS_OPEN = '(';
     public static final char PARENTHESIS_CLOSE = ')';
 
+    public static final String ID_OPEN = "{";
+    public static final String ID_CLOSE = "}";
+
     public static final String EMPTY = "";
     public static final String SPACE = " ";
     public static final String INJECT_FIELD = "{}";
+    public static final String COMMA = ",";
     public static final String SEMICOLON = ";";
+    public static final String COMMA_SPACE = COMMA + SPACE;
     public static final String SEMICOLON_SPACE = SEMICOLON + SPACE;
 
+    public static final Collector<CharSequence, ?, String> COMMA_JOINING_COLLECTOR = Collectors.joining(COMMA_SPACE);
     public static final Collector<CharSequence, ?, String> SEMICOLON_JOINING_COLLECTOR = Collectors.joining(SEMICOLON_SPACE);
 
     public static final Comparator<String> COMPARATOR_LENGTH_DESC = (a, b) -> Integer.compare(b.length(), a.length());
@@ -24,6 +30,10 @@ public final class StringUtils {
     private static final Pattern PATTERN_PARAM = Pattern.compile("\\{\\}");
 
     private StringUtils() {
+    }
+
+    public static boolean isNotEmpty(final CharSequence text) {
+        return text != null && text.length() > 0;
     }
 
     public static String requireNonBlank(final CharSequence text) {

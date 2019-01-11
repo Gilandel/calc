@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
 
+import org.junit.jupiter.api.Test;
+
 import fr.landel.calc.config.Formula;
 import fr.landel.calc.config.Result;
 
@@ -24,31 +26,31 @@ public class ProcessorTest {
      * @throws ProcessorException
      *             on processing error
      */
-    // @Test
+    @Test
     void testProcess() throws ProcessorException {
         MainProcessor processor = new MainProcessor();
 
         assertThrows(ProcessorException.class, () -> processor.process("test(12)"), "Function not found: test");
 
-        processor.setPrecision(0);
+        MainProcessor.setPrecision(0);
 
         check(processor.process("abs(12)"), "12");
         check(processor.process("abs(-12)"), "12");
         check(processor.process("abs(-12.645555)"), "13");
 
-        processor.setPrecision(3);
+        MainProcessor.setPrecision(3);
 
         check(processor.process("abs(12)"), "12.000");
         check(processor.process("abs(-12)"), "12.000");
         check(processor.process("abs(-12.645555)"), "12.646");
 
-        processor.setPrecision(4);
+        MainProcessor.setPrecision(4);
 
         check(processor.process("abs(12)"), "12.0000");
         check(processor.process("abs(-12)"), "12.0000");
         check(processor.process("abs(-12.645555)"), "12.6456");
 
-        processor.setPrecision(15);
+        MainProcessor.setPrecision(15);
 
         check(processor.process("abs(12)"), "12.000000000000000");
         check(processor.process("abs(-12)"), "12.000000000000000");
