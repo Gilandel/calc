@@ -1,4 +1,4 @@
-package fr.landel.calc.view;
+package fr.landel.calc.config;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -169,7 +169,6 @@ public enum I18n {
     DIALOG_FUNCTION_MILLISECONDS("dialog.function.milliseconds"),
     DIALOG_FUNCTION_MICROSECONDS("dialog.function.microseconds"),
     DIALOG_FUNCTION_NANOSECONDS("dialog.function.nanoseconds"),
-    DIALOG_FUNCTION_NOW("dialog.function.now"),
 
     DIALOG_FUNCTION_PARAM_VALUE("dialog.function.param.value"),
     DIALOG_FUNCTION_PARAM_EXPONENT("dialog.function.param.exponent"),

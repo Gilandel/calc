@@ -11,10 +11,14 @@ public interface OperatorConstants {
     BiPredicate<Entity, Entity> IS_CONVERTIBLE = (a, b) -> !a.isUnity() && b.isUnity() && a.getUnityType().equals(b.getUnityType());
 
     BiFunction<Entity, Entity, Entity> FUN_MULTIPLY = (a, b) -> {
-        if (a.isNumber()) {
-            return new Entity(a.getIndex(), a.fromUnity(a.toUnity() * b.getValue()), a.getUnities());
+        final double r = a.toUnityOrValue() * b.toUnityOrValue();
+
+        if (a.hasUnity()) {
+            return new Entity(a.getIndex(), a.fromUnity(r), a.getUnities());
+        } else if (b.hasUnity()) {
+            return new Entity(a.getIndex(), b.fromUnity(r), b.getUnities());
         } else {
-            return new Entity(a.getIndex(), b.fromUnity(b.toUnity() * a.getValue()), b.getUnities());
+            return new Entity(a.getIndex(), r, b.getUnities());
         }
     };
     BiFunction<Entity, Entity, Entity> FUN_DEVIDE = (a, b) -> new Entity(a.getIndex(), a.fromUnity(a.toUnity() / b.getValue()), a.getUnities());

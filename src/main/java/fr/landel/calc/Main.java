@@ -7,8 +7,8 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import fr.landel.calc.config.Conf;
+import fr.landel.calc.config.I18n;
 import fr.landel.calc.utils.Logger;
-import fr.landel.calc.view.I18n;
 import fr.landel.calc.view.MainFrame;
 
 /**

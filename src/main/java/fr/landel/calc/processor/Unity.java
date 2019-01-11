@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import fr.landel.calc.utils.StringUtils;
 
@@ -90,17 +90,6 @@ public enum Unity {
     private static final double MILE_M = FOOT_M * 5_280;
     private static final double LEAGUE_M = FOOT_M * 15_840;
 
-    private static final Supplier<SortedSet<String>> SUPPLIER_SORTED_SET = () -> new TreeSet<>((a, b) -> {
-        int c = Integer.compare(b.length(), a.length());
-        if (c != 0) {
-            return c;
-        } else {
-            return a.compareTo(b);
-        }
-    });
-    private static final SortedSet<String> SYMBOLS = Arrays.stream(Unity.values()).collect(SUPPLIER_SORTED_SET, (a, b) -> a.addAll(Arrays.asList(b.symbols)), (a, b) -> a.addAll(b));
-    private static final Map<String, Unity> BY_SYMBOL = Arrays.stream(Unity.values()).collect(HashMap::new, (a, b) -> Arrays.stream(b.symbols).forEach(i -> a.put(i, b)), (a, b) -> a.putAll(b));
-
     private static final SortedMap<Unity, Double> UNITIES;
     static {
         final SortedMap<Unity, Double> map = new TreeMap<>();
@@ -118,6 +107,27 @@ public enum Unity {
         UNITIES = Collections.unmodifiableSortedMap(map);
     }
 
+    private static final String ERROR_UNITIES_TYPE = "all unities '{}' are not the same type: {} and {}";
+    private static final String ERROR_PARSE = "unity '{}' cannot be parsed";
+    private static final String ERROR_PARSE_TYPE = "unity '{}' cannot be parsed following previous type: {}";
+
+    public static final Character[] CHARS;
+    public static final Tree[] TREE;
+    static {
+        final Set<Character> chars = new HashSet<>();
+        final Tree tree = new Tree();
+        for (Unity unity : Unity.values()) {
+            for (String symbol : unity.symbols) {
+                final Character[] functionChars = StringUtils.toChars(symbol);
+                addTree(tree, functionChars, 0, unity);
+                chars.addAll(Arrays.asList(functionChars));
+            }
+        }
+        TREE = tree.trees;
+        CHARS = chars.toArray(Character[]::new);
+        Arrays.sort(CHARS);
+    }
+
     private static final BinaryOperator<Unity> REDUCER = (a, b) -> {
         if (Math.min(a.ordinal(), b.ordinal()) > -1) {
             return b;
@@ -133,9 +143,10 @@ public enum Unity {
 
     private Unity(final Type type, final Function<Double, Double> fromUnity, final Function<Double, Double> toUnity, final String... symbols) {
         this.type = type;
-        this.symbols = symbols;
         this.fromUnity = fromUnity;
         this.toUnity = toUnity;
+        this.symbols = symbols;
+        Arrays.sort(this.symbols, StringUtils.COMPARATOR_LENGTH_DESC);
     }
 
     private Unity(final Type type, final String... unities) {
@@ -158,31 +169,8 @@ public enum Unity {
         return this.symbols[0];
     }
 
-    public static SortedSet<Unity> getUnities(final String unity) {
-        final SortedSet<Unity> list = new TreeSet<>(COMPARATOR_UNITIES);
-        if (unity == null) {
-            list.add(Unity.NUMBER);
-        } else {
-            String text = unity;
-            boolean notFound = false;
-            while (!notFound && !text.isEmpty()) {
-                notFound = true;
-                // cut symbol list by number of characters <=
-                for (String symbol : SYMBOLS) {
-                    if (text.startsWith(symbol)) {
-                        list.add(BY_SYMBOL.get(symbol));
-                        if (text.length() > symbol.length()) {
-                            text = text.substring(symbol.length());
-                        } else {
-                            text = StringUtils.EMPTY;
-                            break;
-                        }
-                        notFound = false;
-                    }
-                }
-            }
-        }
-        return list;
+    public String[] getSymbols() {
+        return Arrays.copyOf(this.symbols, this.symbols.length);
     }
 
     public static Unity min(final SortedSet<Unity> left, final SortedSet<Unity> right) {
@@ -249,10 +237,133 @@ public enum Unity {
                     } else {
                         intermediate = v / u;
                     }
-                    builder.append(Double.valueOf(intermediate).longValue()).append(unity.firstSymbol());
+                    if (builder.length() > 0) {
+                        builder.append(StringUtils.SPACE);
+                    }
+                    builder.append(Double.valueOf(intermediate).longValue()).append(StringUtils.SPACE).append(unity.firstSymbol());
                 }
                 ++i;
             }
         }
+    }
+
+    private static void addTree(final Tree tree, final Character[] chars, final int index, final Unity unity) {
+        if (chars.length > index) {
+            final Character c = chars[index];
+            if (tree.trees == null) {
+                tree.trees = new Tree[c + 1];
+                final Tree sub = new Tree();
+                tree.trees[c] = sub;
+                addTree(sub, chars, index + 1, unity);
+
+            } else if (tree.trees.length <= c || tree.trees[c] == null) {
+                Tree sub = new Tree();
+                if (tree.trees.length <= c) {
+                    Tree[] tmp = new Tree[c + 1];
+                    System.arraycopy(tree.trees, 0, tmp, 0, tree.trees.length);
+                    tree.trees = tmp;
+                }
+                tree.trees[c] = sub;
+                addTree(sub, chars, index + 1, unity);
+
+            } else if (chars.length > index) {
+                addTree(tree.trees[c], chars, index + 1, unity);
+            }
+        } else if (index > 0 && chars.length == index) {
+            tree.unity = unity;
+        }
+    }
+
+    public static SortedSet<Unity> getUnities(final String text) throws ProcessorException {
+        return getUnities(text, null);
+    }
+
+    public static SortedSet<Unity> getUnities(final String input, final Type requiredType) throws ProcessorException {
+        final SortedSet<Unity> unities = new TreeSet<>(COMPARATOR_UNITIES);
+
+        if (input == null || input.isEmpty()) {
+            return unities;
+        }
+
+        String text = input;
+        char[] data = input.toCharArray();
+
+        Optional<Unity> unityOptional;
+        Unity unity;
+        Unity.Type type = null;
+
+        while ((unityOptional = check(TREE, data, 0, requiredType)).isPresent()) {
+            unity = unityOptional.get();
+            for (String s : unity.getSymbols()) {
+                if (text.startsWith(s)) {
+                    if (type != null && !unity.getType().equals(type)) {
+                        throw new ProcessorException(ERROR_UNITIES_TYPE, input, type, unity.getType());
+                    }
+                    text = text.substring(s.length());
+                    data = text.toCharArray();
+                    unities.add(unity);
+                    type = unity.getType();
+                    break;
+                }
+            }
+        }
+
+        if (data.length > 0) {
+            if (requiredType == null) {
+                throw new ProcessorException(ERROR_PARSE, text);
+            } else {
+                throw new ProcessorException(ERROR_PARSE_TYPE, text, requiredType);
+            }
+        }
+
+        return unities;
+    }
+
+    private static Optional<Unity> check(final Tree[] validator, final char[] array, final int index, final Type requiredType) {
+        if (array.length > index) {
+            char c = array[index];
+            if (validator.length > c && validator[c] != null) {
+                Optional<Unity> unity = Optional.empty();
+                if (validator[c].getTrees() != null) {
+                    unity = check(validator[c].getTrees(), array, index + 1, requiredType);
+                }
+                if (unity.isPresent() && (requiredType == null || requiredType.equals(unity.get().getType()))) {
+                    return unity;
+                } else if (requiredType == null || requiredType.equals(validator[c].getUnityType())) {
+                    return Optional.ofNullable(validator[c].getUnity());
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    static class Tree {
+        private Tree[] trees;
+        private Unity unity;
+
+        public Tree[] getTrees() {
+            return this.trees;
+        }
+
+        public Unity getUnity() {
+            return this.unity;
+        }
+
+        public Unity.Type getUnityType() {
+            if (this.unity != null) {
+                return this.unity.type;
+            }
+            return null;
+        }
+    }
+
+    public static void main(String[] args) throws ProcessorException {
+        String[] tests = {"minutes", "minute", "mile", "mi", "m", "i", "his", "mi"};
+
+        for (String test : tests) {
+            System.out.println(getUnities(test).stream().map(Unity::firstSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
+        }
+
+        System.out.println(getUnities("mi", Type.DATE).stream().map(Unity::firstSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
     }
 }

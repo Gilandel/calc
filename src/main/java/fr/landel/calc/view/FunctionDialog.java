@@ -15,6 +15,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -28,6 +29,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import fr.landel.calc.config.I18n;
+import fr.landel.calc.config.Images;
+import fr.landel.calc.function.FunctionThrowable;
+import fr.landel.calc.processor.Entity;
+import fr.landel.calc.processor.FormulaProcessor;
+import fr.landel.calc.processor.Functions;
+import fr.landel.calc.processor.ProcessorException;
 import fr.landel.calc.utils.FrameUtils;
 import fr.landel.calc.utils.StringUtils;
 
@@ -41,6 +49,8 @@ public class FunctionDialog extends JDialog implements Dialog {
     private static final String ERROR_OPEN = "<html><font style='color:red'><b>";
     private static final String ERROR_CLOSE = "</b></font></html>";
     private static final String NEWLINE = "<br />";
+
+    private static final FunctionThrowable<String, Entity, ProcessorException> PROCESSOR = s -> new FormulaProcessor(s).process();
 
     private MainFrame parent;
 
@@ -270,7 +280,7 @@ public class FunctionDialog extends JDialog implements Dialog {
         if (this.function != null) {
             final String[] params = fields.subList(0, this.function.getParamsCount()).stream().map(JTextField::getText).toArray(String[]::new);
 
-            final List<I18n> errors = this.function.check(params);
+            final List<I18n> errors = this.function.check(Arrays.stream(params).map(PROCESSOR).toArray(Entity[]::new));
             valid = errors.isEmpty();
 
             if (valid) {

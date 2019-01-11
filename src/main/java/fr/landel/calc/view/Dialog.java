@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
 
+import fr.landel.calc.config.I18n;
 import fr.landel.calc.utils.StringUtils;
 
 public interface Dialog {

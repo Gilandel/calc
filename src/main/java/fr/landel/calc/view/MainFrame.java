@@ -47,6 +47,9 @@ import javax.swing.event.ListSelectionEvent;
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Configuration;
 import fr.landel.calc.config.Formula;
+import fr.landel.calc.config.I18n;
+import fr.landel.calc.config.Images;
+import fr.landel.calc.processor.Functions;
 import fr.landel.calc.processor.MainProcessor;
 import fr.landel.calc.processor.Operators;
 import fr.landel.calc.processor.ProcessorException;
@@ -283,8 +286,8 @@ public class MainFrame extends JFrame implements Dialog {
         final JButton buttonDevide = buildButton(Operators.DEVIDE.getOperator());
         final JButton buttonPercent = buildButton(Operators.MODULO.getOperator());
         final JButton buttonPower = buildButton(Operators.POWER.getOperator());
-        final JButton buttonParenthesisOpen = buildButton(MainProcessor.PARENTHESIS_OPEN);
-        final JButton buttonParenthesisClose = buildButton(MainProcessor.PARENTHESIS_CLOSE);
+        final JButton buttonParenthesisOpen = buildButton(StringUtils.PARENTHESIS_OPEN);
+        final JButton buttonParenthesisClose = buildButton(StringUtils.PARENTHESIS_CLOSE);
 
         final JPanel panelLeft = new JPanel();
         final JPanel panelRight = new JPanel();
@@ -877,10 +880,10 @@ public class MainFrame extends JFrame implements Dialog {
     private void processFormula() {
         if (!textAreaFormula.getText().isBlank()) {
             try {
-                this.processor.setRadian(Conf.RADIAN.getBoolean().get());
-                this.processor.setExact(Conf.EXACT.getBoolean().get());
-                this.processor.setScientific(Conf.SCIENTIFIC.getBoolean().get());
-                this.processor.setPrecision(Conf.PRECISION.getInt().get());
+                MainProcessor.setRadian(Conf.RADIAN.getBoolean().get());
+                MainProcessor.setExact(Conf.EXACT.getBoolean().get());
+                MainProcessor.setScientific(Conf.SCIENTIFIC.getBoolean().get());
+                MainProcessor.setPrecision(Conf.PRECISION.getInt().get());
 
                 // XXX
                 final Formula formula = this.processor.process(textAreaFormula.getText());

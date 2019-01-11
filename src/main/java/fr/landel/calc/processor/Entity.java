@@ -1,6 +1,7 @@
 package fr.landel.calc.processor;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -21,8 +22,8 @@ public class Entity {
 
     private static final Pattern PATTERN_UNITY = Pattern.compile("[a-zA-Z]+");
 
-    private static final String ERROR_PARSE = "the following number cannot be parsed: {}";
-    private static final String ERROR_MALFORMED = "the following number is malformed: {}";
+    private static final String ERROR_PARSE = "the following expression cannot be parsed: {}";
+    private static final String ERROR_MALFORMED = "the following expression is malformed: {}";
     private static final String ERROR_UNITY = "the following unity is unknown: {}";
 
     private final int index;
@@ -54,7 +55,6 @@ public class Entity {
         Double value;
         SortedSet<Unity> unities;
         Unity unity;
-        int index, indexLeap;
 
         Matcher matcher = PATTERN_NUMBER.matcher(input);
         while (matcher.find()) {
@@ -64,37 +64,31 @@ public class Entity {
 
                     final String unityGroup = matcher.group(GROUP_NUMBER_UNITY);
                     unities = Unity.getUnities(unityGroup);
-                    if (unities.isEmpty() || unities.size() > 1) {
+
+                    if (unities.isEmpty()) {
+                        this.value = value;
+
+                    } else if (unities.size() > 1) {
                         throw new ProcessorException(ERROR_UNITY, unityGroup);
-                    }
-                    unity = unities.first();
 
-                    if (this.hasUnity()) { // XXX manage all conversions
-                        boolean isNumber = Unity.Type.NUMBER.equals(unity.getType());
-                        index = Unity.DATES.indexOf(this.firstUnity());
-                        indexLeap = Unity.DATES_LEAP.indexOf(this.firstUnity());
+                    } else {
+                        unity = unities.first();
 
-                        if (isNumber && index > -1 && index < Unity.DATES.size() - 1) {
-                            unity = Unity.DATES.get(index + 1);
-
-                        } else if (isNumber && indexLeap > -1 && indexLeap < Unity.DATES.size() - 1) {
-                            unity = Unity.DATES_LEAP.get(indexLeap + 1);
-
-                        } else if (isNumber || !Unity.Type.DATE.equals(unity.getType())) {
+                        if (this.hasUnity() && !Objects.equals(this.getUnityType(), unity.getType())) {
                             throw new ProcessorException(ERROR_MALFORMED, input);
                         }
-                    }
 
-                    if (unity != null) {
-                        this.getUnities().add(unity);
-                    }
+                        if (unity != null) {
+                            this.getUnities().add(unity);
+                        }
 
-                    value = this.fromUnity(value);
+                        value = unity.fromUnity(value);
 
-                    if (this.value == null) {
-                        this.value = value;
-                    } else {
-                        this.value += value;
+                        if (this.value == null) {
+                            this.value = value;
+                        } else {
+                            this.value += value;
+                        }
                     }
                 } catch (NumberFormatException e) {
                     LOGGER.error(e, ERROR_PARSE, input);
@@ -105,7 +99,7 @@ public class Entity {
             }
         }
 
-        if (!this.hasUnity()) {
+        if (!this.isNumber() && !this.hasUnity()) {
             if (PATTERN_UNITY.matcher(input).matches()) {
                 final SortedSet<Unity> list = Unity.getUnities(input);
                 if (!list.isEmpty() && !this.hasUnity()) {
@@ -132,7 +126,7 @@ public class Entity {
     }
 
     public boolean isNumber() {
-        return this.value != null && Unity.NUMBER.equals(this.firstUnity());
+        return this.value != null && (!this.hasUnity() || Unity.NUMBER.equals(this.firstUnity()));
     }
 
     public boolean isUnity() {
@@ -155,7 +149,19 @@ public class Entity {
     }
 
     public Unity.Type getUnityType() {
-        return this.firstUnity().getType();
+        if (this.hasUnity()) {
+            return this.firstUnity().getType();
+        } else {
+            return Unity.Type.NUMBER;
+        }
+    }
+
+    public Double toUnityOrValue() {
+        if (this.hasUnity()) {
+            return this.firstUnity().toUnity(this.value);
+        } else {
+            return this.value;
+        }
     }
 
     public Double toUnity() {
@@ -172,6 +178,20 @@ public class Entity {
 
     public int getIndex() {
         return this.index;
+    }
+
+    // TODO isPositive (1E-5)
+
+    public boolean isInteger() {
+        return true;
+    }
+
+    public boolean isPositiveDecimal() {
+        return true;
+    }
+
+    public boolean isDecimal() {
+        return true;
     }
 
     @Override

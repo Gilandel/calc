@@ -22,6 +22,7 @@ import javax.swing.border.Border;
 
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Formula;
+import fr.landel.calc.config.I18n;
 import fr.landel.calc.utils.ClipboardUtils;
 import fr.landel.calc.utils.StringUtils;
 

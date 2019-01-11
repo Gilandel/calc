@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import fr.landel.calc.utils.Logger;
-import fr.landel.calc.view.I18n;
 
 /**
  * Load configuration

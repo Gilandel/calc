@@ -1,4 +1,4 @@
-package fr.landel.calc.view;
+package fr.landel.calc.config;
 
 import java.awt.Image;
 import java.awt.Toolkit;

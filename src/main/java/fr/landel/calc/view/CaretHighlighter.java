@@ -9,8 +9,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 
-import fr.landel.calc.processor.MainProcessor;
+import fr.landel.calc.processor.Functions;
 import fr.landel.calc.utils.Logger;
+import fr.landel.calc.utils.StringUtils;
 
 public class CaretHighlighter {
 
@@ -49,23 +50,23 @@ public class CaretHighlighter {
         if (next) {
             if (start < len) {
                 for (int i = start + 1; i < len; i++)
-                    if (text.charAt(i) == MainProcessor.PARENTHESIS_CLOSE) {
+                    if (text.charAt(i) == StringUtils.PARENTHESIS_CLOSE) {
                         if (inc == 0)
                             return i;
                         inc--;
-                    } else if (text.charAt(i) == MainProcessor.PARENTHESIS_OPEN)
+                    } else if (text.charAt(i) == StringUtils.PARENTHESIS_OPEN)
                         inc++;
 
             }
         } else if (start >= 0) {
             for (int i = start - 1; i >= 0; i--) {
-                if (text.charAt(i) == MainProcessor.PARENTHESIS_OPEN) {
+                if (text.charAt(i) == StringUtils.PARENTHESIS_OPEN) {
                     if (inc == 0)
                         return i;
                     inc--;
                     continue;
                 }
-                if (text.charAt(i) == MainProcessor.PARENTHESIS_CLOSE)
+                if (text.charAt(i) == StringUtils.PARENTHESIS_CLOSE)
                     inc++;
             }
 
@@ -84,8 +85,8 @@ public class CaretHighlighter {
             if (pos >= 0 && length > 0 && length >= pos) {
                 if (pos > 0) {
                     char c = array[pos - 1];
-                    if (c == MainProcessor.PARENTHESIS_OPEN || c == MainProcessor.PARENTHESIS_CLOSE) {
-                        int i = getParenthesis(pos - 1, c != MainProcessor.PARENTHESIS_CLOSE);
+                    if (c == StringUtils.PARENTHESIS_OPEN || c == StringUtils.PARENTHESIS_CLOSE) {
+                        int i = getParenthesis(pos - 1, c != StringUtils.PARENTHESIS_CLOSE);
                         if (i >= 0) {
                             highlighter.addHighlight(pos - 1, pos, painterOk);
                             highlighter.addHighlight(i, i + 1, painterOk);
@@ -106,8 +107,8 @@ public class CaretHighlighter {
                         }
                     } else if (length > pos) {
                         c = array[pos];
-                        if (c == MainProcessor.PARENTHESIS_OPEN || c == MainProcessor.PARENTHESIS_CLOSE) {
-                            int i = getParenthesis(pos, c != MainProcessor.PARENTHESIS_CLOSE);
+                        if (c == StringUtils.PARENTHESIS_OPEN || c == StringUtils.PARENTHESIS_CLOSE) {
+                            int i = getParenthesis(pos, c != StringUtils.PARENTHESIS_CLOSE);
                             if (i >= 0) {
                                 highlighter.addHighlight(pos, pos + 1, painterOk);
                                 highlighter.addHighlight(i, i + 1, painterOk);
@@ -130,8 +131,8 @@ public class CaretHighlighter {
                     }
                 } else {
                     char c = array[pos];
-                    if (c == MainProcessor.PARENTHESIS_OPEN || c == MainProcessor.PARENTHESIS_CLOSE) {
-                        int i = getParenthesis(pos, c != MainProcessor.PARENTHESIS_CLOSE);
+                    if (c == StringUtils.PARENTHESIS_OPEN || c == StringUtils.PARENTHESIS_CLOSE) {
+                        int i = getParenthesis(pos, c != StringUtils.PARENTHESIS_CLOSE);
                         if (i >= 0) {
                             highlighter.addHighlight(pos, pos + 1, painterOk);
                             highlighter.addHighlight(i, i + 1, painterOk);

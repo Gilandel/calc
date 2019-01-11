@@ -1,4 +1,4 @@
-package fr.landel.calc.view;
+package fr.landel.calc.processor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,47 +6,46 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-import fr.landel.calc.processor.MainProcessor;
+import fr.landel.calc.config.I18n;
+import fr.landel.calc.utils.MathUtils;
 import fr.landel.calc.utils.StringUtils;
 
-public enum Functions {
+public enum Functions implements FunctionConstants {
 
-    // TODO add calculation (array de params) Function<Entity[], Entity>
+    ABS("abs", I18n.DIALOG_FUNCTION_ABS, ONE_PARAM.apply(Math::abs), Params.VALUE),
+    ACOS("acos", I18n.DIALOG_FUNCTION_ACOS, ONE_PARAM.apply(MathUtils.applyInverseAngularFunction(Math::acos)), Params.COSINUS),
+    ASIN("asin", I18n.DIALOG_FUNCTION_ASIN, ONE_PARAM.apply(MathUtils.applyInverseAngularFunction(Math::asin)), Params.SINUS),
+    ATAN("atan", I18n.DIALOG_FUNCTION_ATAN, ONE_PARAM.apply(MathUtils.applyInverseAngularFunction(Math::atan)), Params.TANGENT),
+    CEIL("ceil", I18n.DIALOG_FUNCTION_CEIL, TWO_PARAM.apply(MathUtils::ceil), Params.VALUE, Params.ACCURACY),
+    COS("cos", I18n.DIALOG_FUNCTION_COS, ONE_PARAM.apply(MathUtils.applyAngularFunction(Math::cos)), Params.ANGULAR),
+    EXP("exp", I18n.DIALOG_FUNCTION_EXP, ONE_PARAM.apply(Math::exp), Params.VALUE),
+    FACT("fact", I18n.DIALOG_FUNCTION_FACT, ONE_PARAM.apply(MathUtils::fact), Params.VALUE),
+    FLOOR("floor", I18n.DIALOG_FUNCTION_FLOOR, TWO_PARAM.apply(MathUtils::floor), Params.VALUE, Params.ACCURACY),
+    LOG("log", I18n.DIALOG_FUNCTION_LOG, ONE_PARAM.apply(Math::log10), Params.VALUE),
+    LN("ln", I18n.DIALOG_FUNCTION_LN, ONE_PARAM.apply(Math::log), Params.VALUE),
+    PI("pi", Functions.NO_PARAM.apply(() -> Math.PI)),
+    E("e", Functions.NO_PARAM.apply(() -> Math.E)),
+    RANDOM("rand", Functions.NO_PARAM.apply(Math::random)),
+    POW("pow", I18n.DIALOG_FUNCTION_POW, Functions.TWO_PARAM.apply(Math::pow), Params.VALUE, Params.EXPONENT),
+    ROUND("round", I18n.DIALOG_FUNCTION_ROUND, Functions.TWO_PARAM.apply(MathUtils::round), Params.VALUE, Params.ACCURACY),
+    SIN("sin", I18n.DIALOG_FUNCTION_SIN, ONE_PARAM.apply(MathUtils.applyAngularFunction(Math::sin)), Params.ANGULAR),
+    SQR("sqr", I18n.DIALOG_FUNCTION_SQR, ONE_PARAM.apply(Math::sqrt), Params.VALUE),
+    TAN("tan", I18n.DIALOG_FUNCTION_TAN, ONE_PARAM.apply(MathUtils.applyAngularFunction(Math::tan)), Params.ANGULAR),
 
-    ABS("abs", I18n.DIALOG_FUNCTION_ABS, Params.VALUE),
-    ACOS("acos", I18n.DIALOG_FUNCTION_ACOS, Params.COSINUS),
-    ASIN("asin", I18n.DIALOG_FUNCTION_ASIN, Params.SINUS),
-    ATAN("atan", I18n.DIALOG_FUNCTION_ATAN, Params.TANGENT),
-    CEIL("ceil", I18n.DIALOG_FUNCTION_CEIL, Params.VALUE, Params.ACCURACY),
-    COS("cos", I18n.DIALOG_FUNCTION_COS, Params.ANGULAR),
-    EXP("exp", I18n.DIALOG_FUNCTION_EXP, Params.VALUE),
-    FACT("fact", I18n.DIALOG_FUNCTION_FACT, Params.VALUE),
-    FLOOR("floor", I18n.DIALOG_FUNCTION_FLOOR, Params.VALUE, Params.ACCURACY),
-    LOG("log", I18n.DIALOG_FUNCTION_LOG, Params.VALUE),
-    LN("ln", I18n.DIALOG_FUNCTION_LN, Params.VALUE),
-    PI("pi"),
-    E("e"),
-    RANDOM("rand"),
-    POW("pow", I18n.DIALOG_FUNCTION_POW, Params.VALUE, Params.EXPONENT),
-    ROUND("round", I18n.DIALOG_FUNCTION_ROUND, Params.VALUE, Params.ACCURACY),
-    SIN("sin", I18n.DIALOG_FUNCTION_SIN, Params.ANGULAR),
-    SQR("sqr", I18n.DIALOG_FUNCTION_SQR, Params.VALUE),
-    TAN("tan", I18n.DIALOG_FUNCTION_TAN, Params.ANGULAR),
-
-    YEARS("year", I18n.DIALOG_FUNCTION_YEAR, Params.DATE),
-    MONTH("month", I18n.DIALOG_FUNCTION_MONTH, Params.DATE),
-    WEEK("week", I18n.DIALOG_FUNCTION_WEEK, Params.DATE),
-    DAY("day", I18n.DIALOG_FUNCTION_DAY, Params.DATE),
-    HOURS("hours", I18n.DIALOG_FUNCTION_HOURS, Params.DATE),
-    MINUTES("minutes", I18n.DIALOG_FUNCTION_MINUTES, Params.DATE),
-    SECONDS("seconds", I18n.DIALOG_FUNCTION_SECONDS, Params.DATE),
-    MILLISECONDS("milliseconds", I18n.DIALOG_FUNCTION_MILLISECONDS, Params.DATE),
-    MICROSECONDS("microseconds", I18n.DIALOG_FUNCTION_MICROSECONDS, Params.DATE),
-    NANOSECONDS("nanoseconds", I18n.DIALOG_FUNCTION_NANOSECONDS, Params.DATE),
-    NOW("now", I18n.DIALOG_FUNCTION_NOW);
+    YEARS("year", I18n.DIALOG_FUNCTION_YEAR, ONE_PARAM.apply(Math::abs), Params.DATE),
+    MONTH("month", I18n.DIALOG_FUNCTION_MONTH, ONE_PARAM.apply(Math::abs), Params.DATE),
+    WEEK("week", I18n.DIALOG_FUNCTION_WEEK, ONE_PARAM.apply(Math::abs), Params.DATE),
+    DAY("day", I18n.DIALOG_FUNCTION_DAY, ONE_PARAM.apply(Math::abs), Params.DATE),
+    HOURS("hours", I18n.DIALOG_FUNCTION_HOURS, ONE_PARAM.apply(Math::abs), Params.DATE),
+    MINUTES("minutes", I18n.DIALOG_FUNCTION_MINUTES, ONE_PARAM.apply(Math::abs), Params.DATE),
+    SECONDS("seconds", I18n.DIALOG_FUNCTION_SECONDS, ONE_PARAM.apply(Math::abs), Params.DATE),
+    MILLISECONDS("milliseconds", I18n.DIALOG_FUNCTION_MILLISECONDS, ONE_PARAM.apply(Math::abs), Params.DATE),
+    MICROSECONDS("microseconds", I18n.DIALOG_FUNCTION_MICROSECONDS, ONE_PARAM.apply(Math::abs), Params.DATE),
+    NANOSECONDS("nanoseconds", I18n.DIALOG_FUNCTION_NANOSECONDS, ONE_PARAM.apply(Math::abs), Params.DATE),
+    NOW("now", Functions.NO_PARAM.apply(() -> Double.valueOf(System.nanoTime())));
 
     public static final Character[] CHARS;
     public static final Tree[] TREE;
@@ -54,7 +53,7 @@ public enum Functions {
         final Set<Character> chars = new HashSet<>();
         final Tree tree = new Tree();
         for (Functions function : Functions.values()) {
-            final Character[] functionChars = toChars(function.getFunction());
+            final Character[] functionChars = StringUtils.toChars(function.getFunction());
             addTree(tree, functionChars, 0, function);
             chars.addAll(Arrays.asList(functionChars));
         }
@@ -63,17 +62,14 @@ public enum Functions {
         Arrays.sort(CHARS);
     }
 
-    public static final String SEPARATOR = ";";
-
     private static final String TAG_HTML_OPEN = "<html>";
     private static final String TAG_HTML_CLOSE = "</html>";
     private static final String TAG_HIGHLIGHT_OPEN = "<b><u>";
     private static final String TAG_HIGHLIGHT_CLOSE = "</u></b>";
 
-    private static final String DELIMITER = SEPARATOR + StringUtils.SPACE;
-
     private final String function;
     private final I18n i18n;
+    private final Function<Entity[], Entity> processor;
     private final Params<?>[] params;
     private final boolean hasParams;
     private final int paramsCount;
@@ -81,9 +77,10 @@ public enum Functions {
     private String toString;
     private String[] focusParams;
 
-    private Functions(final String function, final I18n i18n, final Params<?>... params) {
+    private Functions(final String function, final I18n i18n, final Function<Entity[], Entity> processor, final Params<?>... params) {
         this.function = function;
         this.i18n = i18n;
+        this.processor = processor;
 
         this.hasParams = params != null && params.length > 0;
         if (this.hasParams) {
@@ -96,9 +93,9 @@ public enum Functions {
 
         this.focusParams = new String[this.params.length];
 
-        final StringBuilder builderInjectable = new StringBuilder(function).append(MainProcessor.PARENTHESIS_OPEN);
-        builderInjectable.append(Arrays.stream(this.params).map(p -> StringUtils.INJECT_FIELD).collect(Collectors.joining(DELIMITER)));
-        this.injectable = builderInjectable.append(MainProcessor.PARENTHESIS_CLOSE).toString();
+        final StringBuilder builderInjectable = new StringBuilder(function).append(StringUtils.PARENTHESIS_OPEN);
+        builderInjectable.append(Arrays.stream(this.params).map(p -> StringUtils.INJECT_FIELD).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
+        this.injectable = builderInjectable.append(StringUtils.PARENTHESIS_CLOSE).toString();
 
         this.updateI18n();
 
@@ -107,16 +104,16 @@ public enum Functions {
         }
     }
 
-    private Functions(final String function, final I18n i18n) {
-        this(function, i18n, (Params<?>[]) null);
-    }
-
-    private Functions(final String function) {
-        this(function, null);
+    private Functions(final String function, final Function<Entity[], Entity> processor) {
+        this(function, null, processor);
     }
 
     public String getFunction() {
         return this.function;
+    }
+
+    public Function<Entity[], Entity> getProcessor() {
+        return this.processor;
     }
 
     public boolean hasParams() {
@@ -139,7 +136,7 @@ public enum Functions {
         return this.focusParams;
     }
 
-    public List<I18n> check(final String... params) {
+    public List<I18n> check(final Entity... params) {
         final List<I18n> errors = new ArrayList<>();
 
         if (this.getParamsCount() != params.length) {
@@ -147,7 +144,7 @@ public enum Functions {
             return errors;
         }
 
-        Predicate<String> predicate;
+        Predicate<Entity> predicate;
         for (int i = 0; i < this.getParamsCount(); ++i) {
             predicate = this.getParams()[i].getValidator();
             if (predicate != null && !predicate.test(params[i])) {
@@ -210,10 +207,6 @@ public enum Functions {
         } else if (index > 0 && chars.length == index) {
             tree.function = function;
         }
-    }
-
-    private static Character[] toChars(final String string) {
-        return string.chars().mapToObj(i -> (char) i).toArray(Character[]::new);
     }
 
     public static Optional<Functions> check(final char[] array) {

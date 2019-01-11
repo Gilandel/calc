@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 
 import fr.landel.calc.utils.Logger;
 import fr.landel.calc.utils.StringUtils;
-import fr.landel.calc.view.I18n;
 
 public enum Conf {
 

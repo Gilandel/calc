@@ -31,6 +31,8 @@ import javax.swing.border.TitledBorder;
 
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Configuration;
+import fr.landel.calc.config.I18n;
+import fr.landel.calc.config.Images;
 import fr.landel.calc.utils.FrameUtils;
 import fr.landel.calc.utils.StringUtils;
 

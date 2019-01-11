@@ -28,6 +28,8 @@ public class FormulaProcessor implements Processor {
     }
     private static final Supplier<SortedSet<Integer>> SUPPLIER_SORTED_SET = () -> new TreeSet<>(Integer::compareTo);
 
+    private static final String ERROR_PARSE = "the expression cannot be parsed";
+
     private final String formula;
     private final char[] chars;
 
@@ -48,7 +50,7 @@ public class FormulaProcessor implements Processor {
         if (result.isPresent()) {
             return result.get();
         } else {
-            return new Entity(0, this.formula);
+            throw new ProcessorException(ERROR_PARSE);
         }
     }
 

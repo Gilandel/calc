@@ -24,6 +24,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+import fr.landel.calc.config.I18n;
+import fr.landel.calc.config.Images;
 import fr.landel.calc.utils.FrameUtils;
 import fr.landel.calc.utils.StringUtils;
 import fr.landel.calc.utils.SystemUtils;
