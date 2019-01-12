@@ -1,23 +1,25 @@
 package fr.landel.calc.processor;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fr.landel.calc.utils.DateUtils;
 import fr.landel.calc.utils.Logger;
+import fr.landel.calc.utils.MathUtils;
 
 public class Entity {
 
     private static final Logger LOGGER = new Logger(Entity.class);
 
     private static final Pattern PATTERN_NUMBER = Pattern.compile("([+-]?(:?[0-9]+(:?\\.[0-9]+)?|\\.[0-9]+)([Ee][+-]?[0-9]+)?)([a-zA-Z]+)?");
-    private static final int GROUP_NUMBER_INTEGER = 1;
-    // private static final int GROUP_NUMBER_DOUBLE = 2;
-    // private static final int GROUP_NUMBER_DECIMAL = 3;
-    // private static final int GROUP_NUMBER_EXPONENT = 4;
+    private static final int GROUP_NUMBER_DECIMAL = 1;
     private static final int GROUP_NUMBER_UNITY = 5;
 
     private static final Pattern PATTERN_UNITY = Pattern.compile("[a-zA-Z]+");
@@ -28,23 +30,29 @@ public class Entity {
 
     private final int index;
     private Double value;
+    private Optional<LocalDateTime> date;
     private SortedSet<Unity> unities = new TreeSet<>(Unity.COMPARATOR_UNITIES);
+    private boolean decimal;
+    private boolean positive;
 
     public Entity(final int index, final String input) throws ProcessorException {
         this.index = index;
         parse(input);
+        prepare();
     }
 
     public Entity(final int index, final Double value, final SortedSet<Unity> unities) {
         this.index = index;
         this.value = value;
         this.setUnities(unities);
+        prepare();
     }
 
     public Entity(final int index, final Double value, final Unity... unities) {
         this.index = index;
         this.value = value;
         this.setUnities(unities);
+        prepare();
     }
 
     public Entity(final int index, final Double value) {
@@ -60,7 +68,7 @@ public class Entity {
         while (matcher.find()) {
             if (!this.hasUnity() || this.getUnityType().isAccumulable()) {
                 try {
-                    value = Double.parseDouble(matcher.group(GROUP_NUMBER_INTEGER));
+                    value = Double.parseDouble(matcher.group(GROUP_NUMBER_DECIMAL));
 
                     final String unityGroup = matcher.group(GROUP_NUMBER_UNITY);
                     unities = Unity.getUnities(unityGroup);
@@ -78,9 +86,7 @@ public class Entity {
                             throw new ProcessorException(ERROR_MALFORMED, input);
                         }
 
-                        if (unity != null) {
-                            this.getUnities().add(unity);
-                        }
+                        this.getUnities().add(unity);
 
                         value = unity.fromUnity(value);
 
@@ -100,16 +106,42 @@ public class Entity {
         }
 
         if (!this.isNumber() && !this.hasUnity()) {
-            if (PATTERN_UNITY.matcher(input).matches()) {
-                final SortedSet<Unity> list = Unity.getUnities(input);
-                if (!list.isEmpty() && !this.hasUnity()) {
-                    this.setUnities(list.toArray(Unity[]::new));
-                }
+            loadUnities(input);
+            this.date = Optional.empty();
+
+        } else if (this.getUnities().contains(Unity.DATE_YEAR)) {
+            loadLocalDateTime();
+
+        } else {
+            this.date = Optional.empty();
+        }
+    }
+
+    private void loadUnities(final String input) throws ProcessorException {
+        if (PATTERN_UNITY.matcher(input).matches()) {
+            final SortedSet<Unity> list = Unity.getUnities(input);
+            if (!list.isEmpty() && !this.hasUnity()) {
+                this.setUnities(list.toArray(Unity[]::new));
             }
-            if (!this.hasUnity()) {
-                LOGGER.error(ERROR_PARSE, input);
-                throw new ProcessorException(ERROR_PARSE, input);
-            }
+        }
+        if (!this.hasUnity()) {
+            LOGGER.error(ERROR_PARSE, input);
+            throw new ProcessorException(ERROR_PARSE, input);
+        }
+    }
+
+    private void loadLocalDateTime() {
+        double epochNanoseconds = this.value - DateUtils.NANO_1970;
+        long seconds = (long) Math.floor(epochNanoseconds / DateUtils.NANO_PER_SECOND);
+        int nanoseconds = (int) Math.round(epochNanoseconds - (seconds * DateUtils.NANO_PER_SECOND));
+        this.date = Optional.of(LocalDateTime.ofEpochSecond(seconds, nanoseconds, ZoneOffset.UTC));
+        // TODO correct diff 2017y12M = 27 dec 2017
+    }
+
+    private void prepare() {
+        if (this.isNumber()) {
+            positive = this.getValue() >= 0d; // following compute precision
+            decimal = Math.abs(this.getValue() - Math.round(this.getValue())) > 1d / MathUtils.pow10(MainProcessor.getPrecision());
         }
     }
 
@@ -123,6 +155,10 @@ public class Entity {
 
     public Double getValue() {
         return this.value;
+    }
+
+    public Optional<LocalDateTime> getDate() {
+        return this.date;
     }
 
     public boolean isNumber() {
@@ -180,22 +216,29 @@ public class Entity {
         return this.index;
     }
 
-    // TODO isPositive (1E-5)
-
     public boolean isInteger() {
-        return true;
+        return !this.decimal;
     }
 
     public boolean isPositiveDecimal() {
-        return true;
+        return this.positive;
     }
 
     public boolean isDecimal() {
-        return true;
+        return this.decimal;
+    }
+
+    public boolean isUnity(final Unity.Type type) {
+        return this.isUnity() && type.equals(this.getUnityType());
     }
 
     @Override
     public String toString() {
         return this.getUnityType().format(this);
+    }
+
+    public static void main(String[] args) {
+        LocalDateTime.parse("2007-12-03T10:15:30");
+        // new Entity("2007y 12M 03D 10h 15i 30s")
     }
 }

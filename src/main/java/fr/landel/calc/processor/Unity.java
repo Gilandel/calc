@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -15,6 +17,7 @@ import java.util.TreeSet;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
+import fr.landel.calc.utils.DateUtils;
 import fr.landel.calc.utils.MathUtils;
 import fr.landel.calc.utils.StringUtils;
 
@@ -25,17 +28,18 @@ public enum Unity {
 
     NUMBER(Type.NUMBER, "d"),
 
-    DATE_YEARS(Type.DATE, v -> v * Unity.NANO_PER_YEAR, v -> v / Unity.NANO_PER_YEAR, "Y", "year"),
-    DATE_YEARS_LEAP(Type.DATE, v -> v * Unity.NANO_PER_YEAR_LEAP, v -> v / Unity.NANO_PER_YEAR_LEAP, "YL", "yearleap"),
-    DATE_MONTHS(Type.DATE, v -> v * Unity.NANO_PER_MONTH, v -> v / Unity.NANO_PER_MONTH, "M", "month"),
-    DATE_MONTHS_LEAP(Type.DATE, v -> v * Unity.NANO_PER_MONTH_LEAP, v -> v / Unity.NANO_PER_MONTH_LEAP, "ML", "monthleap"),
-    DATE_WEEKS(Type.DATE, v -> v * Unity.NANO_PER_WEEK, v -> v / Unity.NANO_PER_WEEK, "W", "week"),
-    DATE_DAYS(Type.DATE, v -> v * Unity.NANO_PER_DAY, v -> v / Unity.NANO_PER_DAY, "D", "day"),
-    DATE_HOURS(Type.DATE, v -> v * Unity.NANO_PER_HOUR, v -> v / Unity.NANO_PER_HOUR, "h", "hour"),
-    DATE_MINUTES(Type.DATE, v -> v * Unity.NANO_PER_MINUTE, v -> v / Unity.NANO_PER_MINUTE, "i", "minute"),
-    DATE_SECONDS(Type.DATE, v -> v * Unity.NANO_PER_SECOND, v -> v / Unity.NANO_PER_SECOND, "s", "second"),
-    DATE_MILLISECONDS(Type.DATE, v -> v * Unity.NANO_PER_MILLISECOND, v -> v / Unity.NANO_PER_MILLISECOND, "S", "millisecond"),
-    DATE_MICROSECONDS(Type.DATE, v -> v * Unity.NANO_PER_MICROSECOND, v -> v / Unity.NANO_PER_MICROSECOND, "O", "microsecond"),
+    DATE_YEAR(Type.DATE, DateUtils::toZeroNanosecond, DateUtils::fromZeroNanosecond, "y", "year"),
+    DATE_YEARS(Type.DATE, v -> v * DateUtils.NANO_PER_YEAR, v -> v / DateUtils.NANO_PER_YEAR, "Y", "year"),
+    DATE_YEARS_LEAP(Type.DATE, v -> v * DateUtils.NANO_PER_YEAR_LEAP, v -> v / DateUtils.NANO_PER_YEAR_LEAP, "YL", "yearleap"),
+    DATE_MONTHS(Type.DATE, v -> v * DateUtils.NANO_PER_MONTH, v -> v / DateUtils.NANO_PER_MONTH, "M", "month"),
+    DATE_MONTHS_LEAP(Type.DATE, v -> v * DateUtils.NANO_PER_MONTH_LEAP, v -> v / DateUtils.NANO_PER_MONTH_LEAP, "ML", "monthleap"),
+    DATE_WEEKS(Type.DATE, v -> v * DateUtils.NANO_PER_WEEK, v -> v / DateUtils.NANO_PER_WEEK, "W", "week"),
+    DATE_DAYS(Type.DATE, v -> v * DateUtils.NANO_PER_DAY, v -> v / DateUtils.NANO_PER_DAY, "D", "day"),
+    DATE_HOURS(Type.DATE, v -> v * DateUtils.NANO_PER_HOUR, v -> v / DateUtils.NANO_PER_HOUR, "h", "hour"),
+    DATE_MINUTES(Type.DATE, v -> v * DateUtils.NANO_PER_MINUTE, v -> v / DateUtils.NANO_PER_MINUTE, "i", "minute"),
+    DATE_SECONDS(Type.DATE, v -> v * DateUtils.NANO_PER_SECOND, v -> v / DateUtils.NANO_PER_SECOND, "s", "second"),
+    DATE_MILLISECONDS(Type.DATE, v -> v * DateUtils.NANO_PER_MILLISECOND, v -> v / DateUtils.NANO_PER_MILLISECOND, "S", "millisecond"),
+    DATE_MICROSECONDS(Type.DATE, v -> v * DateUtils.NANO_PER_MICROSECOND, v -> v / DateUtils.NANO_PER_MICROSECOND, "O", "microsecond"),
     DATE_NANOSECONDS(Type.DATE, "N", "nanosecond"),
 
     TEMP_KELVIN(Type.TEMPERATURE, "K", "kelvin"),
@@ -65,46 +69,35 @@ public enum Unity {
 
     public static final Comparator<Unity> COMPARATOR_UNITIES = (a, b) -> Integer.compare(a.ordinal(), b.ordinal());
 
-    private static final double NANO_PER_MICROSECOND = 1_000;
-    private static final double NANO_PER_MILLISECOND = NANO_PER_MICROSECOND * 1_000;
-    private static final double NANO_PER_SECOND = NANO_PER_MILLISECOND * 1_000;
-    private static final double NANO_PER_MINUTE = NANO_PER_SECOND * 60;
-    private static final double NANO_PER_HOUR = NANO_PER_MINUTE * 60;
-    private static final double NANO_PER_DAY = NANO_PER_HOUR * 24;
-    private static final double NANO_PER_WEEK = NANO_PER_DAY * 7;
-    private static final double NANO_PER_MONTH = 365 / 12 * NANO_PER_DAY;
-    private static final double NANO_PER_MONTH_LEAP = 366 / 12 * NANO_PER_DAY;
-    private static final double NANO_PER_YEAR = 365 * NANO_PER_DAY;
-    private static final double NANO_PER_YEAR_LEAP = 366 * NANO_PER_DAY;
+    public static final double CELCIUS_ZERO_IN_KELVIN = 273.15;
+    public static final double FAHRENHEIT_ZERO = 32;
+    public static final double FAHRENHEIT_DEVIDER = 1.8;
 
-    private static final double CELCIUS_ZERO_IN_KELVIN = 273.15;
-    private static final double FAHRENHEIT_ZERO = 32;
-    private static final double FAHRENHEIT_DEVIDER = 1.8;
-
-    private static final double FOOT_M = 1_200d / 3_937d;
-    private static final double INCH_M = FOOT_M / 12;
-    private static final double DIGIT_M = FOOT_M / 16;
-    private static final double THOU_M = FOOT_M / 12_000;
-    private static final double YARD_M = FOOT_M * 3;
-    private static final double CHAIN_M = FOOT_M * 66;
-    private static final double FURLONG_M = FOOT_M * 660;
-    private static final double MILE_M = FOOT_M * 5_280;
-    private static final double LEAGUE_M = FOOT_M * 15_840;
+    public static final double FOOT_M = 1_200d / 3_937d;
+    public static final double INCH_M = FOOT_M / 12;
+    public static final double DIGIT_M = FOOT_M / 16;
+    public static final double THOU_M = FOOT_M / 12_000;
+    public static final double YARD_M = FOOT_M * 3;
+    public static final double CHAIN_M = FOOT_M * 66;
+    public static final double FURLONG_M = FOOT_M * 660;
+    public static final double MILE_M = FOOT_M * 5_280;
+    public static final double LEAGUE_M = FOOT_M * 15_840;
 
     private static final SortedMap<Unity, Double> UNITIES;
     static {
         final SortedMap<Unity, Double> map = new TreeMap<>();
-        map.put(Unity.DATE_YEARS, NANO_PER_YEAR);
-        map.put(Unity.DATE_YEARS_LEAP, NANO_PER_YEAR_LEAP);
-        map.put(Unity.DATE_MONTHS, NANO_PER_MONTH);
-        map.put(Unity.DATE_MONTHS_LEAP, NANO_PER_MONTH_LEAP);
-        map.put(Unity.DATE_WEEKS, NANO_PER_WEEK);
-        map.put(Unity.DATE_DAYS, NANO_PER_DAY);
-        map.put(Unity.DATE_HOURS, NANO_PER_HOUR);
-        map.put(Unity.DATE_MINUTES, NANO_PER_MINUTE);
-        map.put(Unity.DATE_SECONDS, NANO_PER_SECOND);
-        map.put(Unity.DATE_MILLISECONDS, NANO_PER_MILLISECOND);
-        map.put(Unity.DATE_MICROSECONDS, NANO_PER_MICROSECOND);
+        map.put(Unity.DATE_YEARS, DateUtils.NANO_PER_YEAR);
+        map.put(Unity.DATE_YEARS_LEAP, DateUtils.NANO_PER_YEAR_LEAP);
+        map.put(Unity.DATE_MONTHS, DateUtils.NANO_PER_MONTH);
+        map.put(Unity.DATE_MONTHS_LEAP, DateUtils.NANO_PER_MONTH_LEAP);
+        map.put(Unity.DATE_WEEKS, DateUtils.NANO_PER_WEEK);
+        map.put(Unity.DATE_DAYS, DateUtils.NANO_PER_DAY);
+        map.put(Unity.DATE_HOURS, DateUtils.NANO_PER_HOUR);
+        map.put(Unity.DATE_MINUTES, DateUtils.NANO_PER_MINUTE);
+        map.put(Unity.DATE_SECONDS, DateUtils.NANO_PER_SECOND);
+        map.put(Unity.DATE_MILLISECONDS, DateUtils.NANO_PER_MILLISECOND);
+        map.put(Unity.DATE_MICROSECONDS, DateUtils.NANO_PER_MICROSECOND);
+        map.put(Unity.DATE_NANOSECONDS, 1d);
         UNITIES = Collections.unmodifiableSortedMap(map);
     }
 
@@ -148,6 +141,7 @@ public enum Unity {
         this.toUnity = toUnity;
         this.symbols = symbols;
         Arrays.sort(this.symbols, StringUtils.COMPARATOR_LENGTH_DESC);
+        this.type.add(this);
     }
 
     private Unity(final Type type, final String... unities) {
@@ -212,6 +206,7 @@ public enum Unity {
 
         private final boolean accumulable;
         private final Function<Entity, String> formatter;
+        private final Map<String, Unity> unities = new HashMap<>();
 
         private Type(final boolean accumulable, final Function<Entity, String> formatter) {
             this.accumulable = accumulable;
@@ -220,6 +215,16 @@ public enum Unity {
 
         public boolean isAccumulable() {
             return this.accumulable;
+        }
+
+        private void add(final Unity unity) {
+            for (String symbol : unity.symbols) {
+                this.unities.put(symbol, unity);
+            }
+        }
+
+        public Map<String, Unity> getUnities() {
+            return this.unities;
         }
 
         public Function<Entity, String> getFormatter() {
@@ -247,7 +252,7 @@ public enum Unity {
                     if (builder.length() > 0) {
                         builder.append(StringUtils.SPACE);
                     }
-                    builder.append(Double.valueOf(intermediate).longValue()).append(StringUtils.SPACE).append(unity.firstSymbol());
+                    builder.append(intermediate).append(StringUtils.SPACE).append(unity.firstSymbol());
                 }
                 ++i;
             }

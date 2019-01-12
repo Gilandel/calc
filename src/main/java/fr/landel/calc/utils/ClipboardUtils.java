@@ -9,11 +9,12 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 
-public class ClipboardUtils {
+public final class ClipboardUtils {
 
     private static final Logger LOGGER = new Logger(ClipboardUtils.class);
 
     private ClipboardUtils() {
+        throw new UnsupportedOperationException();
     }
 
     public static String getText() {

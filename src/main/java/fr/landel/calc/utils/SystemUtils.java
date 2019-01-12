@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class SystemUtils {
+public final class SystemUtils {
 
     private static final Logger LOGGER = new Logger(SystemUtils.class);
 
@@ -25,6 +25,7 @@ public class SystemUtils {
     }
 
     private SystemUtils() {
+        throw new UnsupportedOperationException();
     }
 
     public static boolean isMac() {

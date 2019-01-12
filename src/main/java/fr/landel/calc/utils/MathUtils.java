@@ -4,7 +4,7 @@ import java.util.function.Function;
 
 import fr.landel.calc.processor.MainProcessor;
 
-public class MathUtils {
+public final class MathUtils {
 
     private static final long TEN = 10;
 
@@ -12,6 +12,7 @@ public class MathUtils {
     private static final double DEGREE_CONVERTER = 0.017453292519943295D;
 
     private MathUtils() {
+        throw new UnsupportedOperationException();
     }
 
     public static double fact(final Double n) {
@@ -43,6 +44,15 @@ public class MathUtils {
     public static double floor(final double n, final double accuracy) {
         final double x = pow10(accuracy);
         return Math.floor(n * x) / x;
+    }
+
+    public static double round2(final double n, final double devider) {
+        return n - Math.floor(n / devider) * devider;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(round2(12, 5.235));
+        System.out.println(12 % 5.235);
     }
 
     public static Function<Double, Double> applyAngularFunction(final Function<Double, Double> angularFunction) {

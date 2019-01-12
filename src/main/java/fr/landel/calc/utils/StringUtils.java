@@ -30,6 +30,7 @@ public final class StringUtils {
     private static final Pattern PATTERN_PARAM = Pattern.compile("\\{\\}");
 
     private StringUtils() {
+        throw new UnsupportedOperationException();
     }
 
     public static boolean isNotEmpty(final CharSequence text) {

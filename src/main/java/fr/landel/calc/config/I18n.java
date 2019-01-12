@@ -178,6 +178,7 @@ public enum I18n {
     DIALOG_FUNCTION_PARAM_ACCURACY("dialog.function.param.accuracy"),
     DIALOG_FUNCTION_PARAM_ANGULAR("dialog.function.param.angular"),
     DIALOG_FUNCTION_PARAM_DATE("dialog.function.param.date"),
+    DIALOG_FUNCTION_PARAM_UNITY("dialog.function.param.unity"),
 
     DIALOG_ERROR("dialog.error"),
     DIALOG_ERROR_SELECTION_EMPTY("dialog.error.selection.empty"),
@@ -190,7 +191,8 @@ public enum I18n {
     DIALOG_ERROR_PARAM_COSINUS("dialog.error.param.cosinus"),
     DIALOG_ERROR_PARAM_SINUS("dialog.error.param.sinus"),
     DIALOG_ERROR_PARAM_TANGENT("dialog.error.param.tangent"),
-    DIALOG_ERROR_PARAM_EXPONENT("dialog.error.param.exponent");
+    DIALOG_ERROR_PARAM_EXPONENT("dialog.error.param.exponent"),
+    DIALOG_ERROR_PARAM_UNITY("dialog.error.param.unity");
 
     private static final Logger LOGGER = new Logger(I18n.class);
 
@@ -208,7 +210,8 @@ public enum I18n {
     public static final Locale DEFAULT_LOCALE = Locale.US;
 
     public static final List<Locale> SUPPORTED_LOCALES = listSupportedLocales();
-    public static final List<String> SUPPORTED_LOCALES_NAME = Collections.unmodifiableList(SUPPORTED_LOCALES.stream().map(l -> l.getDisplayName(DEFAULT_LOCALE)).collect(Collectors.toList()));
+    public static final List<String> SUPPORTED_LOCALES_NAME = Collections
+            .unmodifiableList(SUPPORTED_LOCALES.stream().map(l -> l.getDisplayName(DEFAULT_LOCALE)).collect(Collectors.toList()));
 
     public static final String TAG_SEPARATOR = "_";
 

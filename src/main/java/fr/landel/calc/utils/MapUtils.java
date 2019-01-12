@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public class MapUtils {
+public final class MapUtils {
 
     // private static final Logger LOGGER = new Logger(MapUtils.class);
 
@@ -12,6 +12,7 @@ public class MapUtils {
     private static final String ERROR_VALUE_SUPPLIER_NULL = "value's supplier cannot be null";
 
     private MapUtils() {
+        throw new UnsupportedOperationException();
     }
 
     public static <K, V> V getOrPutIfAbsent(final Map<K, V> map, final K key, final Supplier<V> supplier) {

@@ -93,8 +93,12 @@ public class ResultBuilder {
         return this.entities.size();
     }
 
-    public Entity firstEntity() {
-        return this.entities.get(FIRST_ID);
+    public Optional<Entity> firstEntity() {
+        return getEntity(FIRST_ID);
+    }
+
+    public Optional<Entity> getEntity(final String key) {
+        return Optional.ofNullable(this.entities.get(key));
     }
 
     public String getFormula() {

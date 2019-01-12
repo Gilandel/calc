@@ -12,11 +12,12 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
 
-public class FrameUtils {
+public final class FrameUtils {
 
     private static final Logger LOGGER = new Logger(FrameUtils.class);
 
     private FrameUtils() {
+        throw new UnsupportedOperationException();
     }
 
     public static int getScreenWidth() {
@@ -60,8 +61,7 @@ public class FrameUtils {
     }
 
     public static String getCrossPlatformLookAndFeel() {
-        return StringUtils.field(UIManager.getCrossPlatformLookAndFeelClassName(),
-                StringUtils.count(UIManager.getCrossPlatformLookAndFeelClassName(), ".") - 1, ".").toLowerCase();
+        return StringUtils.field(UIManager.getCrossPlatformLookAndFeelClassName(), StringUtils.count(UIManager.getCrossPlatformLookAndFeelClassName(), ".") - 1, ".").toLowerCase();
     }
 
     public static String[] getLookAndFeel() {

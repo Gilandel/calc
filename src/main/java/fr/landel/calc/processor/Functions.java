@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import fr.landel.calc.config.I18n;
+import fr.landel.calc.utils.DateUtils;
 import fr.landel.calc.utils.MathUtils;
 import fr.landel.calc.utils.StringUtils;
 
@@ -26,26 +27,27 @@ public enum Functions implements FunctionConstants {
     FLOOR("floor", I18n.DIALOG_FUNCTION_FLOOR, TWO_PARAM.apply(MathUtils::floor), Params.VALUE, Params.ACCURACY),
     LOG("log", I18n.DIALOG_FUNCTION_LOG, ONE_PARAM.apply(Math::log10), Params.VALUE),
     LN("ln", I18n.DIALOG_FUNCTION_LN, ONE_PARAM.apply(Math::log), Params.VALUE),
-    PI("pi", Functions.NO_PARAM.apply(() -> Math.PI)),
-    E("e", Functions.NO_PARAM.apply(() -> Math.E)),
-    RANDOM("rand", Functions.NO_PARAM.apply(Math::random)),
-    POW("pow", I18n.DIALOG_FUNCTION_POW, Functions.TWO_PARAM.apply(Math::pow), Params.VALUE, Params.EXPONENT),
-    ROUND("round", I18n.DIALOG_FUNCTION_ROUND, Functions.TWO_PARAM.apply(MathUtils::round), Params.VALUE, Params.ACCURACY),
+    PI("pi", NO_PARAM.apply(() -> Math.PI)),
+    E("e", NO_PARAM.apply(() -> Math.E)),
+    RANDOM("rand", NO_PARAM.apply(Math::random)),
+    POW("pow", I18n.DIALOG_FUNCTION_POW, TWO_PARAM.apply(Math::pow), Params.VALUE, Params.EXPONENT),
+    ROUND("round", I18n.DIALOG_FUNCTION_ROUND, TWO_PARAM.apply(MathUtils::round), Params.VALUE, Params.ACCURACY),
     SIN("sin", I18n.DIALOG_FUNCTION_SIN, ONE_PARAM.apply(MathUtils.applyAngularFunction(Math::sin)), Params.ANGULAR),
     SQR("sqr", I18n.DIALOG_FUNCTION_SQR, ONE_PARAM.apply(Math::sqrt), Params.VALUE),
     TAN("tan", I18n.DIALOG_FUNCTION_TAN, ONE_PARAM.apply(MathUtils.applyAngularFunction(Math::tan)), Params.ANGULAR),
 
-    YEARS("year", I18n.DIALOG_FUNCTION_YEAR, ONE_PARAM.apply(Math::abs), Params.DATE),
-    MONTH("month", I18n.DIALOG_FUNCTION_MONTH, ONE_PARAM.apply(Math::abs), Params.DATE),
-    WEEK("week", I18n.DIALOG_FUNCTION_WEEK, ONE_PARAM.apply(Math::abs), Params.DATE),
-    DAY("day", I18n.DIALOG_FUNCTION_DAY, ONE_PARAM.apply(Math::abs), Params.DATE),
-    HOURS("hours", I18n.DIALOG_FUNCTION_HOURS, ONE_PARAM.apply(Math::abs), Params.DATE),
-    MINUTES("minutes", I18n.DIALOG_FUNCTION_MINUTES, ONE_PARAM.apply(Math::abs), Params.DATE),
-    SECONDS("seconds", I18n.DIALOG_FUNCTION_SECONDS, ONE_PARAM.apply(Math::abs), Params.DATE),
-    MILLISECONDS("milliseconds", I18n.DIALOG_FUNCTION_MILLISECONDS, ONE_PARAM.apply(Math::abs), Params.DATE),
-    MICROSECONDS("microseconds", I18n.DIALOG_FUNCTION_MICROSECONDS, ONE_PARAM.apply(Math::abs), Params.DATE),
-    NANOSECONDS("nanoseconds", I18n.DIALOG_FUNCTION_NANOSECONDS, ONE_PARAM.apply(Math::abs), Params.DATE),
-    NOW("now", Functions.NO_PARAM.apply(() -> Double.valueOf(System.nanoTime())));
+    // TODO use LocalDateTime to convert long to an entity with unity
+    YEARS("year", I18n.DIALOG_FUNCTION_YEAR, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_YEAR, Unity.DATE_YEARS), Params.DATE),
+    MONTH("month", I18n.DIALOG_FUNCTION_MONTH, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_MONTH, Unity.DATE_MONTHS), Params.DATE),
+    WEEK("week", I18n.DIALOG_FUNCTION_WEEK, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_WEEK, Unity.DATE_WEEKS), Params.DATE),
+    DAY("day", I18n.DIALOG_FUNCTION_DAY, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_DAY, Unity.DATE_DAYS), Params.DATE),
+    HOURS("hours", I18n.DIALOG_FUNCTION_HOURS, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_HOUR, Unity.DATE_HOURS), Params.DATE),
+    MINUTES("minutes", I18n.DIALOG_FUNCTION_MINUTES, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_MINUTE, Unity.DATE_MINUTES), Params.DATE),
+    SECONDS("seconds", I18n.DIALOG_FUNCTION_SECONDS, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_SECOND, Unity.DATE_SECONDS), Params.DATE),
+    MILLISECONDS("milliseconds", I18n.DIALOG_FUNCTION_MILLISECONDS, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_MILLISECOND, Unity.DATE_MILLISECONDS), Params.DATE),
+    MICROSECONDS("microseconds", I18n.DIALOG_FUNCTION_MICROSECONDS, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_MICROSECOND, Unity.DATE_MICROSECONDS), Params.DATE),
+    NANOSECONDS("nanoseconds", I18n.DIALOG_FUNCTION_NANOSECONDS, ONE_PARAM_UNITY.apply(Function.identity(), Unity.DATE_NANOSECONDS), Params.DATE),
+    NOW("now", NO_PARAM_UNITY.apply(() -> System.currentTimeMillis() * DateUtils.NANO_PER_MILLISECOND + DateUtils.NANO_1970, Unity.DATE_NANOSECONDS));
 
     public static final Character[] CHARS;
     public static final Tree[] TREE;

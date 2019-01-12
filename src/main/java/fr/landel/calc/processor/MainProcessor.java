@@ -96,9 +96,9 @@ public class MainProcessor {
         int parenthesisClose = input.indexOf(StringUtils.PARENTHESIS_CLOSE, parenthesisOpen + 1);
 
         if (parenthesisOpen < 0 && parenthesisClose < 0) {
-            final Entity entity = input.firstEntity();
-            if (input.innerLength() == 0 && input != null) {
-                return entity.toString();
+            final Optional<Entity> entity = input.firstEntity();
+            if (input.innerLength() == 0 && entity.isPresent()) {
+                return entity.get().toString();
             } else {
                 return new FormulaProcessor(input).process().toString();
             }
@@ -116,7 +116,17 @@ public class MainProcessor {
             final Optional<Functions> function = getFunction(prefix);
 
             if (function.isPresent()) {
-                final Entity[] entities = Arrays.stream(block.split(StringUtils.SEMICOLON)).filter(StringUtils::isNotEmpty).map(PROCESSOR).toArray(Entity[]::new);
+
+                final FunctionThrowable<String, Entity, ProcessorException> processor = s -> {
+                    final Optional<Entity> entity = input.getEntity(s);
+                    if (entity.isPresent()) {
+                        return entity.get();
+                    } else {
+                        return new FormulaProcessor(s).process();
+                    }
+                };
+
+                final Entity[] entities = Arrays.stream(block.split(StringUtils.SEMICOLON)).filter(StringUtils::isNotEmpty).map(processor).toArray(Entity[]::new);
 
                 Entity entity = new FunctionProcessor(function.get(), entities).process();
                 result.append(input.substring(0, parenthesisOpen - function.get().getFunction().length()));
