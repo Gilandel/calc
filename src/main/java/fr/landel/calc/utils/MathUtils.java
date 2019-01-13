@@ -73,4 +73,8 @@ public final class MathUtils {
     public static boolean isEqual(final double v1, final double v2, final int precision) {
         return Math.abs(v1 - v2) < 1d / MathUtils.pow10(precision);
     }
+
+    public static boolean isNotEqual(final double v1, final double v2, final int precision) {
+        return Math.abs(v1 - v2) > 1d / MathUtils.pow10(precision);
+    }
 }

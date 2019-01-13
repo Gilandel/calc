@@ -1,5 +1,6 @@
 package fr.landel.calc.processor;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
@@ -13,7 +14,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fr.landel.calc.utils.DateUtils;
-import fr.landel.calc.utils.Interval;
 import fr.landel.calc.utils.Logger;
 import fr.landel.calc.utils.MathUtils;
 
@@ -35,7 +35,7 @@ public class Entity {
     private final int index;
     private Double value;
     private Optional<LocalDateTime> date;
-    private Optional<Interval> interval;
+    private Optional<Duration> duration;
     private SortedSet<Unity> unities = new TreeSet<>(Unity.COMPARATOR_UNITIES);
     private boolean decimal;
     private boolean positive;
@@ -46,18 +46,48 @@ public class Entity {
         prepare();
     }
 
-    public Entity(final int index, final Double value, final SortedSet<Unity> unities) {
+    public Entity(final int index, final Double value, final Duration duration, final SortedSet<Unity> unities) {
         this.index = index;
         this.value = value;
+        this.date = Optional.empty();
+        this.duration = Optional.ofNullable(duration);
         this.setUnities(unities);
         prepare();
     }
 
-    public Entity(final int index, final Double value, final Unity... unities) {
+    public Entity(final int index, final Double value, final Duration duration, final Unity... unities) {
         this.index = index;
         this.value = value;
+        this.date = Optional.empty();
+        this.duration = Optional.ofNullable(duration);
         this.setUnities(unities);
         prepare();
+    }
+
+    public Entity(final int index, final Double value, final LocalDateTime date, final SortedSet<Unity> unities) {
+        this.index = index;
+        this.value = value;
+        this.date = Optional.ofNullable(date);
+        this.duration = Optional.empty();
+        this.setUnities(unities);
+        prepare();
+    }
+
+    public Entity(final int index, final Double value, final LocalDateTime date, final Unity... unities) {
+        this.index = index;
+        this.value = value;
+        this.date = Optional.ofNullable(date);
+        this.duration = Optional.empty();
+        this.setUnities(unities);
+        prepare();
+    }
+
+    public Entity(final int index, final Double value, final SortedSet<Unity> unities) {
+        this(index, value, (Duration) null, unities);
+    }
+
+    public Entity(final int index, final Double value, final Unity... unities) {
+        this(index, value, (Duration) null, unities);
     }
 
     public Entity(final int index, final Double value) {
@@ -94,7 +124,8 @@ public class Entity {
                         if (this.hasUnity() && !Objects.equals(this.getUnityType(), unityType)) {
                             throw new ProcessorException(ERROR_BAD_FORMAT, input);
 
-                        } else if (inputs.containsKey(unity) || Unity.INCOMPATIBLE_UNITIES.get(unity).stream().anyMatch(u -> inputs.containsKey(u))) {
+                        } else if (inputs.containsKey(unity)
+                                || (Unity.INCOMPATIBLE_UNITIES.containsKey(unity) && Unity.INCOMPATIBLE_UNITIES.get(unity).stream().anyMatch(u -> inputs.containsKey(u)))) {
                             throw new ProcessorException(ERROR_INCOMPATIBLE_UNITIES, input);
 
                         } else {
@@ -122,7 +153,7 @@ public class Entity {
         }
 
         if (UnityType.DATE.equals(unityType)) {
-            loadInterval(inputs);
+            loadDuration(inputs);
             loadLocalDateTime(inputs);
 
         } else if (!this.isNumber() && !this.hasUnity()) {
@@ -132,8 +163,8 @@ public class Entity {
         if (this.date == null) {
             this.date = Optional.empty();
         }
-        if (this.interval == null) {
-            this.interval = Optional.empty();
+        if (this.duration == null) {
+            this.duration = Optional.empty();
         }
     }
 
@@ -150,15 +181,15 @@ public class Entity {
         }
     }
 
-    private void loadInterval(final SortedMap<Unity, Double> inputs) throws ProcessorException {
+    private void loadDuration(final SortedMap<Unity, Double> inputs) throws ProcessorException {
         if (inputs.containsKey(Unity.DATE_YEAR)) {
             return;
         }
 
-        final Interval interval = Unity.mapToInterval(inputs, this.getUnities());
+        final Duration duration = Unity.mapToDuration(inputs, this.getUnities());
 
-        this.value = interval.getValue();
-        this.interval = Optional.of(interval);
+        this.value = Double.valueOf(duration.toNanos());
+        this.duration = Optional.of(duration);
     }
 
     private void loadLocalDateTime(final SortedMap<Unity, Double> inputs) throws ProcessorException {
@@ -175,7 +206,7 @@ public class Entity {
     private void prepare() {
         if (this.isNumber()) {
             positive = MathUtils.isEqualOrGreater(this.getValue(), 0d, MainProcessor.getPrecision());
-            decimal = MathUtils.isEqual(this.getValue(), Math.round(this.getValue()), MainProcessor.getPrecision());
+            decimal = MathUtils.isNotEqual(this.getValue(), Math.round(this.getValue()), MainProcessor.getPrecision());
         }
     }
 
@@ -195,12 +226,28 @@ public class Entity {
         return this.date;
     }
 
+    public Optional<Duration> getDuration() {
+        return this.duration;
+    }
+
     public boolean isNumber() {
         return this.value != null && (!this.hasUnity() || Unity.NUMBER.equals(this.firstUnity()));
     }
 
     public boolean isUnity() {
         return this.value == null;
+    }
+
+    public boolean isPositive() {
+        return this.positive;
+    }
+
+    public boolean isDate() {
+        return this.date.isPresent();
+    }
+
+    public boolean isDuration() {
+        return this.duration.isPresent();
     }
 
     public SortedSet<Unity> getUnities() {
@@ -274,9 +321,9 @@ public class Entity {
     public static void main(String[] args) throws ProcessorException {
         // LocalDateTime.parse("2007-12-03T10:15:30");
         Entity entity1 = new Entity(0, "2007y 1M");
-        Entity entity2 = new Entity(0, "2007y 3M");
+        Entity entity2 = new Entity(0, "2007y 4M");
 
-        System.out.println((entity2.getValue() - entity1.getValue()) + " : " + DateUtils.NANO_PER_MONTHS_SUM.get(1));
+        System.out.println((entity2.getValue() - entity1.getValue()) + " : " + DateUtils.NANO_PER_MONTHS_SUM.get(2));
 
         double annee = DateUtils.toZeroNanosecond(2007) + DateUtils.NANO_PER_MONTHS_SUM.get(11);
         double annee1 = LocalDateTime.of(2017, 1, 1, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1_000_0000_000d + DateUtils.NANO_1970;

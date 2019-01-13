@@ -25,14 +25,14 @@ public enum UnityType {
     TEMPERATURE(false, v -> {
         final StringBuilder builder = new StringBuilder();
         if (!v.isUnity()) {
-            builder.append(Double.toString(v.toUnity())).append(StringUtils.SPACE);
+            builder.append(stringify(v.toUnity())).append(StringUtils.SPACE);
         }
         return builder.append(v.firstUnity().firstSymbol()).toString();
     }),
     LENGTH(true, v -> {
         final StringBuilder builder = new StringBuilder();
         if (!v.isUnity()) {
-            builder.append(Double.toString(v.toUnity())).append(StringUtils.SPACE);
+            builder.append(stringify(v.toUnity())).append(StringUtils.SPACE);
         }
         return builder.append(v.firstUnity().firstSymbol()).toString();
     });
@@ -69,8 +69,12 @@ public enum UnityType {
     }
 
     private static void appendDate(final StringBuilder builder, final double value, final SortedSet<Unity> unities) {
-        double v = value;
-        double intermediate;
+        if (!MathUtils.isEqualOrGreater(value, 0d, 9)) {
+            builder.append('-');
+        }
+        double v = Math.abs(value);
+        boolean appended = false;
+        Double intermediate = null;
         Double u;
         int i = 0;
         for (Unity unity : unities) {
@@ -82,12 +86,17 @@ public enum UnityType {
                 } else {
                     intermediate = v / u;
                 }
-                if (builder.length() > 0) {
+                if (appended) {
                     builder.append(StringUtils.SPACE);
                 }
-                builder.append(intermediate).append(StringUtils.SPACE).append(unity.firstSymbol());
+                builder.append(stringify(intermediate)).append(StringUtils.SPACE).append(unity.firstSymbol());
+                appended = true;
             }
             ++i;
+        }
+
+        if (intermediate == null && !Unity.DATES_AVG.equals(unities)) {
+            appendDate(builder, value, Unity.DATES_AVG);
         }
     }
 

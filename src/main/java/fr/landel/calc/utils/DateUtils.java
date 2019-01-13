@@ -1,12 +1,17 @@
 package fr.landel.calc.utils;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
+
+import fr.landel.calc.processor.Entity;
+import fr.landel.calc.processor.Unity;
 
 public final class DateUtils {
 
@@ -90,6 +95,57 @@ public final class DateUtils {
 
     private DateUtils() {
         throw new UnsupportedOperationException();
+    }
+
+    public static Entity add(final Entity a, final Entity b, final Unity unity) {
+        final LocalDateTime date;
+
+        if (a.isDate() && b.isDuration()) {
+            Duration bDuration = b.getDuration().get();
+            date = a.getDate().get().plus(bDuration);
+
+        } else if (a.isDuration() && b.isDate()) {
+            Duration aDuration = a.getDuration().get();
+            date = b.getDate().get().plus(aDuration);
+
+        } else { // a.isDuration() && b.isDuration()
+            Duration aDuration = a.getDuration().get();
+            Duration bDuration = b.getDuration().get();
+            Duration duration = aDuration.plus(bDuration);
+
+            Double diff = Double.valueOf(duration.toNanos());
+
+            return new Entity(a.getIndex(), diff, unity);
+        }
+        return new Entity(a.getIndex(), date.toEpochSecond(ZoneOffset.UTC) * NANO_PER_SECOND + date.getNano(), date, unity);
+    }
+
+    public static Entity subtract(final Entity a, final Entity b, final Unity unity) {
+        final Double diff;
+        final Duration duration;
+
+        if (a.isDate() && b.isDate()) {
+            LocalDateTime aDateTime = a.getDate().get();
+            LocalDateTime bDateTime = b.getDate().get();
+
+            diff = ChronoUnit.SECONDS.between(bDateTime, aDateTime) * NANO_PER_SECOND + aDateTime.getNano() - bDateTime.getNano();
+            duration = Duration.ofNanos(diff.longValue());
+
+        } else if (a.isDate() && b.isDuration()) {
+            Duration bDuration = b.getDuration().get();
+            LocalDateTime date = a.getDate().get().minus(bDuration);
+
+            return new Entity(a.getIndex(), date.toEpochSecond(ZoneOffset.UTC) * NANO_PER_SECOND + date.getNano(), date, unity);
+
+        } else { // a.isInterval() && b.isInterval()
+            Duration aDuration = a.getDuration().get();
+            Duration bDuration = b.getDuration().get();
+            duration = aDuration.minus(bDuration);
+
+            diff = Double.valueOf(duration.toNanos());
+        }
+
+        return new Entity(a.getIndex(), diff, duration, unity);
     }
 
     public static double fromZeroNanosecond(final Double date) {

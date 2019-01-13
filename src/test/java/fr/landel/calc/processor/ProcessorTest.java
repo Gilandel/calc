@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
 
+import org.junit.jupiter.api.Test;
+
 import fr.landel.calc.config.Formula;
 import fr.landel.calc.config.Result;
 
@@ -24,7 +26,7 @@ public class ProcessorTest {
      * @throws ProcessorException
      *             on processing error
      */
-    // @Test
+    @Test
     void testProcess() throws ProcessorException {
         MainProcessor processor = new MainProcessor();
 

@@ -172,10 +172,12 @@ public class MainProcessor {
 
         MainProcessor processor = new MainProcessor();
 
+        System.out.println(processor.processFormula("2007y3M-2008y2M"));
+        System.out.println(processor.processFormula("100Y7M*2"));
         System.out.println(processor.processFormula("3*(3+2)"));
         System.out.println(processor.processFormula("((3+2)*pow(9/abs(3);1-5))-2"));
-        System.out.println(processor.processFormula("15in>>m/1000"));
-        System.out.println(processor.processFormula("(15h+12s)>>his"));
+        System.out.println(processor.processFormula("15in>>m"));
+        System.out.println(processor.processFormula("(15h+12s)>>his")); // bug
         System.out.println(processor.processFormula("5K>>C"));
         System.out.println(processor.processFormula("5C>>K"));
         System.out.println(processor.processFormula("15/(1200/3937/12)"));

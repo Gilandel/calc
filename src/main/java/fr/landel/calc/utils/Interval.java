@@ -45,6 +45,14 @@ public class Interval {
         return this.duration.toNanosPart();
     }
 
+    public Duration getDuration() {
+        return this.duration;
+    }
+
+    public Period getPeriod() {
+        return this.period;
+    }
+
     @Override
     public String toString() {
         return this.period.toString() + "T" + this.duration.toString();

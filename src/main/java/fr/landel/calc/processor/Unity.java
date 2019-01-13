@@ -1,6 +1,8 @@
 package fr.landel.calc.processor;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,7 +21,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import fr.landel.calc.utils.DateUtils;
-import fr.landel.calc.utils.Interval;
 import fr.landel.calc.utils.MapUtils;
 import fr.landel.calc.utils.StringUtils;
 
@@ -67,11 +68,6 @@ public enum Unity {
     LENGTH_IMPERIAL_DIGIT(8, UnityType.LENGTH, v -> v * Unity.DIGIT_M, v -> v / Unity.DIGIT_M, "di", "digit"),
     LENGTH_IMPERIAL_THOU(9, UnityType.LENGTH, v -> v * Unity.THOU_M, v -> v / Unity.THOU_M, "th", "thou");
 
-    public static final List<Unity> DATES = new ArrayList<>(
-            Arrays.asList(DATE_YEARS, DATE_MONTHS, DATE_DAYS, DATE_HOURS, DATE_MINUTES, DATE_SECONDS, DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS));
-    public static final List<Unity> DATES_LEAP = new ArrayList<>(
-            Arrays.asList(DATE_YEARS_LEAP, DATE_MONTHS_LEAP, DATE_DAYS, DATE_HOURS, DATE_MINUTES, DATE_SECONDS, DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS));
-
     public static final Comparator<Unity> COMPARATOR_UNITIES = (a, b) -> Integer.compare(a.index, b.index);
 
     public static final double CELCIUS_ZERO_IN_KELVIN = 273.15;
@@ -88,21 +84,31 @@ public enum Unity {
     public static final double MILE_M = FOOT_M * 5_280;
     public static final double LEAGUE_M = FOOT_M * 15_840;
 
+    static final SortedSet<Unity> DATES_AVG;
+    static {
+        final SortedSet<Unity> unities = new TreeSet<>(COMPARATOR_UNITIES);
+        unities.addAll(Arrays.asList(DATE_YEARS_AVG, DATE_MONTHS_AVG, DATE_WEEKS, DATE_DAYS, DATE_HOURS, DATE_MINUTES, DATE_SECONDS, DATE_MILLISECONDS, DATE_MICROSECONDS,
+                DATE_NANOSECONDS));
+        DATES_AVG = Collections.unmodifiableSortedSet(unities);
+    }
+
     static final SortedMap<Unity, Double> UNITIES;
     static {
         final SortedMap<Unity, Double> map = new TreeMap<>();
-        map.put(Unity.DATE_YEARS, DateUtils.NANO_PER_YEAR);
-        map.put(Unity.DATE_YEARS_LEAP, DateUtils.NANO_PER_YEAR_LEAP);
-        map.put(Unity.DATE_MONTHS, DateUtils.NANO_PER_MONTH);
-        map.put(Unity.DATE_MONTHS_LEAP, DateUtils.NANO_PER_MONTH_LEAP);
-        map.put(Unity.DATE_WEEKS, DateUtils.NANO_PER_WEEK);
-        map.put(Unity.DATE_DAYS, DateUtils.NANO_PER_DAY);
-        map.put(Unity.DATE_HOURS, DateUtils.NANO_PER_HOUR);
-        map.put(Unity.DATE_MINUTES, DateUtils.NANO_PER_MINUTE);
-        map.put(Unity.DATE_SECONDS, DateUtils.NANO_PER_SECOND);
-        map.put(Unity.DATE_MILLISECONDS, DateUtils.NANO_PER_MILLISECOND);
-        map.put(Unity.DATE_MICROSECONDS, DateUtils.NANO_PER_MICROSECOND);
-        map.put(Unity.DATE_NANOSECONDS, 1d);
+        map.put(DATE_YEARS, DateUtils.NANO_PER_YEAR);
+        map.put(DATE_YEARS_AVG, DateUtils.NANO_PER_YEAR_AVG);
+        map.put(DATE_YEARS_LEAP, DateUtils.NANO_PER_YEAR_LEAP);
+        map.put(DATE_MONTHS, DateUtils.NANO_PER_MONTH);
+        map.put(DATE_MONTHS_AVG, DateUtils.NANO_PER_MONTH_AVG);
+        map.put(DATE_MONTHS_LEAP, DateUtils.NANO_PER_MONTH_LEAP);
+        map.put(DATE_WEEKS, DateUtils.NANO_PER_WEEK);
+        map.put(DATE_DAYS, DateUtils.NANO_PER_DAY);
+        map.put(DATE_HOURS, DateUtils.NANO_PER_HOUR);
+        map.put(DATE_MINUTES, DateUtils.NANO_PER_MINUTE);
+        map.put(DATE_SECONDS, DateUtils.NANO_PER_SECOND);
+        map.put(DATE_MILLISECONDS, DateUtils.NANO_PER_MILLISECOND);
+        map.put(DATE_MICROSECONDS, DateUtils.NANO_PER_MICROSECOND);
+        map.put(DATE_NANOSECONDS, 1d);
         UNITIES = Collections.unmodifiableSortedMap(map);
     }
 
@@ -169,12 +175,12 @@ public enum Unity {
         this(index, type, fromUnity, toUnity, new int[0], symbols);
     }
 
-    private Unity(final int index, final UnityType type, final int[] incompatibleUnities, final String... unities) {
-        this(index, type, Function.identity(), Function.identity(), incompatibleUnities, unities);
+    private Unity(final int index, final UnityType type, final int[] incompatibleUnities, final String... symbols) {
+        this(index, type, Function.identity(), Function.identity(), incompatibleUnities, symbols);
     }
 
-    private Unity(final int index, final UnityType type, final String... unities) {
-        this(index, type, Function.identity(), Function.identity(), unities);
+    private Unity(final int index, final UnityType type, final String... symbols) {
+        this(index, type, Function.identity(), Function.identity(), symbols);
     }
 
     public UnityType getType() {
@@ -203,6 +209,13 @@ public enum Unity {
         } else {
             return REDUCER.apply(left.last(), right.last());
         }
+    }
+
+    public static SortedSet<Unity> merge(final SortedSet<Unity> left, final SortedSet<Unity> right) {
+        final SortedSet<Unity> unities = new TreeSet<>(Unity.COMPARATOR_UNITIES);
+        unities.addAll(left);
+        unities.addAll(right);
+        return unities;
     }
 
     public static SortedSet<Unity> getUnities(final String text) throws ProcessorException {
@@ -250,46 +263,18 @@ public enum Unity {
         return unities;
     }
 
-    public static Interval mapToInterval(final SortedMap<Unity, Double> inputs, final SortedSet<Unity> unities) throws ProcessorException {
-        int years = 0, months = 0, days = 0;
-        long hours = 0, minutes = 0, seconds = 0, nanos = 0;
+    public static Duration mapToDuration(final SortedMap<Unity, Double> inputs, final SortedSet<Unity> unities) throws ProcessorException {
+        Double amount = 0d;
 
         for (Entry<Unity, Double> input : inputs.entrySet()) {
             Unity unity = input.getKey();
             int value = input.getValue().intValue();
 
             unities.add(unity);
-
-            switch (unity) {
-            case DATE_YEARS:
-                years = value;
-                break;
-            case DATE_MONTHS:
-                months = value;
-                break;
-            case DATE_DAYS:
-                days = value;
-                break;
-            case DATE_HOURS:
-                hours = value;
-                break;
-            case DATE_MINUTES:
-                minutes = value;
-                break;
-            case DATE_MILLISECONDS:
-                nanos += Double.valueOf(value * DateUtils.NANO_PER_MILLISECOND).longValue();
-                break;
-            case DATE_MICROSECONDS:
-                nanos += Double.valueOf(value * DateUtils.NANO_PER_MICROSECOND).longValue();
-                break;
-            case DATE_NANOSECONDS:
-                nanos += value;
-                break;
-            default:
-            }
+            amount += value * UNITIES.get(unity);
         }
 
-        return new Interval(years, months, days, hours, minutes, seconds, nanos);
+        return Duration.of(amount.longValue(), ChronoUnit.NANOS);
     }
 
     public static LocalDateTime mapToLocalDateTime(final SortedMap<Unity, Double> inputs, final SortedSet<Unity> unities) throws ProcessorException {
