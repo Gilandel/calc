@@ -14,7 +14,7 @@ public class Params<T> {
     public static final Params<Double> SINUS = new Params<>(I18n.DIALOG_FUNCTION_PARAM_SINUS, Entity::isDecimal, I18n.DIALOG_ERROR_PARAM_SINUS);
     public static final Params<Double> TANGENT = new Params<>(I18n.DIALOG_FUNCTION_PARAM_TANGENT, Entity::isDecimal, I18n.DIALOG_ERROR_PARAM_TANGENT);
     public static final Params<Double> EXPONENT = new Params<>(I18n.DIALOG_FUNCTION_PARAM_EXPONENT, Entity::isDecimal, I18n.DIALOG_ERROR_PARAM_EXPONENT);
-    public static final Params<String> UNITY = new Params<>(I18n.DIALOG_FUNCTION_PARAM_UNITY, e -> e.isUnity(Unity.Type.DATE), I18n.DIALOG_ERROR_PARAM_EXPONENT);
+    public static final Params<String> UNITY = new Params<>(I18n.DIALOG_FUNCTION_PARAM_UNITY, e -> e.isUnity(UnityType.DATE), I18n.DIALOG_ERROR_PARAM_EXPONENT);
 
     private final I18n i18n;
     private final Predicate<Entity> validator;

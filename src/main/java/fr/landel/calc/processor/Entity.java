@@ -5,12 +5,15 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fr.landel.calc.utils.DateUtils;
+import fr.landel.calc.utils.Interval;
 import fr.landel.calc.utils.Logger;
 import fr.landel.calc.utils.MathUtils;
 
@@ -25,12 +28,14 @@ public class Entity {
     private static final Pattern PATTERN_UNITY = Pattern.compile("[a-zA-Z]+");
 
     private static final String ERROR_PARSE = "the following expression cannot be parsed: {}";
-    private static final String ERROR_MALFORMED = "the following expression is malformed: {}";
+    private static final String ERROR_BAD_FORMAT = "the following expression is not formatted correctly: {}";
+    private static final String ERROR_INCOMPATIBLE_UNITIES = "the following expression contains incompatible unities: {}";
     private static final String ERROR_UNITY = "the following unity is unknown: {}";
 
     private final int index;
     private Double value;
     private Optional<LocalDateTime> date;
+    private Optional<Interval> interval;
     private SortedSet<Unity> unities = new TreeSet<>(Unity.COMPARATOR_UNITIES);
     private boolean decimal;
     private boolean positive;
@@ -63,6 +68,9 @@ public class Entity {
         Double value;
         SortedSet<Unity> unities;
         Unity unity;
+        UnityType unityType = null;
+
+        final SortedMap<Unity, Double> inputs = new TreeMap<>(Unity.COMPARATOR_UNITIES);
 
         Matcher matcher = PATTERN_NUMBER.matcher(input);
         while (matcher.find()) {
@@ -81,19 +89,27 @@ public class Entity {
 
                     } else {
                         unity = unities.first();
+                        unityType = unity.getType();
 
-                        if (this.hasUnity() && !Objects.equals(this.getUnityType(), unity.getType())) {
-                            throw new ProcessorException(ERROR_MALFORMED, input);
+                        if (this.hasUnity() && !Objects.equals(this.getUnityType(), unityType)) {
+                            throw new ProcessorException(ERROR_BAD_FORMAT, input);
+
+                        } else if (inputs.containsKey(unity) || Unity.INCOMPATIBLE_UNITIES.get(unity).stream().anyMatch(u -> inputs.containsKey(u))) {
+                            throw new ProcessorException(ERROR_INCOMPATIBLE_UNITIES, input);
+
+                        } else {
+                            inputs.put(unity, value);
                         }
 
-                        this.getUnities().add(unity);
+                        if (!UnityType.DATE.equals(unityType)) {
+                            this.getUnities().add(unity);
+                            value = unity.fromUnity(value);
 
-                        value = unity.fromUnity(value);
-
-                        if (this.value == null) {
-                            this.value = value;
-                        } else {
-                            this.value += value;
+                            if (this.value == null) {
+                                this.value = value;
+                            } else {
+                                this.value += value;
+                            }
                         }
                     }
                 } catch (NumberFormatException e) {
@@ -101,19 +117,23 @@ public class Entity {
                     throw new ProcessorException(e, ERROR_PARSE, input);
                 }
             } else {
-                throw new ProcessorException(ERROR_MALFORMED, input);
+                throw new ProcessorException(ERROR_BAD_FORMAT, input);
             }
         }
 
-        if (!this.isNumber() && !this.hasUnity()) {
+        if (UnityType.DATE.equals(unityType)) {
+            loadInterval(inputs);
+            loadLocalDateTime(inputs);
+
+        } else if (!this.isNumber() && !this.hasUnity()) {
             loadUnities(input);
-            this.date = Optional.empty();
+        }
 
-        } else if (this.getUnities().contains(Unity.DATE_YEAR)) {
-            loadLocalDateTime();
-
-        } else {
+        if (this.date == null) {
             this.date = Optional.empty();
+        }
+        if (this.interval == null) {
+            this.interval = Optional.empty();
         }
     }
 
@@ -130,18 +150,32 @@ public class Entity {
         }
     }
 
-    private void loadLocalDateTime() {
-        double epochNanoseconds = this.value - DateUtils.NANO_1970;
-        long seconds = (long) Math.floor(epochNanoseconds / DateUtils.NANO_PER_SECOND);
-        int nanoseconds = (int) Math.round(epochNanoseconds - (seconds * DateUtils.NANO_PER_SECOND));
-        this.date = Optional.of(LocalDateTime.ofEpochSecond(seconds, nanoseconds, ZoneOffset.UTC));
-        // TODO correct diff 2017y12M = 27 dec 2017
+    private void loadInterval(final SortedMap<Unity, Double> inputs) throws ProcessorException {
+        if (inputs.containsKey(Unity.DATE_YEAR)) {
+            return;
+        }
+
+        final Interval interval = Unity.mapToInterval(inputs, this.getUnities());
+
+        this.value = interval.getValue();
+        this.interval = Optional.of(interval);
+    }
+
+    private void loadLocalDateTime(final SortedMap<Unity, Double> inputs) throws ProcessorException {
+        if (!inputs.containsKey(Unity.DATE_YEAR)) {
+            return;
+        }
+
+        final LocalDateTime date = Unity.mapToLocalDateTime(inputs, this.getUnities());
+
+        this.value = DateUtils.toZeroNanosecond(date);
+        this.date = Optional.of(date);
     }
 
     private void prepare() {
         if (this.isNumber()) {
-            positive = this.getValue() >= 0d; // following compute precision
-            decimal = Math.abs(this.getValue() - Math.round(this.getValue())) > 1d / MathUtils.pow10(MainProcessor.getPrecision());
+            positive = MathUtils.isEqualOrGreater(this.getValue(), 0d, MainProcessor.getPrecision());
+            decimal = MathUtils.isEqual(this.getValue(), Math.round(this.getValue()), MainProcessor.getPrecision());
         }
     }
 
@@ -184,11 +218,11 @@ public class Entity {
         return this;
     }
 
-    public Unity.Type getUnityType() {
+    public UnityType getUnityType() {
         if (this.hasUnity()) {
             return this.firstUnity().getType();
         } else {
-            return Unity.Type.NUMBER;
+            return UnityType.NUMBER;
         }
     }
 
@@ -228,7 +262,7 @@ public class Entity {
         return this.decimal;
     }
 
-    public boolean isUnity(final Unity.Type type) {
+    public boolean isUnity(final UnityType type) {
         return this.isUnity() && type.equals(this.getUnityType());
     }
 
@@ -237,8 +271,22 @@ public class Entity {
         return this.getUnityType().format(this);
     }
 
-    public static void main(String[] args) {
-        LocalDateTime.parse("2007-12-03T10:15:30");
-        // new Entity("2007y 12M 03D 10h 15i 30s")
+    public static void main(String[] args) throws ProcessorException {
+        // LocalDateTime.parse("2007-12-03T10:15:30");
+        Entity entity1 = new Entity(0, "2007y 1M");
+        Entity entity2 = new Entity(0, "2007y 3M");
+
+        System.out.println((entity2.getValue() - entity1.getValue()) + " : " + DateUtils.NANO_PER_MONTHS_SUM.get(1));
+
+        double annee = DateUtils.toZeroNanosecond(2007) + DateUtils.NANO_PER_MONTHS_SUM.get(11);
+        double annee1 = LocalDateTime.of(2017, 1, 1, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1_000_0000_000d + DateUtils.NANO_1970;
+        double annee2 = LocalDateTime.of(2000, 1, 1, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1_000_0000_000d + DateUtils.NANO_1970;
+
+        Double y = (annee1 - DateUtils.NANO_1970) / 1_000_0000_000d;
+        Double y1 = (annee1 - annee2) / 1_000_0000_000d;
+        // long s = y ;
+        LocalDateTime date = LocalDateTime.ofEpochSecond(y.longValue(), 0, ZoneOffset.UTC);
+
+        System.out.printf("%,.6f%n%,.6f%n%,.6f%n%,.6f%n%s", entity1.getValue(), annee, annee1, annee2, date);
     }
 }

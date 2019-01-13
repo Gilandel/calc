@@ -1,7 +1,6 @@
 package fr.landel.calc.config;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -65,7 +64,7 @@ public final class Configuration {
             }
 
             if (FILE.exists()) {
-                try (OutputStream os = new BufferedOutputStream(new FileOutputStream(FILE))) {
+                try (OutputStream os = new FileOutputStream(FILE)) {
                     PROPS.store(os, I18n.TITLE.getI18n() + " configuration");
 
                     LOGGER.info("Configuration saved");
@@ -79,8 +78,7 @@ public final class Configuration {
     }
 
     private static void init() {
-        Arrays.stream(Conf.values()).filter(v -> !Conf.HISTORY_FORMULA.equals(v) && v.getDefaultValue() != null)
-                .forEach(v -> set(v, String.valueOf(v.getDefaultValue())));
+        Arrays.stream(Conf.values()).filter(v -> !Conf.HISTORY_FORMULA.equals(v) && v.getDefaultValue() != null).forEach(v -> set(v, String.valueOf(v.getDefaultValue())));
     }
 
     public static void set(final Conf key, final Object value) {

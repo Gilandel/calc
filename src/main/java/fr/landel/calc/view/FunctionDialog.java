@@ -56,8 +56,6 @@ public class FunctionDialog extends JDialog implements Dialog {
 
     private final JPanel panel = new JPanel();
 
-    public static int maxParams = Functions.maxParams();
-
     private final JLabel labelFunction = new JLabel();
     private final JLabel labelDescription = new JLabel();
     private final JLabel labelError = new JLabel();
@@ -91,7 +89,7 @@ public class FunctionDialog extends JDialog implements Dialog {
 
         function = Functions.ABS;
 
-        for (int i = 0; i < maxParams; ++i) {
+        for (int i = 0; i < Functions.MAX_PARAMS; ++i) {
             this.labels.add(new JLabel());
             JTextField field = new JTextField();
             this.fields.add(field);
@@ -140,7 +138,7 @@ public class FunctionDialog extends JDialog implements Dialog {
         final ParallelGroup hLabelGroup = layout.createParallelGroup(LEADING);
         final ParallelGroup hFieldGroup = layout.createParallelGroup(LEADING);
 
-        for (int i = 0; i < maxParams; ++i) {
+        for (int i = 0; i < Functions.MAX_PARAMS; ++i) {
             hLabelGroup.addComponent(labels.get(i));
             hFieldGroup.addComponent(fields.get(i));
         }
@@ -172,7 +170,7 @@ public class FunctionDialog extends JDialog implements Dialog {
                 .addPreferredGap(UNRELATED)
                 .addComponent(labelDescription);
         
-        for (int i=0; i < maxParams; ++i) {
+        for (int i=0; i < Functions.MAX_PARAMS; ++i) {
             vGroup.addPreferredGap(UNRELATED)
                     .addGroup(layout.createParallelGroup(BASELINE)
                             .addComponent(labels.get(i))
@@ -220,7 +218,7 @@ public class FunctionDialog extends JDialog implements Dialog {
         updateI18n(function.getI18n(), labelDescription::setText);
 
         if (function.hasParams()) {
-            IntStream.range(0, maxParams).forEach(i -> {
+            IntStream.range(0, Functions.MAX_PARAMS).forEach(i -> {
                 if (i < function.getParamsCount()) {
                     labels.get(i).setText(function.getParams()[i].getI18n().getI18n());
                     fields.get(i).setText(StringUtils.EMPTY);

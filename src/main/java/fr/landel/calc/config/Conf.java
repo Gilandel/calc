@@ -29,6 +29,7 @@ public enum Conf {
     LOG_MODE("log.mode", Pattern.compile("^(" + Logger.LOG_MODE_CONSOLE + "|" + Logger.LOG_MODE_FILE + ")$"), Logger.LOG_MODE_CONSOLE),
     DECIMAL_SEPARATOR("separator.decimal", String.class, "."),
     THOUSAND_SEPARATOR("separator.thousand", String.class, ","),
+    UNITY_FULL_LENGTH("unity.fullLength", Boolean.class, false),
 
     HISTORY_MAX("history.max", Integer.class, 100),
     HISTORY_SAVE("history.save", Boolean.class, true),

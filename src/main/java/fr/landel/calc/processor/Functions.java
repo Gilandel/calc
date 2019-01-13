@@ -2,10 +2,7 @@ package fr.landel.calc.processor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -49,20 +46,7 @@ public enum Functions implements FunctionConstants {
     NANOSECONDS("nanoseconds", I18n.DIALOG_FUNCTION_NANOSECONDS, ONE_PARAM_UNITY.apply(Function.identity(), Unity.DATE_NANOSECONDS), Params.DATE),
     NOW("now", NO_PARAM_UNITY.apply(() -> System.currentTimeMillis() * DateUtils.NANO_PER_MILLISECOND + DateUtils.NANO_1970, Unity.DATE_NANOSECONDS));
 
-    public static final Character[] CHARS;
-    public static final Tree[] TREE;
-    static {
-        final Set<Character> chars = new HashSet<>();
-        final Tree tree = new Tree();
-        for (Functions function : Functions.values()) {
-            final Character[] functionChars = StringUtils.toChars(function.getFunction());
-            addTree(tree, functionChars, 0, function);
-            chars.addAll(Arrays.asList(functionChars));
-        }
-        TREE = tree.trees;
-        CHARS = chars.toArray(Character[]::new);
-        Arrays.sort(CHARS);
-    }
+    public static final int MAX_PARAMS = Arrays.stream(Functions.values()).map(f -> f.getParamsCount()).max(Integer::compareTo).orElse(0);
 
     private static final String TAG_HTML_OPEN = "<html>";
     private static final String TAG_HTML_CLOSE = "</html>";
@@ -178,72 +162,5 @@ public enum Functions implements FunctionConstants {
     @Override
     public String toString() {
         return this.toString;
-    }
-
-    public static int maxParams() {
-        return Arrays.stream(Functions.values()).map(f -> f.getParamsCount()).max(Integer::compareTo).orElse(0);
-    }
-
-    private static void addTree(final Tree tree, final Character[] chars, final int index, final Functions function) {
-        if (chars.length > index) {
-            final Character c = chars[index];
-            if (tree.trees == null) {
-                tree.trees = new Tree[c + 1];
-                final Tree sub = new Tree();
-                tree.trees[c] = sub;
-                addTree(sub, chars, index + 1, function);
-
-            } else if (tree.trees.length <= c || tree.trees[c] == null) {
-                Tree sub = new Tree();
-                if (tree.trees.length <= c) {
-                    Tree[] tmp = new Tree[c + 1];
-                    System.arraycopy(tree.trees, 0, tmp, 0, tree.trees.length);
-                    tree.trees = tmp;
-                }
-                tree.trees[c] = sub;
-                addTree(sub, chars, index + 1, function);
-
-            } else if (chars.length > index) {
-                addTree(tree.trees[c], chars, index + 1, function);
-            }
-        } else if (index > 0 && chars.length == index) {
-            tree.function = function;
-        }
-    }
-
-    public static Optional<Functions> check(final char[] array) {
-        return check(TREE, array, 0);
-    }
-
-    private static Optional<Functions> check(final Tree[] validator, final char[] array, final int index) {
-        if (array.length > index) {
-            char c = array[index];
-            if (validator.length > c && validator[c] != null) {
-                if (validator[c].getTrees() != null) {
-                    final Optional<Functions> function = check(validator[c].getTrees(), array, index + 1);
-                    if (function.isPresent()) {
-                        return function;
-                    } else {
-                        return Optional.ofNullable(validator[c].getFunction());
-                    }
-                } else if (array.length == index + 1) {
-                    return Optional.of(validator[c].getFunction());
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
-    static class Tree {
-        private Tree[] trees;
-        private Functions function;
-
-        public Tree[] getTrees() {
-            return this.trees;
-        }
-
-        public Functions getFunction() {
-            return this.function;
-        }
     }
 }

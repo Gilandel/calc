@@ -9,7 +9,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 
-import fr.landel.calc.processor.Functions;
+import fr.landel.calc.processor.FunctionsTree;
 import fr.landel.calc.utils.Logger;
 import fr.landel.calc.utils.StringUtils;
 
@@ -93,16 +93,16 @@ public class CaretHighlighter {
                         } else {
                             highlighter.addHighlight(pos - 1, pos, painterErr);
                         }
-                    } else if (Arrays.binarySearch(Functions.CHARS, c) > -1) {
+                    } else if (Arrays.binarySearch(FunctionsTree.CHARS, c) > -1) {
                         int start = pos - 1;
                         int end = start;
-                        for (int i = pos - 1; i >= 0 && Arrays.binarySearch(Functions.CHARS, (char) array[i]) > -1; --i) {
+                        for (int i = pos - 1; i >= 0 && Arrays.binarySearch(FunctionsTree.CHARS, (char) array[i]) > -1; --i) {
                             start = i;
                         }
-                        for (int i = pos; i < length && Arrays.binarySearch(Functions.CHARS, (char) array[i]) > -1; ++i) {
+                        for (int i = pos; i < length && Arrays.binarySearch(FunctionsTree.CHARS, (char) array[i]) > -1; ++i) {
                             end = i;
                         }
-                        if (start > -1 && end >= start && Functions.check(Arrays.copyOfRange(array, start, end + 1)).isPresent()) {
+                        if (start > -1 && end >= start && FunctionsTree.check(Arrays.copyOfRange(array, start, end + 1)).isPresent()) {
                             highlighter.addHighlight(start, end + 1, painterFun);
                         }
                     } else if (length > pos) {
@@ -115,16 +115,16 @@ public class CaretHighlighter {
                             } else {
                                 highlighter.addHighlight(pos, pos + 1, painterErr);
                             }
-                        } else if (Arrays.binarySearch(Functions.CHARS, c) > -1) {
+                        } else if (Arrays.binarySearch(FunctionsTree.CHARS, c) > -1) {
                             int start = pos;
                             int end = start + 1;
-                            for (int i = pos; i >= 0 && Arrays.binarySearch(Functions.CHARS, (char) array[i]) > -1; --i) {
+                            for (int i = pos; i >= 0 && Arrays.binarySearch(FunctionsTree.CHARS, (char) array[i]) > -1; --i) {
                                 start = i;
                             }
-                            for (int i = pos + 1; i < length && Arrays.binarySearch(Functions.CHARS, (char) array[i]) > -1; ++i) {
+                            for (int i = pos + 1; i < length && Arrays.binarySearch(FunctionsTree.CHARS, (char) array[i]) > -1; ++i) {
                                 end = i;
                             }
-                            if (start > -1 && end >= start && Functions.check(Arrays.copyOfRange(array, start, end + 1)).isPresent()) {
+                            if (start > -1 && end >= start && FunctionsTree.check(Arrays.copyOfRange(array, start, end + 1)).isPresent()) {
                                 highlighter.addHighlight(start, end + 1, painterFun);
                             }
                         }

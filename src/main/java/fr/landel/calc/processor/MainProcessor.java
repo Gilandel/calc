@@ -151,12 +151,12 @@ public class MainProcessor {
 
         int pos = len;
 
-        while (--pos >= 0 && Arrays.binarySearch(Functions.CHARS, chars[pos]) > -1) {
+        while (--pos >= 0 && Arrays.binarySearch(FunctionsTree.CHARS, chars[pos]) > -1) {
         }
 
         if (pos < len - 1) {
             final char[] inputFunction = Arrays.copyOfRange(chars, pos + 1, len);
-            final Optional<Functions> function = Functions.check(inputFunction);
+            final Optional<Functions> function = FunctionsTree.check(inputFunction);
             if (function.isPresent()) {
                 return function;
             } else {

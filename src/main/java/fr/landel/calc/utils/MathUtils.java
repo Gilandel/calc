@@ -46,15 +46,6 @@ public final class MathUtils {
         return Math.floor(n * x) / x;
     }
 
-    public static double round2(final double n, final double devider) {
-        return n - Math.floor(n / devider) * devider;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(round2(12, 5.235));
-        System.out.println(12 % 5.235);
-    }
-
     public static Function<Double, Double> applyAngularFunction(final Function<Double, Double> angularFunction) {
         return d -> {
             double angular = angularFunction.apply(d);
@@ -73,5 +64,13 @@ public final class MathUtils {
             }
             return angular;
         };
+    }
+
+    public static boolean isEqualOrGreater(final double v1, final double v2, final int precision) {
+        return v1 > v2 || isEqual(v1, v2, precision);
+    }
+
+    public static boolean isEqual(final double v1, final double v2, final int precision) {
+        return Math.abs(v1 - v2) < 1d / MathUtils.pow10(precision);
     }
 }
