@@ -97,35 +97,42 @@ public class Entity {
     private void parse(final String input) throws ProcessorException {
         Double value;
         SortedSet<Unity> unities;
-        Unity unity;
+        Unity unity = null;
         UnityType unityType = null;
+        boolean accumulable = false;
 
         final SortedMap<Unity, Double> inputs = new TreeMap<>(Unity.COMPARATOR_UNITIES);
 
         Matcher matcher = PATTERN_NUMBER.matcher(input);
         while (matcher.find()) {
-            if (!this.hasUnity() || this.getUnityType().isAccumulable()) {
+            if (unity == null || accumulable) {
                 try {
                     value = Double.parseDouble(matcher.group(GROUP_NUMBER_DECIMAL));
 
                     final String unityGroup = matcher.group(GROUP_NUMBER_UNITY);
                     unities = Unity.getUnities(unityGroup);
 
-                    if (unities.isEmpty()) {
+                    if (unities.isEmpty() && !accumulable) {
                         this.value = value;
 
                     } else if (unities.size() > 1) {
                         throw new ProcessorException(ERROR_UNITY, unityGroup);
 
                     } else {
-                        unity = unities.first();
+                        if (unities.isEmpty()) {
+                            unity = unity.next().orElseThrow(() -> new ProcessorException(ERROR_BAD_FORMAT, input));
+                        } else {
+                            unity = unities.first();
+                        }
+
                         unityType = unity.getType();
+                        accumulable = unityType.isAccumulable();
 
                         if (this.hasUnity() && !Objects.equals(this.getUnityType(), unityType)) {
                             throw new ProcessorException(ERROR_BAD_FORMAT, input);
 
-                        } else if (inputs.containsKey(unity)
-                                || (Unity.INCOMPATIBLE_UNITIES.containsKey(unity) && Unity.INCOMPATIBLE_UNITIES.get(unity).stream().anyMatch(u -> inputs.containsKey(u)))) {
+                        } else if (inputs.containsKey(unity) || (Unity.INCOMPATIBLE_UNITIES.containsKey(unity)
+                                && Unity.INCOMPATIBLE_UNITIES.get(unity).stream().anyMatch(u -> inputs.containsKey(u)))) {
                             throw new ProcessorException(ERROR_INCOMPATIBLE_UNITIES, input);
 
                         } else {

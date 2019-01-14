@@ -87,8 +87,8 @@ public enum Unity {
     static final SortedSet<Unity> DATES_AVG;
     static {
         final SortedSet<Unity> unities = new TreeSet<>(COMPARATOR_UNITIES);
-        unities.addAll(Arrays.asList(DATE_YEARS_AVG, DATE_MONTHS_AVG, DATE_WEEKS, DATE_DAYS, DATE_HOURS, DATE_MINUTES, DATE_SECONDS, DATE_MILLISECONDS, DATE_MICROSECONDS,
-                DATE_NANOSECONDS));
+        unities.addAll(Arrays.asList(DATE_YEARS_AVG, DATE_MONTHS_AVG, DATE_WEEKS, DATE_DAYS, DATE_HOURS, DATE_MINUTES, DATE_SECONDS,
+                DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS));
         DATES_AVG = Collections.unmodifiableSortedSet(unities);
     }
 
@@ -116,8 +116,8 @@ public enum Unity {
     private static final String ERROR_PARSE = "unity '{}' cannot be parsed";
     private static final String ERROR_PARSE_TYPE = "unity '{}' cannot be parsed following previous type: {}";
     private static final String ERROR_BOUNDS = "value of unity '{}' is out of bound: {}";
-    private static final String ERROR_BOUNDS_SUB_SECONDS = Arrays.asList(DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS).stream().map(String::valueOf)
-            .collect(Collectors.joining("' or '"));
+    private static final String ERROR_BOUNDS_SUB_SECONDS = Arrays.asList(DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS).stream()
+            .map(String::valueOf).collect(Collectors.joining("' or '"));
 
     private static final BinaryOperator<Unity> REDUCER = (a, b) -> {
         if (COMPARATOR_UNITIES.compare(a, b) > -1) {
@@ -127,29 +127,40 @@ public enum Unity {
         }
     };
 
+    public static final Map<Unity, Unity> NEXT_UNITY;
     public static final Map<UnityType, Map<Integer, Unity>> INDEX_BY_TYPE;
     public static final Map<Unity, List<Unity>> INCOMPATIBLE_UNITIES;
     static {
-        final Map<UnityType, Map<Integer, Unity>> index = new HashMap<>();
+        final Map<Unity, Unity> nextUnity = new HashMap<>();
+        Unity previous = null;
         for (Unity unity : Unity.values()) {
-            Map<Integer, Unity> unities = MapUtils.getOrPutIfAbsent(index, unity.type, HashMap::new);
+            if (previous != null && unity.getType().equals(previous.getType())) {
+                nextUnity.put(previous, unity);
+            }
+            previous = unity;
+        }
+        NEXT_UNITY = Collections.unmodifiableMap(nextUnity);
+
+        final Map<UnityType, Map<Integer, Unity>> indexByType = new HashMap<>();
+        for (Unity unity : Unity.values()) {
+            Map<Integer, Unity> unities = MapUtils.getOrPutIfAbsent(indexByType, unity.type, HashMap::new);
             unities.put(unity.index, unity);
         }
-        INDEX_BY_TYPE = Collections.unmodifiableMap(index);
+        INDEX_BY_TYPE = Collections.unmodifiableMap(indexByType);
 
-        final Map<Unity, List<Unity>> map = new HashMap<>();
+        final Map<Unity, List<Unity>> incompatibleUnities = new HashMap<>();
         for (Unity unity : Unity.values()) {
             if (unity.incompatibleUnities.length > 0) {
-                List<Unity> unities = MapUtils.getOrPutIfAbsent(map, unity, ArrayList::new);
+                List<Unity> unities = MapUtils.getOrPutIfAbsent(incompatibleUnities, unity, ArrayList::new);
                 Map<Integer, Unity> unitiesByIndex = INDEX_BY_TYPE.get(unity.type);
                 for (int incompatibleUnityIndex : unity.incompatibleUnities) {
                     Unity incompatibleUnity = unitiesByIndex.get(incompatibleUnityIndex);
                     unities.add(incompatibleUnity);
-                    MapUtils.getOrPutIfAbsent(map, incompatibleUnity, ArrayList::new).add(unity);
+                    MapUtils.getOrPutIfAbsent(incompatibleUnities, incompatibleUnity, ArrayList::new).add(unity);
                 }
             }
         }
-        INCOMPATIBLE_UNITIES = Collections.unmodifiableMap(map);
+        INCOMPATIBLE_UNITIES = Collections.unmodifiableMap(incompatibleUnities);
     }
 
     private final UnityType type;
@@ -159,8 +170,8 @@ public enum Unity {
     private final Function<Double, Double> toUnity;
     private final int[] incompatibleUnities;
 
-    private Unity(final int index, final UnityType type, final Function<Double, Double> fromUnity, final Function<Double, Double> toUnity, final int[] incompatibleUnities,
-            final String... symbols) {
+    private Unity(final int index, final UnityType type, final Function<Double, Double> fromUnity, final Function<Double, Double> toUnity,
+            final int[] incompatibleUnities, final String... symbols) {
         this.index = index;
         this.type = type;
         this.fromUnity = fromUnity;
@@ -171,7 +182,8 @@ public enum Unity {
         this.type.add(this);
     }
 
-    private Unity(final int index, final UnityType type, final Function<Double, Double> fromUnity, final Function<Double, Double> toUnity, final String... symbols) {
+    private Unity(final int index, final UnityType type, final Function<Double, Double> fromUnity, final Function<Double, Double> toUnity,
+            final String... symbols) {
         this(index, type, fromUnity, toUnity, new int[0], symbols);
     }
 
@@ -201,6 +213,10 @@ public enum Unity {
 
     public String[] getSymbols() {
         return Arrays.copyOf(this.symbols, this.symbols.length);
+    }
+
+    public Optional<Unity> next() {
+        return Optional.ofNullable(NEXT_UNITY.get(this));
     }
 
     public static Unity min(final SortedSet<Unity> left, final SortedSet<Unity> right) {
