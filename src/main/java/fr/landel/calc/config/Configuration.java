@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
@@ -45,7 +44,7 @@ public final class Configuration extends ConcurrentHashMap<String, String> {
     private static final Configuration PROPS = new Configuration();
     static {
         if (FILE.exists()) {
-            PROPS.load(FILE.toPath());
+            PROPS.load();
 
             // remove old keys
             String key;
@@ -97,8 +96,8 @@ public final class Configuration extends ConcurrentHashMap<String, String> {
         super();
     }
 
-    public void load(final Path path) {
-        try (final BufferedReader br = Files.newBufferedReader(path)) {
+    public void load() {
+        try (final BufferedReader br = Files.newBufferedReader(FILE.toPath())) {
             br.lines().forEach(this::put);
 
         } catch (IOException e) {
@@ -119,8 +118,8 @@ public final class Configuration extends ConcurrentHashMap<String, String> {
         }
     }
 
-    public void store(final Path path, final String comment) {
-        try (BufferedWriter bw = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+    public void store(final String comment) {
+        try (BufferedWriter bw = Files.newBufferedWriter(FILE.toPath(), StandardCharsets.UTF_8)) {
             bw.append(COMMENT_PREFIX).append(comment);
             bw.newLine();
             bw.append(COMMENT_PREFIX).append(new Date().toString());
@@ -148,7 +147,7 @@ public final class Configuration extends ConcurrentHashMap<String, String> {
 
             if (FILE.exists()) {
 
-                PROPS.store(FILE.toPath(), I18n.TITLE.getI18n() + " configuration");
+                PROPS.store(I18n.TITLE.getI18n() + " configuration");
 
                 LOGGER.info("Configuration saved");
 
