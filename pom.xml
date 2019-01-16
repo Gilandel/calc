@@ -131,7 +131,7 @@
 		<failsafe.plugin.version>3.0.0-M3</failsafe.plugin.version>
 		<surefire.plugin.version>3.0.0-M3</surefire.plugin.version>
 		<jacoco.plugin.version>0.8.2</jacoco.plugin.version>
-		<sonar.plugin.version>3.5.0.1254</sonar.plugin.version>
+		<sonar.plugin.version>3.6.0.1398</sonar.plugin.version>
 
 		<gpg.plugin.version>1.6</gpg.plugin.version>
 		<nexus.staging.plugin.version>1.6.8</nexus.staging.plugin.version>
