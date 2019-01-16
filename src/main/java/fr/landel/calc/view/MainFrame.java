@@ -753,9 +753,12 @@ public class MainFrame extends JFrame implements Dialog {
         mainFrameList.clear();
     }
 
-    public void setText(final String text) {
-        if (text != null & !text.isBlank()) {
+    public void setText(final String text, final boolean forceEmpty) {
+        if (text != null && !text.isBlank()) {
             textAreaFormula.setText(text.trim());
+            textAreaFormula.requestFocus();
+        } else if (forceEmpty && !textAreaFormula.getText().isEmpty()) {
+            textAreaFormula.setText(StringUtils.EMPTY);
             textAreaFormula.requestFocus();
         }
     }
@@ -839,7 +842,7 @@ public class MainFrame extends JFrame implements Dialog {
             if (draftFormula == null) {
                 draftFormula = textAreaFormula.getText();
             }
-            setText(screenList.getSelectedValue());
+            setText(screenList.getSelectedValue(), false);
         }
     }
 
@@ -854,26 +857,26 @@ public class MainFrame extends JFrame implements Dialog {
             type = mainFrameList.getFormulaType(screenList.getSelectedIndex());
 
             if (type == 0 || type == 1) {
-                setText(screenList.getSelectedValue());
+                setText(screenList.getSelectedValue(), false);
             } else if (index < size - 1) {
                 mainFrameList.setSelectedIndex(++index);
 
                 type = mainFrameList.getFormulaType(screenList.getSelectedIndex());
 
                 if (type == 0 || type == 1) {
-                    setText(screenList.getSelectedValue());
+                    setText(screenList.getSelectedValue(), false);
                 }
             } else if (draftFormula != null) { // TODO set empty text most bottom and not last
-                setText(draftFormula);
+                setText(draftFormula, false);
                 screenList.removeSelectionInterval(0, size);
             } else {
 
                 mainFrameList.setSelectedIndex(--index);
 
-                setText(screenList.getSelectedValue());
+                setText(screenList.getSelectedValue(), false);
             }
-        } else if (draftFormula != null) {
-            setText(draftFormula);
+        } else {
+            setText(draftFormula, true);
             screenList.removeSelectionInterval(0, size);
         }
     }

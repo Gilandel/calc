@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import fr.landel.calc.utils.StringUtils;
 
@@ -35,7 +37,8 @@ public class ResultBuilder {
     }
 
     public ResultBuilder append(final String text) throws ProcessorException {
-        if (formula.length() > 0 && Arrays.binarySearch(NUMBER, formula.charAt(formula.length() - 1)) > -1 && Arrays.binarySearch(NUMBER, text.charAt(0)) > -1) {
+        if (formula.length() > 0 && Arrays.binarySearch(NUMBER, formula.charAt(formula.length() - 1)) > -1
+                && Arrays.binarySearch(NUMBER, text.charAt(0)) > -1) {
             throw new ProcessorException(ERROR_CONCAT, formula, text);
         }
         formula.append(text);
@@ -110,6 +113,50 @@ public class ResultBuilder {
         String result = formula.toString();
         for (Entry<String, Entity> entry : this.entities.entrySet()) {
             result = result.replace(entry.getKey(), entry.getValue().toString());
+        }
+
+        return result;
+    }
+
+    public static ResultBuilder from(final String text) throws ProcessorException {
+        return new ResultBuilder().append(text);
+    }
+
+    public static ResultBuilder from(final Entity entity) throws ProcessorException {
+        return new ResultBuilder().append(entity);
+    }
+
+    public static ResultBuilder from(final String block, final ResultBuilder input) throws ProcessorException {
+        final ResultBuilder result = new ResultBuilder();
+
+        if (block.indexOf(StringUtils.ID_OPEN) < 0 || !input.hasEntities()) {
+            return result.append(block);
+        }
+
+        final SortedMap<Integer, Entry<String, Entity>> positionsEntity = new TreeMap<>(Integer::compareTo);
+        int start;
+        for (Entry<String, Entity> entry : input.entities.entrySet()) {
+            start = block.indexOf(entry.getKey());
+            if (start > -1) {
+                positionsEntity.put(start, entry);
+            }
+        }
+
+        if (!positionsEntity.isEmpty()) {
+            start = 0;
+            for (Entry<Integer, Entry<String, Entity>> entry : positionsEntity.entrySet()) {
+                if (entry.getKey() > start) {
+                    result.append(block.substring(start, entry.getKey()));
+                }
+
+                result.append(entry.getValue().getValue());
+                start += entry.getValue().getKey().length();
+            }
+            if (start < block.length()) {
+                result.append(block.substring(start));
+            }
+        } else {
+            result.append(block);
         }
 
         return result;

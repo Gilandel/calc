@@ -23,8 +23,6 @@ public class MainProcessor {
     private static final String ERROR_RESTRICTED = "expression cannot contains restricted characters: {}";
     private static final String RESTRICTED_TEXT = RESTRICTED_LIST.stream().collect(StringUtils.COMMA_JOINING_COLLECTOR);
 
-    private static final FunctionThrowable<String, Entity, ProcessorException> PROCESSOR = s -> new FormulaProcessor(s).process();
-
     private static boolean radian = true;
     private static boolean exact = false;
     private static boolean scientific = false;
@@ -96,7 +94,7 @@ public class MainProcessor {
             throw new ProcessorException(ERROR_RESTRICTED, input, RESTRICTED_TEXT);
         }
 
-        return processFormula(new ResultBuilder().append(input));
+        return processFormula(ResultBuilder.from(input));
     }
 
     // must return an entity (3h/2)>>i
@@ -138,11 +136,11 @@ public class MainProcessor {
                 final Entity[] entities = Arrays.stream(block.split(StringUtils.SEMICOLON)).filter(StringUtils::isNotEmpty).map(processor)
                         .toArray(Entity[]::new);
 
-                Entity entity = new FunctionProcessor(function.get(), entities).process();
+                final Entity entity = new FunctionProcessor(function.get(), entities).process();
                 result.append(input.substring(0, parenthesisOpen - function.get().getFunction().length()));
                 result.append(entity);
             } else {
-                result.append(prefix).append(PROCESSOR.apply(block));
+                result.append(prefix).append(new FormulaProcessor(ResultBuilder.from(block, input)).process());
             }
         } else {
             result.append(block);

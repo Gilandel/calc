@@ -80,7 +80,7 @@ public class MainFrameList {
             if (type == 0 || type == 1) {
                 final String text = getValue(screenList, index).trim();
                 if (parent.isControlDown()) {
-                    parent.setText(text);
+                    parent.setText(text, false);
                 } else {
                     parent.insertText(text);
                 }
@@ -378,7 +378,8 @@ public class MainFrameList {
         }
     }
 
-    private static void setColor(final JList<String> list, final int index, final Color background, final Color front, final Color backgroundSelected, final Color frontSelected) {
+    private static void setColor(final JList<String> list, final int index, final Color background, final Color front, final Color backgroundSelected,
+            final Color frontSelected) {
         int len = getSize(list);
         int i = index != -1 ? index : len - 1;
         if (i >= 0 && i < len) {
@@ -435,7 +436,8 @@ public class MainFrameList {
             setOpaque(true);
         }
 
-        public Component getListCellRendererComponent(final JList<? extends T> list, final T value, final int index, final boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(final JList<? extends T> list, final T value, final int index, final boolean isSelected,
+                boolean cellHasFocus) {
             setText(value.toString());
             if (index < aCellColor.length) {
                 setBackground(isSelected ? aCellColor[index][2] : aCellColor[index][0]);
