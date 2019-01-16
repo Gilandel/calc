@@ -14,7 +14,7 @@ public class ResultBuilder {
 
     // private static final Logger LOGGER = new Logger(Result.class);
 
-    private static final String FIRST_ID = idBuilder(0);
+    public static final String FIRST_ID = idBuilder(0);
 
     private static final String ERROR_CONCAT = "cannot evaluate: {} and {}";
 
@@ -150,7 +150,7 @@ public class ResultBuilder {
                 }
 
                 result.append(entry.getValue().getValue());
-                start += entry.getValue().getKey().length();
+                start += entry.getKey() + entry.getValue().getKey().length();
             }
             if (start < block.length()) {
                 result.append(block.substring(start));

@@ -66,8 +66,7 @@ public class Formula implements Serializable {
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder(this.formula);
-        this.result.ifPresent(
-                result -> builder.append("__STATUS__").append(result.isSuccess()).append("__RESULT__").append(result.getResult()));
+        this.result.ifPresent(result -> builder.append(", success: ").append(result.isSuccess()).append(", result: ").append(result.getResult()));
         return builder.toString();
     }
 }

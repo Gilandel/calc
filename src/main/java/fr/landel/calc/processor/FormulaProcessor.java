@@ -200,6 +200,8 @@ public class FormulaProcessor implements Processor {
                     used.put(right.getIndex(), result);
                 }
             }
+        } else if (this.result != null && this.result.hasEntities() && ResultBuilder.FIRST_ID.equals(this.formula)) {
+            result = this.result.firstEntity().get();
         } else {
             result = new Entity(0, this.formula);
         }

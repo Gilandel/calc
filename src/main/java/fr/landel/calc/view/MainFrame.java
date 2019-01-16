@@ -875,7 +875,7 @@ public class MainFrame extends JFrame implements Dialog {
 
                 setText(screenList.getSelectedValue(), false);
             }
-        } else {
+        } else if (draftFormula != null) {
             setText(draftFormula, true);
             screenList.removeSelectionInterval(0, size);
         }

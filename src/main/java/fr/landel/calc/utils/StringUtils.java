@@ -49,6 +49,16 @@ public final class StringUtils {
         }
     }
 
+    public static int countStart(final String text, final String stringToFind) {
+        int fromIndex = 0, lastIndex = 0;
+        int len = stringToFind.length();
+        int count = 0;
+        while ((fromIndex = text.indexOf(stringToFind, fromIndex) + 1) > 0 && ((lastIndex += len) == fromIndex)) {
+            ++count;
+        }
+        return count;
+    }
+
     public static int count(final String text, final String stringToFind) {
         int fromIndex = 0;
         int count = 0;

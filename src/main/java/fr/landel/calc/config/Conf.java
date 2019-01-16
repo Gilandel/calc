@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fr.landel.calc.utils.Logger;
@@ -34,7 +33,9 @@ public enum Conf {
     HISTORY_MAX("history.max", Integer.class, 100),
     HISTORY_SAVE("history.save", Boolean.class, true),
 
-    HISTORY_FORMULA("history.formula.", Pattern.compile("^(.*?)(__STATUS__(true|false)__RESULT__(.*?))?$"), null);
+    HISTORY_FORMULA("history.formula.{}", String.class, null),
+    HISTORY_FORMULA_STATUS("history.formula.{}.status", Boolean.class, true),
+    HISTORY_FORMULA_RESULT("history.formula.{}.result", String.class, null);
 
     private static final Logger LOGGER = new Logger(Conf.class);
 
@@ -116,33 +117,34 @@ public enum Conf {
     }
 
     public static void clearFormulas() {
-        Configuration.clear(Conf.HISTORY_FORMULA.getKey());
+        Configuration.clear(StringUtils.inject(Conf.HISTORY_FORMULA.getKey(), StringUtils.EMPTY));
     }
 
     public static void setFormula(final int index, final Formula formula) {
-        Configuration.set(Conf.HISTORY_FORMULA, index, formula);
+        Configuration.set(Conf.HISTORY_FORMULA, index, formula.getFormula());
+        formula.getResult().ifPresent(result -> {
+            Configuration.set(Conf.HISTORY_FORMULA_STATUS, index, String.valueOf(result.isSuccess()));
+            Configuration.set(Conf.HISTORY_FORMULA_RESULT, index, result.getResult());
+        });
     }
 
     public static List<Formula> getFormulas() {
 
-        final Conf key = Conf.HISTORY_FORMULA;
         final int max = HISTORY_MAX.getInt().get();
-
-        final int formulaGroup = 1;
-        final int statusGroup = 3;
-        final int resultGroup = 4;
 
         final List<Formula> formulas = new LinkedList<>();
 
-        String value;
-        Matcher matcher;
+        String formula, success, result;
         for (int index = 0; index < max; index++) {
-            value = Configuration.get(key, index);
+            formula = Configuration.get(Conf.HISTORY_FORMULA, index);
+            success = Configuration.get(Conf.HISTORY_FORMULA_STATUS, index);
+            result = Configuration.get(Conf.HISTORY_FORMULA_RESULT, index);
 
-            if (value != null && value.length() > 0) {
-                matcher = key.pattern.matcher(value);
-                if (matcher.find()) {
-                    formulas.add(new Formula(matcher.group(formulaGroup), Boolean.parseBoolean(matcher.group(statusGroup)), matcher.group(resultGroup)));
+            if (formula != null && !formula.isBlank()) {
+                if (result != null && !result.isBlank()) {
+                    formulas.add(new Formula(formula, Boolean.parseBoolean(success), result));
+                } else {
+                    formulas.add(new Formula(formula));
                 }
             } else {
                 break;
