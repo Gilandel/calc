@@ -115,7 +115,7 @@ public final class DateUtils {
 
             Double diff = Double.valueOf(duration.toNanos());
 
-            return new Entity(a.getIndex(), diff, unity);
+            return new Entity(a.getIndex(), diff, duration, unity);
         }
         return new Entity(a.getIndex(), date.toEpochSecond(ZoneOffset.UTC) * NANO_PER_SECOND + date.getNano(), date, unity);
     }

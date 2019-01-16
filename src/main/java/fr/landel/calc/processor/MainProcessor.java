@@ -7,6 +7,7 @@ import java.util.Optional;
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Formula;
 import fr.landel.calc.function.FunctionThrowable;
+import fr.landel.calc.utils.Logger;
 import fr.landel.calc.utils.StringUtils;
 
 public class MainProcessor {
@@ -14,6 +15,8 @@ public class MainProcessor {
     // TODO corriger detection des caracteres avant fonction (2e())
     // TODO gerer radian / exact / scientific
     // TODO remonter les erreurs traduites
+
+    private static final Logger LOGGER = new Logger(MainProcessor.class);
 
     private static final List<String> RESTRICTED_LIST = Arrays.asList(StringUtils.ID_OPEN, StringUtils.ID_CLOSE);
 
@@ -75,7 +78,13 @@ public class MainProcessor {
             throw new ProcessorException("Input formula cannot be null, empty or blank");
         }
 
-        return new Formula(input, true, processFormula(removeAllSpaces(input)));
+        final long start = System.currentTimeMillis();
+
+        final Formula result = new Formula(input, true, processFormula(removeAllSpaces(input)));
+
+        LOGGER.info("'{}' processed in {} ms", input, System.currentTimeMillis() - start);
+
+        return result;
     }
 
     private String removeAllSpaces(final String input) {
@@ -126,7 +135,8 @@ public class MainProcessor {
                     }
                 };
 
-                final Entity[] entities = Arrays.stream(block.split(StringUtils.SEMICOLON)).filter(StringUtils::isNotEmpty).map(processor).toArray(Entity[]::new);
+                final Entity[] entities = Arrays.stream(block.split(StringUtils.SEMICOLON)).filter(StringUtils::isNotEmpty).map(processor)
+                        .toArray(Entity[]::new);
 
                 Entity entity = new FunctionProcessor(function.get(), entities).process();
                 result.append(input.substring(0, parenthesisOpen - function.get().getFunction().length()));
@@ -177,7 +187,7 @@ public class MainProcessor {
         System.out.println(processor.processFormula("3*(3+2)"));
         System.out.println(processor.processFormula("((3+2)*pow(9/abs(3);1-5))-2"));
         System.out.println(processor.processFormula("15in>>m"));
-        System.out.println(processor.processFormula("(15h+12s)>>his")); 
+        System.out.println(processor.processFormula("(15h+12s)>>his"));
         System.out.println(processor.processFormula("5K>>C"));
         System.out.println(processor.processFormula("5C>>K"));
         System.out.println(processor.processFormula("15/(1200/3937/12)"));

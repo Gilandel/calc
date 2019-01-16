@@ -642,7 +642,8 @@ public class MainFrame extends JFrame implements Dialog {
         return subMenu;
     }
 
-    public JRadioButtonMenuItem add(final JMenu menu, final ButtonGroup group, final JRadioButtonMenuItem subMenu, final ActionListener actionListener) {
+    public JRadioButtonMenuItem add(final JMenu menu, final ButtonGroup group, final JRadioButtonMenuItem subMenu,
+            final ActionListener actionListener) {
 
         menu.add(subMenu);
         group.add(subMenu);
@@ -862,7 +863,7 @@ public class MainFrame extends JFrame implements Dialog {
                 if (type == 0 || type == 1) {
                     setText(screenList.getSelectedValue());
                 }
-            } else if (draftFormula != null) {
+            } else if (draftFormula != null) { // TODO set empty text most bottom and not last
                 setText(draftFormula);
                 screenList.removeSelectionInterval(0, size);
             } else {
