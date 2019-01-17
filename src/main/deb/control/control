@@ -1,0 +1,8 @@
+Package: [[calc]]
+Version: [[0.0.1-SNAPSHOT]
+Section: misc
+Priority: low
+Architecture: all
+Description: [[calculator]]
+Maintainer: Gilles Landel <gilles@landel.fr>
+Depends: default-jre | java11-runtime
