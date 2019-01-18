@@ -95,60 +95,26 @@ public class Entity {
     }
 
     private void parse(final String input) throws ProcessorException {
-        Double value;
-        SortedSet<Unity> unities;
-        Unity unity = null;
-        UnityType unityType = null;
-        boolean accumulable = false;
-
+        final EntityTmp entity = new EntityTmp();
         final SortedMap<Unity, Double> inputs = new TreeMap<>(Unity.COMPARATOR_UNITIES);
 
-        Matcher matcher = PATTERN_NUMBER.matcher(input);
+        final Matcher matcher = PATTERN_NUMBER.matcher(input);
         while (matcher.find()) {
-            if (unity == null || accumulable) {
+            if (entity.unity == null || entity.accumulable) {
                 try {
-                    value = Double.parseDouble(matcher.group(GROUP_NUMBER_DECIMAL));
+                    entity.value = Double.parseDouble(matcher.group(GROUP_NUMBER_DECIMAL));
 
                     final String unityGroup = matcher.group(GROUP_NUMBER_UNITY);
-                    unities = Unity.getUnities(unityGroup);
+                    entity.unities = Unity.getUnities(unityGroup);
 
-                    if (unities.isEmpty() && !accumulable) {
-                        this.value = value;
+                    if (entity.unities.isEmpty() && !entity.accumulable) {
+                        this.value = entity.value;
 
-                    } else if (unities.size() > 1) {
+                    } else if (entity.unities.size() > 1) {
                         throw new ProcessorException(ERROR_UNITY, unityGroup);
 
                     } else {
-                        if (unities.isEmpty()) {
-                            unity = unity.next().orElseThrow(() -> new ProcessorException(ERROR_BAD_FORMAT, input));
-                        } else {
-                            unity = unities.first();
-                        }
-
-                        unityType = unity.getType();
-                        accumulable = unityType.isAccumulable();
-
-                        if (this.hasUnity() && !Objects.equals(this.getUnityType(), unityType)) {
-                            throw new ProcessorException(ERROR_BAD_FORMAT, input);
-
-                        } else if (inputs.containsKey(unity) || (Unity.INCOMPATIBLE_UNITIES.containsKey(unity)
-                                && Unity.INCOMPATIBLE_UNITIES.get(unity).stream().anyMatch(u -> inputs.containsKey(u)))) {
-                            throw new ProcessorException(ERROR_INCOMPATIBLE_UNITIES, input);
-
-                        } else {
-                            inputs.put(unity, value);
-                        }
-
-                        if (!UnityType.DATE.equals(unityType)) {
-                            this.getUnities().add(unity);
-                            value = unity.fromUnity(value);
-
-                            if (this.value == null) {
-                                this.value = value;
-                            } else {
-                                this.value += value;
-                            }
-                        }
+                        this.check(entity, input, inputs);
                     }
                 } catch (NumberFormatException e) {
                     LOGGER.error(e, ERROR_PARSE, input);
@@ -159,7 +125,7 @@ public class Entity {
             }
         }
 
-        if (UnityType.DATE.equals(unityType)) {
+        if (UnityType.DATE.equals(entity.unityType)) {
             loadDuration(inputs);
             loadLocalDateTime(inputs);
 
@@ -172,6 +138,40 @@ public class Entity {
         }
         if (this.duration == null) {
             this.duration = Optional.empty();
+        }
+    }
+
+    private void check(final EntityTmp entity, final String input, final SortedMap<Unity, Double> inputs) throws ProcessorException {
+
+        if (entity.unities.isEmpty()) {
+            entity.unity = entity.unity.next().orElseThrow(() -> new ProcessorException(ERROR_BAD_FORMAT, input));
+        } else {
+            entity.unity = entity.unities.first();
+        }
+
+        entity.unityType = entity.unity.getType();
+        entity.accumulable = entity.unityType.isAccumulable();
+
+        if (this.hasUnity() && !Objects.equals(this.getUnityType(), entity.unityType)) {
+            throw new ProcessorException(ERROR_BAD_FORMAT, input);
+
+        } else if (inputs.containsKey(entity.unity) || (Unity.INCOMPATIBLE_UNITIES.containsKey(entity.unity)
+                && Unity.INCOMPATIBLE_UNITIES.get(entity.unity).stream().anyMatch(inputs::containsKey))) {
+            throw new ProcessorException(ERROR_INCOMPATIBLE_UNITIES, input);
+
+        } else {
+            inputs.put(entity.unity, entity.value);
+        }
+
+        if (!UnityType.DATE.equals(entity.unityType)) {
+            this.getUnities().add(entity.unity);
+            entity.value = entity.unity.fromUnity(entity.value);
+
+            if (this.value == null) {
+                this.value = entity.value;
+            } else {
+                this.value += entity.value;
+            }
         }
     }
 
@@ -323,6 +323,14 @@ public class Entity {
     @Override
     public String toString() {
         return this.getUnityType().format(this);
+    }
+
+    private class EntityTmp {
+        Double value;
+        Unity unity;
+        UnityType unityType;
+        boolean accumulable;
+        SortedSet<Unity> unities;
     }
 
     public static void main(String[] args) throws ProcessorException {
