@@ -14,10 +14,13 @@ public final class StringUtils {
     public static final String ID_OPEN = "{";
     public static final String ID_CLOSE = "}";
 
+    public static final String DOLLAR = "$";
+
     public static final String EMPTY = "";
     public static final String SPACE = " ";
     public static final String INJECT_FIELD = "{}";
     public static final String COMMA = ",";
+    public static final String DOT = ".";
     public static final String SEMICOLON = ";";
     public static final String COMMA_SPACE = COMMA + SPACE;
     public static final String SEMICOLON_SPACE = SEMICOLON + SPACE;
@@ -154,5 +157,13 @@ public final class StringUtils {
 
     public static Character[] toChars(final String string) {
         return string.chars().mapToObj(i -> (char) i).toArray(Character[]::new);
+    }
+
+    public static String replaceCommaByDot(final String input) {
+        return input.replace(COMMA, DOT);
+    }
+
+    public static String removeAllSpaces(final String input) {
+        return input.replace(SPACE, EMPTY);
     }
 }

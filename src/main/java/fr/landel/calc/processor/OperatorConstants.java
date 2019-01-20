@@ -13,17 +13,21 @@ public interface OperatorConstants {
     BiPredicate<Integer, Integer> ALL_EXCEPT_LAST = (index, end) -> index > -1 && index < end;
     BiPredicate<Integer, Integer> ALL_EXCEPT_FIRST_AND_LAST = (index, end) -> index > 0 && index < end;
 
-    BiPredicate<Entity, Entity> IS_LEFT_NUMBER_AND_RIGHT_NOT_UNITY = (a, b) -> UnityType.NUMBER.equals(a.getUnityType()) && !b.isUnity() && !b.isDate();
-    BiPredicate<Entity, Entity> IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER = (a, b) -> !a.isUnity() && !a.isDate() && UnityType.NUMBER.equals(b.getUnityType());
+    BiPredicate<Entity, Entity> IS_LEFT_NUMBER_AND_RIGHT_NOT_UNITY = (a, b) -> UnityType.NUMBER.equals(a.getUnityType()) && !b.isUnity()
+            && !b.isDate();
+    BiPredicate<Entity, Entity> IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER = (a, b) -> !a.isUnity() && !a.isDate()
+            && UnityType.NUMBER.equals(b.getUnityType());
     BiPredicate<Entity, Entity> IS_ANY_NUMBER = IS_LEFT_NUMBER_AND_RIGHT_NOT_UNITY.or(IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER);
     BiPredicate<Entity, Entity> CHECK_ADD = (a, b) -> {
         return !a.isUnity() && a.getUnityType().equals(b.getUnityType())
                 && (!UnityType.DATE.equals(a.getUnityType()) || (a.isDate() != b.isDate()) || (a.isDuration() && b.isDuration()));
     };
     BiPredicate<Entity, Entity> CHECK_SUBSTRACT = (a, b) -> {
-        return !a.isUnity() && a.getUnityType().equals(b.getUnityType()) && (!UnityType.DATE.equals(a.getUnityType()) || (a.isDuration() && b.isDuration()) || a.isDate());
+        return !a.isUnity() && a.getUnityType().equals(b.getUnityType())
+                && (!UnityType.DATE.equals(a.getUnityType()) || (a.isDuration() && b.isDuration()) || a.isDate());
     };
     BiPredicate<Entity, Entity> IS_CONVERTIBLE = (a, b) -> !a.isUnity() && b.isUnity() && a.getUnityType().equals(b.getUnityType());
+    BiPredicate<Entity, Entity> IS_VARIABLE = (a, b) -> a.isVariable() && !b.isUnity();
 
     // FUNCTIONS
 
@@ -64,6 +68,8 @@ public interface OperatorConstants {
         }
     };
     BiFunction<Entity, Entity, Entity> FUN_MODULO = (a, b) -> new Entity(a.getIndex(), a.fromUnity(a.toUnity() % b.getValue()), a.getUnities());
-    BiFunction<Entity, Entity, Entity> FUN_POWER = (a, b) -> new Entity(a.getIndex(), a.fromUnity(Math.pow(a.toUnity(), b.getValue())), a.getUnities());
+    BiFunction<Entity, Entity, Entity> FUN_POWER = (a, b) -> new Entity(a.getIndex(), a.fromUnity(Math.pow(a.toUnity(), b.getValue())),
+            a.getUnities());
     BiFunction<Entity, Entity, Entity> FUN_CONVERT = (a, b) -> a.setUnities(b.getUnities());
+    BiFunction<Entity, Entity, Entity> FUN_VARIABLE = (a, b) -> a.setVariable(b);
 }

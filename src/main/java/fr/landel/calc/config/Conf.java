@@ -5,9 +5,12 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import fr.landel.calc.processor.Entity;
+import fr.landel.calc.processor.ProcessorException;
 import fr.landel.calc.utils.Logger;
 import fr.landel.calc.utils.StringUtils;
 
@@ -26,16 +29,21 @@ public enum Conf {
     EXTENDED_STATE("frame.extendedState", Integer.class, Frame.NORMAL),
     KEYBOARD("frame.keyboard", Boolean.class, true),
     LOG_MODE("log.mode", Pattern.compile("^(" + Logger.LOG_MODE_CONSOLE + "|" + Logger.LOG_MODE_FILE + ")$"), Logger.LOG_MODE_CONSOLE),
-    DECIMAL_SEPARATOR("separator.decimal", String.class, "."),
-    THOUSAND_SEPARATOR("separator.thousand", String.class, ","),
-    UNITY_FULL_LENGTH("unity.fullLength", Boolean.class, false),
+    UNITY_FULL_LENGTH("unity.fullLength", Boolean.class, true),
+    UNITY_SPACE("unity.space", Boolean.class, true),
 
     HISTORY_MAX("history.max", Integer.class, 100),
     HISTORY_SAVE("history.save", Boolean.class, true),
 
     HISTORY_FORMULA("history.formula.{}", String.class, null),
     HISTORY_FORMULA_STATUS("history.formula.{}.status", Boolean.class, true),
-    HISTORY_FORMULA_RESULT("history.formula.{}.result", String.class, null);
+    HISTORY_FORMULA_RESULT("history.formula.{}.result", String.class, null),
+
+    VARIABLE_MAX("variable.max", Integer.class, 25),
+    VARIABLE_SAVE("variable.save", Boolean.class, true),
+
+    VARIABLE_KEY("variable.{}.key", Entity.PATTERN_VARIABLE, null),
+    VARIABLE_VALUE("variable.{}.value", String.class, null);
 
     private static final Logger LOGGER = new Logger(Conf.class);
 
@@ -152,6 +160,38 @@ public enum Conf {
         }
 
         return formulas;
+    }
+
+    public static void saveVariables() {
+        int index = 0;
+        for (Entry<String, Optional<Entity>> entry : Entity.VARIABLES.entrySet()) {
+            Configuration.set(Conf.VARIABLE_KEY, index, entry.getKey());
+            if (entry.getValue().isPresent()) {
+                Configuration.set(Conf.VARIABLE_VALUE, index, entry.getValue().get().toString());
+            }
+            ++index;
+        }
+    }
+
+    public static void loadVariables() throws ProcessorException {
+
+        final int max = VARIABLE_MAX.getInt().get();
+
+        String key, value;
+        for (int index = 0; index < max; index++) {
+            key = Configuration.get(Conf.VARIABLE_KEY, index);
+            value = Configuration.get(Conf.VARIABLE_VALUE, index);
+
+            if (key != null && !key.isBlank()) {
+                if (value != null) {
+                    Entity.VARIABLES.put(key, Optional.ofNullable(new Entity(0, StringUtils.replaceCommaByDot(StringUtils.removeAllSpaces(value)))));
+                } else {
+                    Entity.VARIABLES.put(key, Optional.empty());
+                }
+            } else {
+                break;
+            }
+        }
     }
 
     public static Locale getLocale() {

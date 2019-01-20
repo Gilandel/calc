@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import fr.landel.calc.config.I18n;
 import fr.landel.calc.utils.StringUtils;
 
 public class ResultBuilder {
@@ -15,8 +16,6 @@ public class ResultBuilder {
     // private static final Logger LOGGER = new Logger(Result.class);
 
     public static final String FIRST_ID = idBuilder(0);
-
-    private static final String ERROR_CONCAT = "cannot evaluate: {} and {}";
 
     // TODO correct missing operator
     private static final char[] NUMBER = "0123456789".toCharArray();
@@ -39,7 +38,7 @@ public class ResultBuilder {
     public ResultBuilder append(final String text) throws ProcessorException {
         if (formula.length() > 0 && Arrays.binarySearch(NUMBER, formula.charAt(formula.length() - 1)) > -1
                 && Arrays.binarySearch(NUMBER, text.charAt(0)) > -1) {
-            throw new ProcessorException(ERROR_CONCAT, formula, text);
+            throw new ProcessorException(I18n.ERROR_RESULT_EVAL, formula, text);
         }
         formula.append(text);
         length += text.length();
@@ -48,7 +47,7 @@ public class ResultBuilder {
 
     public ResultBuilder append(final Entity entity) throws ProcessorException {
         if (formula.length() > 0 && Arrays.binarySearch(NUMBER, formula.charAt(formula.length() - 1)) > -1) {
-            throw new ProcessorException(ERROR_CONCAT, formula, entity);
+            throw new ProcessorException(I18n.ERROR_RESULT_EVAL, formula, entity);
         }
         final String id = idBuilder(this.id++);
         entities.put(id, entity);

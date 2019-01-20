@@ -12,29 +12,30 @@ import fr.landel.calc.utils.StringUtils;
 public enum UnityType {
     // TODO manage output conf (exact, scientific, precision) remove
     // stringify
+    VARIABLE(false, v -> v.getVariable()),
     NUMBER(false, v -> stringify(v.getValue())),
     DATE(true, v -> {
         final StringBuilder builder = new StringBuilder();
         if (!v.isUnity()) {
             appendDate(builder, v.getValue(), v.getUnities());
-            return builder.toString();
         } else {
-            return builder.append(v.firstUnity().firstSymbol()).toString();
+            builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityFullLength()));
         }
+        return builder.toString();
     }),
     TEMPERATURE(false, v -> {
         final StringBuilder builder = new StringBuilder();
         if (!v.isUnity()) {
             builder.append(stringify(v.toUnity())).append(StringUtils.SPACE);
         }
-        return builder.append(v.firstUnity().firstSymbol()).toString();
+        return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityFullLength())).toString();
     }),
     LENGTH(true, v -> {
         final StringBuilder builder = new StringBuilder();
         if (!v.isUnity()) {
             builder.append(stringify(v.toUnity())).append(StringUtils.SPACE);
         }
-        return builder.append(v.firstUnity().firstSymbol()).toString();
+        return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityFullLength())).toString();
     });
 
     private final boolean accumulable;
@@ -69,9 +70,11 @@ public enum UnityType {
     }
 
     private static void appendDate(final StringBuilder builder, final double value, final SortedSet<Unity> unities) {
-        if (!MathUtils.isEqualOrGreater(value, 0d, 9)) {
+        final int nanosPrecision = 9;
+        if (!MathUtils.isEqualOrGreater(value, 0d, nanosPrecision)) {
             builder.append('-');
         }
+        final int size = unities.size();
         double v = Math.abs(value);
         boolean appended = false;
         Double intermediate = null;
@@ -86,10 +89,14 @@ public enum UnityType {
                 } else {
                     intermediate = v / u;
                 }
-                if (appended) {
+                if (appended && MainProcessor.isUnitySpace()) {
                     builder.append(StringUtils.SPACE);
                 }
-                builder.append(stringify(intermediate)).append(StringUtils.SPACE).append(unity.firstSymbol());
+                builder.append(stringify(intermediate, i < size));
+                if (MainProcessor.isUnitySpace()) {
+                    builder.append(StringUtils.SPACE);
+                }
+                builder.append(unity.getSymbol(MainProcessor.isUnityFullLength()));
                 appended = true;
             }
             ++i;
@@ -100,22 +107,32 @@ public enum UnityType {
         }
     }
 
-    private static String stringify(final double d) {
-        double r = MathUtils.round(d, MainProcessor.getPrecision());
+    private static String stringify(final double input) {
+        return stringify(input, false);
+    }
 
-        final String value = Double.toString(r);
+    private static String stringify(final double input, boolean intermediate) {
+        double rounded = MathUtils.round(input, MainProcessor.getPrecision());
+
+        final String value = Double.toString(rounded);
         final int dot = value.indexOf('.');
         int length = dot + 1 + MainProcessor.getPrecision();
         final String result;
 
-        if (length > value.length()) {
+        if (intermediate && !value.substring(dot + 1).chars().anyMatch(v -> v != '0')) {
+            result = value.substring(0, dot);
+
+        } else if (length > value.length()) {
             char[] chars = new char[length - value.length()];
             Arrays.fill(chars, '0');
             result = value + new String(chars);
+
         } else if (MainProcessor.getPrecision() > 0) {
             result = value.substring(0, length);
+
         } else if (dot > -1) {
             result = value.substring(0, dot);
+
         } else {
             result = value;
         }

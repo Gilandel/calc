@@ -112,7 +112,7 @@ public class MainFrame extends JFrame implements Dialog {
 
     private boolean controlDown;
 
-    public MainFrame() {
+    public MainFrame() throws ProcessorException {
         super();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -125,6 +125,7 @@ public class MainFrame extends JFrame implements Dialog {
         this.functionDialog = new FunctionDialog(this);
 
         this.formulas = Conf.getFormulas();
+        Conf.loadVariables();
 
         this.processor = new MainProcessor();
 
@@ -200,6 +201,9 @@ public class MainFrame extends JFrame implements Dialog {
         add(menuParameters, setCheckBoxMenuItem(Conf.RADIAN, I18n.MENU_SETTINGS_RADIAN), this.setParameter(Conf.RADIAN));
         add(menuParameters, setCheckBoxMenuItem(Conf.EXACT, I18n.MENU_SETTINGS_EXACT), this.setParameter(Conf.EXACT));
         add(menuParameters, setCheckBoxMenuItem(Conf.SCIENTIFIC, I18n.MENU_SETTINGS_SCIENTIFIC), this.setParameter(Conf.SCIENTIFIC));
+        add(menuParameters, setCheckBoxMenuItem(Conf.UNITY_FULL_LENGTH, I18n.MENU_SETTINGS_UNITY_LENGTH_FULL),
+                this.setParameter(Conf.UNITY_FULL_LENGTH));
+        add(menuParameters, setCheckBoxMenuItem(Conf.UNITY_SPACE, I18n.MENU_SETTINGS_UNITY_SPACE), this.setParameter(Conf.UNITY_SPACE));
         JMenu itemPrecision = add(menuParameters, setMenu(I18n.MENU_SETTINGS_ACCURACY));
         groupPrecision = new ButtonGroup();
         for (int i = 0; i <= 15; i++) {
@@ -279,7 +283,7 @@ public class MainFrame extends JFrame implements Dialog {
         final JButton button7 = buildButton("7");
         final JButton button8 = buildButton("8");
         final JButton button9 = buildButton("9");
-        final JButton buttonDot = buildButton(I18n.DIALOG_PREFERENCES_FORMAT_DECIMAL_DEFAULT);
+        final JButton buttonDot = buildButton('.');
         final JButton buttonAdd = buildButton(Operators.ADD.getOperator());
         final JButton buttonSubstract = buildButton(Operators.SUBSTRACT.getOperator());
         final JButton buttonMultiply = buildButton(Operators.MULTIPLY.getOperator());
@@ -575,6 +579,8 @@ public class MainFrame extends JFrame implements Dialog {
             for (Formula formula : this.formulas) {
                 Conf.setFormula(i++, formula);
             }
+
+            Conf.saveVariables();
         }
 
         Configuration.save();
@@ -587,12 +593,6 @@ public class MainFrame extends JFrame implements Dialog {
     private JButton buildButton(final String text) {
         final JButton button = buildButton(DIM_BUTTON, this::buttonActionListener);
         button.setText(text);
-        return button;
-    }
-
-    private JButton buildButton(final I18n i18n) {
-        final JButton button = buildButton(DIM_BUTTON, this::buttonActionListener);
-        updateI18n(i18n, t -> button.setText(t.replace("'", StringUtils.EMPTY)));
         return button;
     }
 
@@ -773,7 +773,16 @@ public class MainFrame extends JFrame implements Dialog {
                 textAreaFormula.insert(text, textAreaFormula.getCaretPosition());
             }
             textAreaFormula.requestFocus();
+            updateDraftFormula();
         }
+    }
+
+    public void resetDraftFormula() {
+        draftFormula = null;
+    }
+
+    public void updateDraftFormula() {
+        draftFormula = textAreaFormula.getText();
     }
 
     private void formulaKeyPressed(final KeyEvent evt) {
@@ -800,19 +809,16 @@ public class MainFrame extends JFrame implements Dialog {
 
         if (evt.getKeyCode() == KeyEvent.VK_ENTER || evt.getKeyCode() == '\r') {
             evt.consume();
-
             processFormula();
-
-            draftFormula = null;
+            resetDraftFormula();
 
         } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_V) {
             insertText(ClipboardUtils.getText());
-            draftFormula = null;
             int size = screenList.getModel().getSize();
             screenList.removeSelectionInterval(0, size);
 
         } else if (!evt.isControlDown() && evt.getKeyCode() != KeyEvent.VK_UP && evt.getKeyCode() != KeyEvent.VK_DOWN) {
-            draftFormula = null;
+            resetDraftFormula();
             int size = screenList.getModel().getSize();
             screenList.removeSelectionInterval(0, size);
         }
@@ -834,13 +840,12 @@ public class MainFrame extends JFrame implements Dialog {
 
         if (type != 0 && type != 1 && index > 0) {
             mainFrameList.setSelectedIndex(--index);
-
             type = mainFrameList.getFormulaType(screenList.getSelectedIndex());
         }
 
         if (type == 0 || type == 1) {
             if (draftFormula == null) {
-                draftFormula = textAreaFormula.getText();
+                updateDraftFormula();
             }
             setText(screenList.getSelectedValue(), false);
         }
@@ -866,13 +871,12 @@ public class MainFrame extends JFrame implements Dialog {
                 if (type == 0 || type == 1) {
                     setText(screenList.getSelectedValue(), false);
                 }
-            } else if (draftFormula != null) { // TODO set empty text most bottom and not last
+            } else if (draftFormula != null) {
                 setText(draftFormula, false);
                 screenList.removeSelectionInterval(0, size);
+
             } else {
-
                 mainFrameList.setSelectedIndex(--index);
-
                 setText(screenList.getSelectedValue(), false);
             }
         } else if (draftFormula != null) {
@@ -888,8 +892,9 @@ public class MainFrame extends JFrame implements Dialog {
                 MainProcessor.setExact(Conf.EXACT.getBoolean().get());
                 MainProcessor.setScientific(Conf.SCIENTIFIC.getBoolean().get());
                 MainProcessor.setPrecision(Conf.PRECISION.getInt().get());
+                MainProcessor.setUnityFullLength(Conf.UNITY_FULL_LENGTH.getBoolean().get());
+                MainProcessor.setUnitySpace(Conf.UNITY_SPACE.getBoolean().get());
 
-                // XXX
                 final Formula formula = this.processor.process(textAreaFormula.getText());
 
                 this.mainFrameList.addFormula(formula, true);

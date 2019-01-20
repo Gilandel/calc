@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+import fr.landel.calc.config.I18n;
 import fr.landel.calc.utils.MapUtils;
 import fr.landel.calc.utils.StringUtils;
 
@@ -31,10 +32,6 @@ public class FormulaProcessor implements Processor {
     private static final Supplier<List<Integer>> SUPPLIER_LIST = ArrayList::new;
     private static final BiConsumer<List<Integer>, ? super SortedSet<Integer>> ACCUMULATOR = (a, b) -> a.addAll(b);
     private static final BiConsumer<List<Integer>, List<Integer>> COMBINER = (a, b) -> a.addAll(b);
-
-    private static final String ERROR_PARSE = "the expression cannot be parsed";
-    private static final String ERROR_OPERATOR_POSITION = "the operator '{}' cannot be placed at: {}";
-    private static final String ERROR_OPERATOR_MISSING = "the operator is missing between: {} and {}";
 
     private final String formula;
     private final int length;
@@ -65,10 +62,21 @@ public class FormulaProcessor implements Processor {
         loadOperatorsAndSegments();
 
         final Optional<Entity> result = calculate();
+
         if (result.isPresent()) {
-            return result.get();
+            final Entity entity = result.get();
+
+            if (!entity.isUnity()) {
+                return entity;
+
+            } else if (entity.isVariable()) {
+                throw new ProcessorException(I18n.ERROR_VARIABLE_VALUE_MISSING, entity);
+
+            } else {
+                throw new ProcessorException(I18n.ERROR_UNITY_VALUE_MISSING, entity);
+            }
         } else {
-            throw new ProcessorException(ERROR_PARSE);
+            throw new ProcessorException(I18n.ERROR_FORMULA_PARSE, this.formula);
         }
     }
 
@@ -86,7 +94,7 @@ public class FormulaProcessor implements Processor {
                 if (o.getPositionChecker().test(pos, this.length)) {
                     positions.put(pos, o);
                 } else {
-                    throw new ProcessorException(ERROR_OPERATOR_POSITION, o, pos);
+                    throw new ProcessorException(I18n.ERROR_FORMULA_OPERATOR_POSITION, o, pos);
                 }
             }
         }
@@ -133,16 +141,7 @@ public class FormulaProcessor implements Processor {
             this.sortedOperators.putAll(realOperatorsByPosition);
 
         } else if (this.result != null && this.result.innerLength() > 0 && this.result.hasEntities()) {
-            final int pos = this.result.indexOf(StringUtils.ID_OPEN);
-            final String value1, value2;
-            if (pos > 0) {
-                value1 = this.result.substring(0, pos);
-                value2 = this.result.firstEntity().toString();
-            } else {
-                value1 = this.result.firstEntity().toString();
-                value2 = this.result.substring(pos + value1.length());
-            }
-            throw new ProcessorException(ERROR_OPERATOR_MISSING, value1, value2);
+            throw new ProcessorException(I18n.ERROR_FORMULA_OPERATOR_MISSING, this.result);
 
         } else {
             this.sortedOperators = Collections.emptySortedMap();

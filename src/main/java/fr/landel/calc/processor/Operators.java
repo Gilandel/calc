@@ -19,10 +19,11 @@ public enum Operators implements OperatorConstants {
     DEVIDE("/", 2, ALL_EXCEPT_FIRST_AND_LAST, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, FUN_DEVIDE),
     MODULO("%", 2, ALL_EXCEPT_FIRST_AND_LAST, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, FUN_MODULO),
     POWER("^", 1, ALL_EXCEPT_FIRST_AND_LAST, IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER, FUN_POWER),
-    CONVERT(">>", 0, ALL_EXCEPT_FIRST_AND_LAST, IS_CONVERTIBLE, FUN_CONVERT);
+    CONVERT(">>", 0, ALL_EXCEPT_FIRST_AND_LAST, IS_CONVERTIBLE, FUN_CONVERT),
+    VARIABLE("=", 0, ALL_EXCEPT_FIRST_AND_LAST, IS_VARIABLE, FUN_VARIABLE);
 
-    public static final List<Operators> BY_LENGTH_DESC = Arrays.stream(Operators.values()).sorted((a, b) -> Integer.compare(b.getLength(), a.getLength()))
-            .collect(Collectors.toList());
+    public static final List<Operators> BY_LENGTH_DESC = Arrays.stream(Operators.values())
+            .sorted((a, b) -> Integer.compare(b.getLength(), a.getLength())).collect(Collectors.toList());
     public static final SortedMap<Integer, List<Operators>> BY_PRIORITY;
     public static final List<Integer> PRIORITIES;
     static {
@@ -39,8 +40,8 @@ public enum Operators implements OperatorConstants {
     private final BiPredicate<Entity, Entity> validator;
     private final BiFunction<Entity, Entity, Entity> processor;
 
-    private Operators(final String operator, final int priority, final BiPredicate<Integer, Integer> positionChecker, final BiPredicate<Entity, Entity> validator,
-            final BiFunction<Entity, Entity, Entity> processor) {
+    private Operators(final String operator, final int priority, final BiPredicate<Integer, Integer> positionChecker,
+            final BiPredicate<Entity, Entity> validator, final BiFunction<Entity, Entity, Entity> processor) {
         this.operator = operator;
         this.length = operator.length();
         this.priority = priority;

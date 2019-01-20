@@ -99,6 +99,8 @@ public enum I18n {
     MENU_SETTINGS_RADIAN("menu.settings.radian"),
     MENU_SETTINGS_EXACT("menu.settings.exact"),
     MENU_SETTINGS_SCIENTIFIC("menu.settings.scientific"),
+    MENU_SETTINGS_UNITY_LENGTH_FULL("menu.settings.unity.length.full"),
+    MENU_SETTINGS_UNITY_SPACE("menu.settings.unity.space"),
     MENU_SETTINGS_ACCURACY("menu.settings.accuracy"),
     MENU_SETTINGS_DECIMAL("menu.settings.decimal"),
     MENU_SETTINGS_DECIMAL_PLURAL("menu.settings.decimal.plural"),
@@ -121,11 +123,6 @@ public enum I18n {
     DIALOG_PREFERENCES_HISTORY_SAVE("dialog.preferences.history.save"),
     DIALOG_PREFERENCES_THEME("dialog.preferences.theme"),
     DIALOG_PREFERENCES_LANGUAGE("dialog.preferences.language"),
-    DIALOG_PREFERENCES_FORMAT("dialog.preferences.format"),
-    DIALOG_PREFERENCES_FORMAT_DECIMAL("dialog.preferences.format.decimal"),
-    DIALOG_PREFERENCES_FORMAT_DECIMAL_DEFAULT("dialog.preferences.format.decimal.default"),
-    DIALOG_PREFERENCES_FORMAT_THOUSAND("dialog.preferences.format.thousand"),
-    DIALOG_PREFERENCES_FORMAT_THOUSAND_DEFAULT("dialog.preferences.format.thousand.default"),
 
     DIALOG_ABOUT("dialog.about"),
     DIALOG_ABOUT_PROJECT("dialog.about.project"),
@@ -192,7 +189,21 @@ public enum I18n {
     DIALOG_ERROR_PARAM_SINUS("dialog.error.param.sinus"),
     DIALOG_ERROR_PARAM_TANGENT("dialog.error.param.tangent"),
     DIALOG_ERROR_PARAM_EXPONENT("dialog.error.param.exponent"),
-    DIALOG_ERROR_PARAM_UNITY("dialog.error.param.unity");
+    DIALOG_ERROR_PARAM_UNITY("dialog.error.param.unity"),
+
+    ERROR_CHARACTERS_RESTRICTED("error.characters.restricted"),
+    ERROR_CHARACTERS_UNKNOWN("error.characters.unknown"),
+    ERROR_RESULT_EVAL("error.result.eval"),
+    ERROR_FUNCTION_PARSE("error.function.parse"),
+    ERROR_FORMULA_PARSE("error.formula.parse"),
+    ERROR_FORMULA_OPERATOR_POSITION("error.formula.operator.position"),
+    ERROR_FORMULA_OPERATOR_MISSING("error.formula.operator.missing"),
+    ERROR_VARIABLE_VALUE_MISSING("error.variable.value.missing"),
+    ERROR_UNITY_TYPE("error.unity.type"),
+    ERROR_UNITY_PARSE("error.unity.parse"),
+    ERROR_UNITY_PARSE_TYPE("error.unity.parse.type"),
+    ERROR_UNITY_BOUNDS("error.unity.bounds"),
+    ERROR_UNITY_VALUE_MISSING("error.unity.value.missing");
 
     private static final Logger LOGGER = new Logger(I18n.class);
 

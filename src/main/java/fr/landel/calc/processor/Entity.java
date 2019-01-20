@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
@@ -13,19 +15,26 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fr.landel.calc.config.I18n;
 import fr.landel.calc.utils.DateUtils;
 import fr.landel.calc.utils.Logger;
 import fr.landel.calc.utils.MathUtils;
+import fr.landel.calc.utils.StringUtils;
 
 public class Entity {
 
     private static final Logger LOGGER = new Logger(Entity.class);
 
+    public static final Map<String, Optional<Entity>> VARIABLES = new HashMap<>();
+
+    public static final Pattern PATTERN_VARIABLE = Pattern.compile("^\\$[a-zA-Z_]+$");
+
     private static final Pattern PATTERN_NUMBER = Pattern.compile("([+-]?(:?[0-9]+(:?\\.[0-9]+)?|\\.[0-9]+)([Ee][+-]?[0-9]+)?)([a-zA-Z]+)?");
+    private static final int GROUP_NUMBER = 0;
     private static final int GROUP_NUMBER_DECIMAL = 1;
     private static final int GROUP_NUMBER_UNITY = 5;
 
-    private static final Pattern PATTERN_UNITY = Pattern.compile("[a-zA-Z]+");
+    private static final Pattern PATTERN_UNITY = Pattern.compile("^[a-zA-Z]+$");
 
     private static final String ERROR_PARSE = "the following expression cannot be parsed: {}";
     private static final String ERROR_BAD_FORMAT = "the following expression is not formatted correctly: {}";
@@ -39,6 +48,7 @@ public class Entity {
     private SortedSet<Unity> unities = new TreeSet<>(Unity.COMPARATOR_UNITIES);
     private boolean decimal;
     private boolean positive;
+    private String variable;
 
     public Entity(final int index, final String input) throws ProcessorException {
         this.index = index;
@@ -98,10 +108,13 @@ public class Entity {
         final EntityTmp entity = new EntityTmp();
         final SortedMap<Unity, Double> inputs = new TreeMap<>(Unity.COMPARATOR_UNITIES);
 
+        int notParsedlength = input.length();
+
         final Matcher matcher = PATTERN_NUMBER.matcher(input);
         while (matcher.find()) {
             if (entity.unity == null || entity.accumulable) {
                 try {
+                    notParsedlength -= matcher.group(GROUP_NUMBER).length();
                     entity.value = Double.parseDouble(matcher.group(GROUP_NUMBER_DECIMAL));
 
                     final String unityGroup = matcher.group(GROUP_NUMBER_UNITY);
@@ -129,8 +142,17 @@ public class Entity {
             loadDuration(inputs);
             loadLocalDateTime(inputs);
 
+        } else if (input.startsWith(StringUtils.DOLLAR)) {
+            loadVariables(input);
+            notParsedlength = 0;
+
         } else if (!this.isNumber() && !this.hasUnity()) {
             loadUnities(input);
+            notParsedlength = 0;
+        }
+
+        if (notParsedlength > 0) {
+            throw new ProcessorException(I18n.ERROR_FORMULA_PARSE, input);
         }
 
         if (this.date == null) {
@@ -172,6 +194,27 @@ public class Entity {
             } else {
                 this.value += entity.value;
             }
+        }
+    }
+
+    private void loadVariables(final String input) throws ProcessorException {
+        if (PATTERN_VARIABLE.matcher(input).matches()) {
+
+            this.variable = input;
+
+            final Optional<Entity> entity = VARIABLES.get(this.variable);
+
+            if (entity == null || entity.isEmpty()) {
+                this.unities.add(Unity.VARIABLE);
+                VARIABLES.put(input, Optional.empty());
+
+            } else {
+                loadEntity(entity.get());
+            }
+        }
+        if (!this.isVariable()) {
+            LOGGER.error(ERROR_PARSE, input);
+            throw new ProcessorException(ERROR_PARSE, input);
         }
     }
 
@@ -239,6 +282,10 @@ public class Entity {
 
     public boolean isNumber() {
         return this.value != null && (!this.hasUnity() || Unity.NUMBER.equals(this.firstUnity()));
+    }
+
+    public boolean isVariable() {
+        return this.variable != null;
     }
 
     public boolean isUnity() {
@@ -318,6 +365,26 @@ public class Entity {
 
     public boolean isUnity(final UnityType type) {
         return this.isUnity() && type.equals(this.getUnityType());
+    }
+
+    public String getVariable() {
+        return this.variable;
+    }
+
+    public Entity setVariable(final Entity entity) {
+        loadEntity(entity);
+        VARIABLES.put(this.variable, Optional.of(this));
+
+        return this;
+    }
+
+    private void loadEntity(final Entity entity) {
+        this.value = entity.getValue();
+        this.date = entity.getDate();
+        this.duration = entity.getDuration();
+        this.decimal = entity.isDecimal();
+        this.positive = entity.isPositive();
+        this.unities = entity.getUnities();
     }
 
     @Override

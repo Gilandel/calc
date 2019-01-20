@@ -20,14 +20,14 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import fr.landel.calc.config.I18n;
 import fr.landel.calc.utils.DateUtils;
 import fr.landel.calc.utils.MapUtils;
 import fr.landel.calc.utils.StringUtils;
 
 public enum Unity {
 
-    // TODO creer arbre unite comme fonction pour retrouner l'unite qui
-    // correspond le mieux
+    VARIABLE(0, UnityType.VARIABLE),
 
     NUMBER(0, UnityType.NUMBER, "d"),
 
@@ -112,10 +112,6 @@ public enum Unity {
         UNITIES = Collections.unmodifiableSortedMap(map);
     }
 
-    private static final String ERROR_UNITIES_TYPE = "all unities '{}' are not the same type: {} and {}";
-    private static final String ERROR_PARSE = "unity '{}' cannot be parsed";
-    private static final String ERROR_PARSE_TYPE = "unity '{}' cannot be parsed following previous type: {}";
-    private static final String ERROR_BOUNDS = "value of unity '{}' is out of bound: {}";
     private static final String ERROR_BOUNDS_SUB_SECONDS = Arrays.asList(DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS).stream()
             .map(String::valueOf).collect(Collectors.joining("' or '"));
 
@@ -207,8 +203,20 @@ public enum Unity {
         return this.toUnity.apply(value);
     }
 
-    public String firstSymbol() {
+    public String longestSymbol() {
         return this.symbols[0];
+    }
+
+    public String shortestSymbol() {
+        return this.symbols[this.symbols.length - 1];
+    }
+
+    public String getSymbol(final boolean fullLength) {
+        if (fullLength) {
+            return this.longestSymbol();
+        } else {
+            return this.shortestSymbol();
+        }
     }
 
     public String[] getSymbols() {
@@ -257,7 +265,7 @@ public enum Unity {
             for (String s : unity.getSymbols()) {
                 if (text.startsWith(s)) {
                     if (type != null && !unity.getType().equals(type)) {
-                        throw new ProcessorException(ERROR_UNITIES_TYPE, input, type, unity.getType());
+                        throw new ProcessorException(I18n.ERROR_UNITY_TYPE, input, type, unity.getType());
                     }
                     text = text.substring(s.length());
                     data = text.toCharArray();
@@ -270,9 +278,9 @@ public enum Unity {
 
         if (data.length > 0) {
             if (requiredType == null) {
-                throw new ProcessorException(ERROR_PARSE, text);
+                throw new ProcessorException(I18n.ERROR_UNITY_PARSE, text);
             } else {
-                throw new ProcessorException(ERROR_PARSE_TYPE, text, requiredType);
+                throw new ProcessorException(I18n.ERROR_UNITY_PARSE_TYPE, text, requiredType);
             }
         }
 
@@ -310,28 +318,28 @@ public enum Unity {
                 if (value > 0 && value < 13) {
                     month = value;
                 } else {
-                    throw new ProcessorException(ERROR_BOUNDS, unity, value);
+                    throw new ProcessorException(I18n.ERROR_UNITY_BOUNDS, unity, value);
                 }
                 break;
             case DATE_DAYS:
                 if (value > 0 && value < 32) {
                     dayOfMonth = value;
                 } else {
-                    throw new ProcessorException(ERROR_BOUNDS, unity, value);
+                    throw new ProcessorException(I18n.ERROR_UNITY_BOUNDS, unity, value);
                 }
                 break;
             case DATE_HOURS:
                 if (value > -1 && value < 24) {
                     hour = value;
                 } else {
-                    throw new ProcessorException(ERROR_BOUNDS, unity, value);
+                    throw new ProcessorException(I18n.ERROR_UNITY_BOUNDS, unity, value);
                 }
                 break;
             case DATE_MINUTES:
                 if (value > -1 && value < 60) {
                     minute = value;
                 } else {
-                    throw new ProcessorException(ERROR_BOUNDS, unity, value);
+                    throw new ProcessorException(I18n.ERROR_UNITY_BOUNDS, unity, value);
                 }
                 break;
             case DATE_MILLISECONDS:
@@ -348,7 +356,7 @@ public enum Unity {
         }
 
         if (nanoOfSecond < 0 && nanoOfSecond > DateUtils.NANO_PER_SECOND) {
-            throw new ProcessorException(ERROR_BOUNDS, ERROR_BOUNDS_SUB_SECONDS, nanoOfSecond);
+            throw new ProcessorException(I18n.ERROR_UNITY_BOUNDS, ERROR_BOUNDS_SUB_SECONDS, nanoOfSecond);
         }
 
         return LocalDateTime.of(year, month, dayOfMonth, hour, minute, second, nanoOfSecond);
@@ -360,9 +368,9 @@ public enum Unity {
         String[] tests = {"minutes", "minute", "mile", "mi", "m", "i", "his", "mi"};
 
         for (String test : tests) {
-            System.out.println(getUnities(test).stream().map(Unity::firstSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
+            System.out.println(getUnities(test).stream().map(Unity::longestSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
         }
 
-        System.out.println(getUnities("mi", UnityType.DATE).stream().map(Unity::firstSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
+        System.out.println(getUnities("mi", UnityType.DATE).stream().map(Unity::longestSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
     }
 }

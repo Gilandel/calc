@@ -8,6 +8,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.I18n;
+import fr.landel.calc.processor.ProcessorException;
 import fr.landel.calc.utils.Logger;
 import fr.landel.calc.view.MainFrame;
 
@@ -24,7 +25,7 @@ public class Main {
 
     /**
      * @param args
-     *            the arguments
+     *            the arguments (not used)
      */
     public static void main(String[] args) {
 
@@ -39,7 +40,8 @@ public class Main {
 
                     new MainFrame();
 
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException
+                        | ProcessorException e) {
                     LOGGER.error(e, "Cannot initialize theme");
                 }
             }

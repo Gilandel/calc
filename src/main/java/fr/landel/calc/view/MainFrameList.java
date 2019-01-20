@@ -81,6 +81,7 @@ public class MainFrameList {
                 final String text = getValue(screenList, index).trim();
                 if (parent.isControlDown()) {
                     parent.setText(text, false);
+                    parent.updateDraftFormula();
                 } else {
                     parent.insertText(text);
                 }
@@ -302,6 +303,7 @@ public class MainFrameList {
             if (this.formulas.size() > subIndex) {
                 this.formulas.remove(subIndex);
                 Conf.setFormula(subIndex, null);
+                Conf.saveVariables();
             }
         });
         fireCounter();

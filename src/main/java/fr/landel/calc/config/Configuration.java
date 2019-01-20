@@ -14,6 +14,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import fr.landel.calc.function.TriFunction;
 import fr.landel.calc.utils.Logger;
 import fr.landel.calc.utils.StringUtils;
 
@@ -62,33 +63,48 @@ public final class Configuration extends ConcurrentHashMap<String, String> {
         }
     }
 
-    private static final String HISTORY_FORMULA = StringUtils.inject(Conf.HISTORY_FORMULA.getKey(), StringUtils.EMPTY);
+    private static final String HISTORY_FORMULA_PREFIX = StringUtils.inject(Conf.HISTORY_FORMULA.getKey(), StringUtils.EMPTY);
+    private static final String VARIABLE_PREFIX = "variable.";
+    private static final int HISTORY_FORMULA_PREFIX_LENGTH = HISTORY_FORMULA_PREFIX.length();
+    private static final int VARIABLE_PREFIX_LENGTH = VARIABLE_PREFIX.length();
+
+    private static final TriFunction<String, String, Integer, Integer> COMPARATOR_PREFIX = (a, b, l) -> {
+        final String aSegment = a.substring(l);
+        final String bSegment = b.substring(l);
+        final int aDot = aSegment.indexOf('.');
+        final int bDot = bSegment.indexOf('.');
+        final int aIndex = Integer.parseInt(aDot < 0 ? aSegment : aSegment.substring(0, aDot));
+        final int bIndex = Integer.parseInt(bDot < 0 ? bSegment : bSegment.substring(0, bDot));
+
+        if (aIndex < bIndex) {
+            return -1;
+        } else if (aIndex > bIndex) {
+            return 1;
+        } else {
+            return a.compareTo(b);
+        }
+    };
 
     private static final Comparator<String> COMPARATOR = (a, b) -> {
-        final boolean aHistory = a.startsWith(HISTORY_FORMULA);
-        final boolean bHistory = b.startsWith(HISTORY_FORMULA);
+        final boolean aHistory = a.startsWith(HISTORY_FORMULA_PREFIX);
+        final boolean bHistory = b.startsWith(HISTORY_FORMULA_PREFIX);
+        final boolean aVariable = a.startsWith(VARIABLE_PREFIX);
+        final boolean bVariable = b.startsWith(VARIABLE_PREFIX);
 
         if (aHistory && !bHistory) {
             return 1;
         } else if (!aHistory && bHistory) {
             return -1;
-        } else if (!aHistory && !bHistory) {
-            return a.compareTo(b);
+        } else if (aVariable && !bVariable) {
+            return 1;
+        } else if (!aVariable && bVariable) {
+            return -1;
+        } else if (aHistory && bHistory) {
+            return COMPARATOR_PREFIX.apply(a, b, HISTORY_FORMULA_PREFIX_LENGTH);
+        } else if (aVariable && bVariable) {
+            return COMPARATOR_PREFIX.apply(a, b, VARIABLE_PREFIX_LENGTH);
         } else {
-            final String aSegment = a.substring(HISTORY_FORMULA.length());
-            final String bSegment = b.substring(HISTORY_FORMULA.length());
-            final int aDot = aSegment.indexOf('.');
-            final int bDot = bSegment.indexOf('.');
-            final int aIndex = Integer.parseInt(aDot < 0 ? aSegment : aSegment.substring(0, aDot));
-            final int bIndex = Integer.parseInt(bDot < 0 ? bSegment : bSegment.substring(0, bDot));
-
-            if (aIndex < bIndex) {
-                return -1;
-            } else if (aIndex > bIndex) {
-                return 1;
-            } else {
-                return a.compareTo(b);
-            }
+            return a.compareTo(b);
         }
     };
 

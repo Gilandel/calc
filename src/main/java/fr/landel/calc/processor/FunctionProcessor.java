@@ -9,8 +9,6 @@ import fr.landel.calc.utils.StringUtils;
 
 public class FunctionProcessor implements Processor {
 
-    private static final String ERROR_FUNCTION = "the input function cannot be processed: {}({})";
-
     private final Functions function;
     private final Entity[] segments;
 
@@ -34,7 +32,8 @@ public class FunctionProcessor implements Processor {
         if (result != null) {
             return result;
         } else {
-            throw new ProcessorException(ERROR_FUNCTION, function.getFunction(), Arrays.stream(segments).map(String::valueOf).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
+            throw new ProcessorException(I18n.ERROR_FUNCTION_PARSE, function.getFunction(),
+                    Arrays.stream(segments).map(String::valueOf).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
         }
     }
 }

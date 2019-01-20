@@ -4,32 +4,34 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import fr.landel.calc.config.Conf;
 import fr.landel.calc.config.Formula;
+import fr.landel.calc.config.I18n;
 import fr.landel.calc.function.FunctionThrowable;
 import fr.landel.calc.utils.Logger;
 import fr.landel.calc.utils.StringUtils;
 
 public class MainProcessor {
 
-    // TODO corriger detection des caracteres avant fonction (2e())
     // TODO gerer radian / exact / scientific
-    // TODO remonter les erreurs traduites
 
     private static final Logger LOGGER = new Logger(MainProcessor.class);
 
     private static final List<String> RESTRICTED_LIST = Arrays.asList(StringUtils.ID_OPEN, StringUtils.ID_CLOSE);
-
-    private static final String ERROR_RESTRICTED = "expression cannot contains restricted characters: {}";
     private static final String RESTRICTED_TEXT = RESTRICTED_LIST.stream().collect(StringUtils.COMMA_JOINING_COLLECTOR);
+    private static final char[] KNOWN_ARRAY = ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_" + StringUtils.COMMA + StringUtils.DOT
+            + StringUtils.SEMICOLON + StringUtils.SPACE + StringUtils.PARENTHESIS_OPEN + StringUtils.PARENTHESIS_CLOSE + Operators.ADD.getOperator()
+            + Operators.SUBSTRACT.getOperator() + Operators.MULTIPLY.getOperator() + Operators.DEVIDE.getOperator() + Operators.POWER.getOperator()
+            + Operators.MODULO.getOperator() + Operators.CONVERT.getOperator() + Operators.VARIABLE.getOperator() + StringUtils.DOLLAR).toCharArray();
+    static {
+        Arrays.sort(KNOWN_ARRAY);
+    }
 
     private static boolean radian = true;
     private static boolean exact = false;
     private static boolean scientific = false;
     private static int precision = 3;
-
-    private static String decimalSeparator = ".";
-    private static String thousandSeparator = ",";
+    private static boolean unityFullLength = true;
+    private static boolean unitySpace = true;
 
     public MainProcessor() {
     }
@@ -50,6 +52,14 @@ public class MainProcessor {
         MainProcessor.precision = precision;
     }
 
+    public static void setUnityFullLength(boolean unityFullLength) {
+        MainProcessor.unityFullLength = unityFullLength;
+    }
+
+    public static void setUnitySpace(boolean unitySpace) {
+        MainProcessor.unitySpace = unitySpace;
+    }
+
     public static boolean isRadian() {
         return MainProcessor.radian;
     }
@@ -66,9 +76,12 @@ public class MainProcessor {
         return MainProcessor.precision;
     }
 
-    public void updateI18n() {
-        decimalSeparator = Conf.DECIMAL_SEPARATOR.getString().get();
-        thousandSeparator = Conf.THOUSAND_SEPARATOR.getString().get();
+    public static boolean isUnityFullLength() {
+        return MainProcessor.unityFullLength;
+    }
+
+    public static boolean isUnitySpace() {
+        return MainProcessor.unitySpace;
     }
 
     public Formula process(final String input) throws ProcessorException {
@@ -78,20 +91,26 @@ public class MainProcessor {
 
         final long start = System.currentTimeMillis();
 
-        final Formula result = new Formula(input, true, processFormula(removeAllSpaces(input)));
+        final Formula result = new Formula(input, true, processFormula(prepare(input)));
 
         LOGGER.info("'{}' processed in {} ms", input, System.currentTimeMillis() - start);
 
         return result;
     }
 
-    private String removeAllSpaces(final String input) {
-        return input.replace(StringUtils.SPACE, StringUtils.EMPTY);
+    private String prepare(final String input) throws ProcessorException {
+        final String unknown = input.chars().filter(c -> Arrays.binarySearch(KNOWN_ARRAY, (char) c) < 0)
+                .collect(StringBuilder::new, (a, c) -> a.append((char) c), (a, b) -> a.append(b)).toString();
+        if (!unknown.isEmpty()) {
+            throw new ProcessorException(I18n.ERROR_CHARACTERS_UNKNOWN, unknown);
+        }
+
+        return StringUtils.replaceCommaByDot(StringUtils.removeAllSpaces(input));
     }
 
     private String processFormula(final String input) throws ProcessorException {
         if (RESTRICTED_LIST.stream().filter(input::contains).findAny().isPresent()) {
-            throw new ProcessorException(ERROR_RESTRICTED, input, RESTRICTED_TEXT);
+            throw new ProcessorException(I18n.ERROR_CHARACTERS_RESTRICTED, input, RESTRICTED_TEXT);
         }
 
         return processFormula(ResultBuilder.from(input));
