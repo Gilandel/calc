@@ -30,8 +30,9 @@ public class MainProcessor {
     private static boolean exact = false;
     private static boolean scientific = false;
     private static int precision = 3;
-    private static boolean unityFullLength = true;
-    private static boolean unitySpace = true;
+    private static boolean unityAbbrev = true;
+    private static boolean unitiesSpace = true;
+    private static boolean valuesSpace = true;
 
     public MainProcessor() {
     }
@@ -52,12 +53,16 @@ public class MainProcessor {
         MainProcessor.precision = precision;
     }
 
-    public static void setUnityFullLength(boolean unityFullLength) {
-        MainProcessor.unityFullLength = unityFullLength;
+    public static void setUnityAbbrev(boolean unityAbbrev) {
+        MainProcessor.unityAbbrev = unityAbbrev;
     }
 
-    public static void setUnitySpace(boolean unitySpace) {
-        MainProcessor.unitySpace = unitySpace;
+    public static void setUnitiesSpace(boolean unitiesSpace) {
+        MainProcessor.unitiesSpace = unitiesSpace;
+    }
+
+    public static void setValuesSpace(boolean valuesSpace) {
+        MainProcessor.valuesSpace = valuesSpace;
     }
 
     public static boolean isRadian() {
@@ -76,12 +81,16 @@ public class MainProcessor {
         return MainProcessor.precision;
     }
 
-    public static boolean isUnityFullLength() {
-        return MainProcessor.unityFullLength;
+    public static boolean isUnityAbbrev() {
+        return MainProcessor.unityAbbrev;
     }
 
-    public static boolean isUnitySpace() {
-        return MainProcessor.unitySpace;
+    public static boolean isUnitiesSpace() {
+        return MainProcessor.unitiesSpace;
+    }
+
+    public static boolean isValuesSpace() {
+        return MainProcessor.valuesSpace;
     }
 
     public Formula process(final String input) throws ProcessorException {

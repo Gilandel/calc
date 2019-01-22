@@ -7,14 +7,20 @@ import fr.landel.calc.config.I18n;
 public class Params<T> {
 
     public static final Params<Double> VALUE = new Params<>(I18n.DIALOG_FUNCTION_PARAM_VALUE, Entity::isNumber, I18n.DIALOG_ERROR_PARAM_VALUE);
-    public static final Params<Double> ACCURACY = new Params<>(I18n.DIALOG_FUNCTION_PARAM_ACCURACY, Entity::isPositiveDecimal, I18n.DIALOG_ERROR_PARAM_ACCURACY);
+    public static final Params<Double> ACCURACY = new Params<>(I18n.DIALOG_FUNCTION_PARAM_ACCURACY, Entity::isPositiveDecimal,
+            I18n.DIALOG_ERROR_PARAM_ACCURACY);
     public static final Params<Double> ANGULAR = new Params<>(I18n.DIALOG_FUNCTION_PARAM_ANGULAR, Entity::isNumber, I18n.DIALOG_ERROR_PARAM_ANGULAR);
     public static final Params<Double> DATE = new Params<>(I18n.DIALOG_FUNCTION_PARAM_DATE, Entity::isInteger, I18n.DIALOG_ERROR_PARAM_DATE);
+    public static final Params<Double> DATE_DATE = new Params<>(I18n.DIALOG_FUNCTION_PARAM_DATE, Entity::isDate, I18n.DIALOG_ERROR_PARAM_DATE);
+    public static final Params<Double> DATE_DURATION = new Params<>(I18n.DIALOG_FUNCTION_PARAM_DATE, Entity::isDuration,
+            I18n.DIALOG_ERROR_PARAM_DATE);
     public static final Params<Double> COSINUS = new Params<>(I18n.DIALOG_FUNCTION_PARAM_COSINUS, Entity::isNumber, I18n.DIALOG_ERROR_PARAM_COSINUS);
     public static final Params<Double> SINUS = new Params<>(I18n.DIALOG_FUNCTION_PARAM_SINUS, Entity::isNumber, I18n.DIALOG_ERROR_PARAM_SINUS);
     public static final Params<Double> TANGENT = new Params<>(I18n.DIALOG_FUNCTION_PARAM_TANGENT, Entity::isNumber, I18n.DIALOG_ERROR_PARAM_TANGENT);
-    public static final Params<Double> EXPONENT = new Params<>(I18n.DIALOG_FUNCTION_PARAM_EXPONENT, Entity::isNumber, I18n.DIALOG_ERROR_PARAM_EXPONENT);
-    public static final Params<String> UNITY = new Params<>(I18n.DIALOG_FUNCTION_PARAM_UNITY, e -> e.isUnity(UnityType.DATE), I18n.DIALOG_ERROR_PARAM_EXPONENT);
+    public static final Params<Double> EXPONENT = new Params<>(I18n.DIALOG_FUNCTION_PARAM_EXPONENT, Entity::isNumber,
+            I18n.DIALOG_ERROR_PARAM_EXPONENT);
+    public static final Params<String> UNITY = new Params<>(I18n.DIALOG_FUNCTION_PARAM_UNITY, e -> e.isUnity(UnityType.DATE),
+            I18n.DIALOG_ERROR_PARAM_EXPONENT);
 
     private final I18n i18n;
     private final Predicate<Entity> validator;

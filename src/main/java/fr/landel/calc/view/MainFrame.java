@@ -201,9 +201,6 @@ public class MainFrame extends JFrame implements Dialog {
         add(menuParameters, setCheckBoxMenuItem(Conf.RADIAN, I18n.MENU_SETTINGS_RADIAN), this.setParameter(Conf.RADIAN));
         add(menuParameters, setCheckBoxMenuItem(Conf.EXACT, I18n.MENU_SETTINGS_EXACT), this.setParameter(Conf.EXACT));
         add(menuParameters, setCheckBoxMenuItem(Conf.SCIENTIFIC, I18n.MENU_SETTINGS_SCIENTIFIC), this.setParameter(Conf.SCIENTIFIC));
-        add(menuParameters, setCheckBoxMenuItem(Conf.UNITY_FULL_LENGTH, I18n.MENU_SETTINGS_UNITY_LENGTH_FULL),
-                this.setParameter(Conf.UNITY_FULL_LENGTH));
-        add(menuParameters, setCheckBoxMenuItem(Conf.UNITY_SPACE, I18n.MENU_SETTINGS_UNITY_SPACE), this.setParameter(Conf.UNITY_SPACE));
         JMenu itemPrecision = add(menuParameters, setMenu(I18n.MENU_SETTINGS_ACCURACY));
         groupPrecision = new ButtonGroup();
         for (int i = 0; i <= 15; i++) {
@@ -892,8 +889,9 @@ public class MainFrame extends JFrame implements Dialog {
                 MainProcessor.setExact(Conf.EXACT.getBoolean().get());
                 MainProcessor.setScientific(Conf.SCIENTIFIC.getBoolean().get());
                 MainProcessor.setPrecision(Conf.PRECISION.getInt().get());
-                MainProcessor.setUnityFullLength(Conf.UNITY_FULL_LENGTH.getBoolean().get());
-                MainProcessor.setUnitySpace(Conf.UNITY_SPACE.getBoolean().get());
+                MainProcessor.setUnityAbbrev(Conf.UNITY_ABBREV.getBoolean().get());
+                MainProcessor.setUnitiesSpace(Conf.UNITY_SPACE.getBoolean().get());
+                MainProcessor.setValuesSpace(Conf.VALUE_SPACE.getBoolean().get());
 
                 final Formula formula = this.processor.process(textAreaFormula.getText());
 

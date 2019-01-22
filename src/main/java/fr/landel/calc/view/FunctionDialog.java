@@ -31,7 +31,6 @@ import javax.swing.JTextField;
 
 import fr.landel.calc.config.I18n;
 import fr.landel.calc.config.Images;
-import fr.landel.calc.function.FunctionThrowable;
 import fr.landel.calc.processor.Entity;
 import fr.landel.calc.processor.FormulaProcessor;
 import fr.landel.calc.processor.Functions;
@@ -49,8 +48,6 @@ public class FunctionDialog extends JDialog implements Dialog {
     private static final String ERROR_OPEN = "<html><font style='color:red'><b>";
     private static final String ERROR_CLOSE = "</b></font></html>";
     private static final String NEWLINE = "<br />";
-
-    private static final FunctionThrowable<String, Entity, ProcessorException> PROCESSOR = s -> new FormulaProcessor(s).process();
 
     private MainFrame parent;
 
@@ -272,19 +269,30 @@ public class FunctionDialog extends JDialog implements Dialog {
         });
     }
 
-    private void buttonInsertActionPerformed(ActionEvent evt) {
+    private void buttonInsertActionPerformed(final ActionEvent evt) {
         boolean valid = true;
 
         if (this.function != null) {
             final String[] params = fields.subList(0, this.function.getParamsCount()).stream().map(JTextField::getText).toArray(String[]::new);
 
-            final List<I18n> errors = this.function.check(Arrays.stream(params).map(PROCESSOR).toArray(Entity[]::new));
+            List<I18n> errors;
+            int i = 0;
+            try {
+                final Entity[] entities = new Entity[params.length];
+                for (i = 0; i < params.length; ++i) {
+                    entities[i] = new FormulaProcessor(params[i]).process();
+                }
+                errors = this.function.check(entities);
+
+            } catch (ProcessorException e) {
+                errors = Arrays.asList(this.function.getParams()[i].getPredicateI18n());
+            }
             valid = errors.isEmpty();
 
             if (valid) {
                 parent.insertText(this.function.inject(params));
             } else {
-                labelError.setText(errors.stream().map(e -> e.getI18n()).collect(Collectors.joining(NEWLINE, ERROR_OPEN, ERROR_CLOSE)));
+                labelError.setText(errors.stream().map(I18n::getI18n).collect(Collectors.joining(NEWLINE, ERROR_OPEN, ERROR_CLOSE)));
             }
 
             labelError.setVisible(!valid);

@@ -29,8 +29,9 @@ public enum Conf {
     EXTENDED_STATE("frame.extendedState", Integer.class, Frame.NORMAL),
     KEYBOARD("frame.keyboard", Boolean.class, true),
     LOG_MODE("log.mode", Pattern.compile("^(" + Logger.LOG_MODE_CONSOLE + "|" + Logger.LOG_MODE_FILE + ")$"), Logger.LOG_MODE_CONSOLE),
-    UNITY_FULL_LENGTH("unity.fullLength", Boolean.class, true),
+    UNITY_ABBREV("unity.abbrev", Boolean.class, true),
     UNITY_SPACE("unity.space", Boolean.class, true),
+    VALUE_SPACE("value.space", Boolean.class, true),
 
     HISTORY_MAX("history.max", Integer.class, 100),
     HISTORY_SAVE("history.save", Boolean.class, true),

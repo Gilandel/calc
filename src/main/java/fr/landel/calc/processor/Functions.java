@@ -1,5 +1,7 @@
 package fr.landel.calc.processor;
 
+import java.time.LocalDateTime;
+import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,17 +36,48 @@ public enum Functions implements FunctionConstants {
     TAN("tan", I18n.DIALOG_FUNCTION_TAN, ONE_PARAM.apply(MathUtils.applyAngularFunction(Math::tan)), Params.ANGULAR),
 
     // TODO use LocalDateTime to convert long to an entity with unity
-    YEARS("year", I18n.DIALOG_FUNCTION_YEAR, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_YEAR, Unity.DATE_YEARS), Params.DATE),
-    MONTH("month", I18n.DIALOG_FUNCTION_MONTH, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_MONTH, Unity.DATE_MONTHS), Params.DATE),
-    WEEK("week", I18n.DIALOG_FUNCTION_WEEK, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_WEEK, Unity.DATE_WEEKS), Params.DATE),
-    DAY("day", I18n.DIALOG_FUNCTION_DAY, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_DAY, Unity.DATE_DAYS), Params.DATE),
-    HOURS("hours", I18n.DIALOG_FUNCTION_HOURS, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_HOUR, Unity.DATE_HOURS), Params.DATE),
-    MINUTES("minutes", I18n.DIALOG_FUNCTION_MINUTES, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_MINUTE, Unity.DATE_MINUTES), Params.DATE),
-    SECONDS("seconds", I18n.DIALOG_FUNCTION_SECONDS, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_SECOND, Unity.DATE_SECONDS), Params.DATE),
-    MILLISECONDS("milliseconds", I18n.DIALOG_FUNCTION_MILLISECONDS, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_MILLISECOND, Unity.DATE_MILLISECONDS), Params.DATE),
-    MICROSECONDS("microseconds", I18n.DIALOG_FUNCTION_MICROSECONDS, ONE_PARAM_UNITY.apply(v -> v / DateUtils.NANO_PER_MICROSECOND, Unity.DATE_MICROSECONDS), Params.DATE),
-    NANOSECONDS("nanoseconds", I18n.DIALOG_FUNCTION_NANOSECONDS, ONE_PARAM_UNITY.apply(Function.identity(), Unity.DATE_NANOSECONDS), Params.DATE),
-    NOW("now", NO_PARAM_UNITY.apply(() -> System.currentTimeMillis() * DateUtils.NANO_PER_MILLISECOND + DateUtils.NANO_1970, Unity.DATE_NANOSECONDS));
+    YEARS("year", I18n.DIALOG_FUNCTION_YEAR, e -> {
+        return new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getYear()));
+    }, Params.DATE_DATE),
+    MONTH(
+            "month",
+            I18n.DIALOG_FUNCTION_MONTH,
+            e -> new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getMonthValue())),
+            Params.DATE_DATE),
+    WEEK(
+            "week",
+            I18n.DIALOG_FUNCTION_WEEK,
+            e -> new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().get(IsoFields.WEEK_OF_WEEK_BASED_YEAR))),
+            Params.DATE_DATE),
+    DAY("day", I18n.DIALOG_FUNCTION_DAY, e -> new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getDayOfMonth())), Params.DATE_DATE),
+    HOURS("hour", I18n.DIALOG_FUNCTION_HOURS, e -> new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getHour())), Params.DATE_DATE),
+    MINUTES(
+            "minute",
+            I18n.DIALOG_FUNCTION_MINUTES,
+            e -> new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getMinute())),
+            Params.DATE_DATE),
+    SECONDS(
+            "second",
+            I18n.DIALOG_FUNCTION_SECONDS,
+            e -> new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getSecond())),
+            Params.DATE_DATE),
+    MILLISECONDS(
+            "millisecond",
+            I18n.DIALOG_FUNCTION_MILLISECONDS,
+            e -> new Entity(e[0].getIndex(), Math.floor(e[0].getDate().get().getNano() / DateUtils.NANO_PER_MILLISECOND)),
+            Params.DATE_DATE),
+    MICROSECONDS(
+            "microsecond",
+            I18n.DIALOG_FUNCTION_MICROSECONDS,
+            e -> new Entity(e[0].getIndex(), Math.floor(e[0].getDate().get().getNano() / DateUtils.NANO_PER_MICROSECOND)),
+            Params.DATE_DATE),
+    NANOSECONDS("nanosecond", I18n.DIALOG_FUNCTION_NANOSECONDS, e -> {
+        return new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getNano()));
+    }, Params.DATE_DATE),
+    NOW("now", e -> {
+        return new Entity(0, System.currentTimeMillis() * DateUtils.NANO_PER_MILLISECOND + DateUtils.NANO_1970, LocalDateTime.now(),
+                Unity.DATE_NANOSECONDS);
+    });
 
     public static final int MAX_PARAMS = Arrays.stream(Functions.values()).map(f -> f.getParamsCount()).max(Integer::compareTo).orElse(0);
 

@@ -211,11 +211,11 @@ public enum Unity {
         return this.symbols[this.symbols.length - 1];
     }
 
-    public String getSymbol(final boolean fullLength) {
-        if (fullLength) {
-            return this.longestSymbol();
-        } else {
+    public String getSymbol(final boolean abbrev) {
+        if (abbrev) {
             return this.shortestSymbol();
+        } else {
+            return this.longestSymbol();
         }
     }
 

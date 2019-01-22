@@ -19,7 +19,7 @@ public enum UnityType {
         if (!v.isUnity()) {
             appendDate(builder, v.getValue(), v.getUnities());
         } else {
-            builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityFullLength()));
+            builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityAbbrev()));
         }
         return builder.toString();
     }),
@@ -28,14 +28,14 @@ public enum UnityType {
         if (!v.isUnity()) {
             builder.append(stringify(v.toUnity())).append(StringUtils.SPACE);
         }
-        return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityFullLength())).toString();
+        return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityAbbrev())).toString();
     }),
     LENGTH(true, v -> {
         final StringBuilder builder = new StringBuilder();
         if (!v.isUnity()) {
             builder.append(stringify(v.toUnity())).append(StringUtils.SPACE);
         }
-        return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityFullLength())).toString();
+        return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityAbbrev())).toString();
     });
 
     private final boolean accumulable;
@@ -89,14 +89,14 @@ public enum UnityType {
                 } else {
                     intermediate = v / u;
                 }
-                if (appended && MainProcessor.isUnitySpace()) {
+                if (appended && MainProcessor.isValuesSpace()) {
                     builder.append(StringUtils.SPACE);
                 }
                 builder.append(stringify(intermediate, i < size));
-                if (MainProcessor.isUnitySpace()) {
+                if (MainProcessor.isUnitiesSpace()) {
                     builder.append(StringUtils.SPACE);
                 }
-                builder.append(unity.getSymbol(MainProcessor.isUnityFullLength()));
+                builder.append(unity.getSymbol(MainProcessor.isUnityAbbrev()));
                 appended = true;
             }
             ++i;
@@ -116,6 +116,14 @@ public enum UnityType {
 
         final String value = Double.toString(rounded);
         final int dot = value.indexOf('.');
+        final int exp = Math.max(value.indexOf('E'), value.indexOf('e'));
+        if (exp > -1) {
+            final int nbExp = Integer.parseInt(value.substring(exp + 1));
+            char[] chars = new char[value.length() + nbExp];
+            Arrays.fill(chars, '0');
+
+            // FIXME manage 8.4E6
+        }
         int length = dot + 1 + MainProcessor.getPrecision();
         final String result;
 

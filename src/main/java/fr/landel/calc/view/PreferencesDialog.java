@@ -3,6 +3,7 @@ package fr.landel.calc.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.BASELINE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
@@ -54,6 +55,7 @@ public class PreferencesDialog extends JDialog implements Dialog {
 
     private final JPanel panel = new JPanel();
     private final JPanel panelHistory = new JPanel();
+    private final JPanel panelFormat = new JPanel();
     private final JPanel panelTheme = new JPanel();
     private final JPanel panelLanguage = new JPanel();
 
@@ -64,6 +66,9 @@ public class PreferencesDialog extends JDialog implements Dialog {
     private final JComboBox<String> comboBoxTheme = new JComboBox<>();
     private final JLabel labelLanguage = new JLabel();
     private final JComboBox<String> comboBoxLanguage = new JComboBox<>();
+    private final JCheckBox abbreviatedMode = new JCheckBox();
+    private final JCheckBox spaceUnities = new JCheckBox();
+    private final JCheckBox spaceValues = new JCheckBox();
 
     private JButton buttonOk;
     private JButton buttonCancel;
@@ -105,6 +110,10 @@ public class PreferencesDialog extends JDialog implements Dialog {
         I18n.SUPPORTED_LOCALES_NAME.forEach(comboBoxLanguage::addItem);
         comboBoxLanguage.addItemListener(this::languageChanged);
 
+        updateI18n(I18n.DIALOG_PREFERENCES_UNITY_LENGTH, abbreviatedMode::setText);
+        updateI18n(I18n.DIALOG_PREFERENCES_UNITY_SPACE, spaceUnities::setText);
+        updateI18n(I18n.DIALOG_PREFERENCES_VALUE_SPACE, spaceValues::setText);
+
         this.resetConf();
 
         buttonOk = buildButton(I18n.DIALOG_BUTTON_OK, new Dimension(60, BUTTON_HEIGHT), this::buttonOkActionPerformed);
@@ -121,6 +130,7 @@ public class PreferencesDialog extends JDialog implements Dialog {
         });
 
         this.setHistoryLayout();
+        this.setFormatLayout();
         this.setThemeLayout();
         this.setLanguageLayout();
         this.setPanelLayout();
@@ -133,11 +143,13 @@ public class PreferencesDialog extends JDialog implements Dialog {
         FrameUtils.setLookAndFeel(this, laf, true);
 
         if ("Nimbus".equals(laf)) {
-            this.setSize(this.getWidth(), 370);
+            this.setSize(this.getWidth(), 470);
         } else if ("Metal".equals(laf)) {
-            this.setSize(this.getWidth(), 330);
+            this.setSize(this.getWidth(), 420);
+        } else if ("CDE/Motif".equals(laf)) {
+            this.setSize(this.getWidth(), 410);
         } else {
-            this.setSize(this.getWidth(), 290);
+            this.setSize(this.getWidth(), 380);
         }
 
         this.resetPosition();
@@ -154,6 +166,38 @@ public class PreferencesDialog extends JDialog implements Dialog {
             border.setTitle(text);
             panel.repaint();
         });
+    }
+
+    private void setFormatLayout() {
+        final GroupLayout layout = new GroupLayout(panelFormat);
+        panelFormat.setLayout(layout);
+        setTitledBorder(panelFormat, I18n.DIALOG_PREFERENCES_FORMAT);
+
+        // @formatter:off
+        layout.setHorizontalGroup(layout.createParallelGroup(LEADING)
+                .addGap(10, 10, MAX_SIZE)
+                .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(LEADING)
+                                .addComponent(abbreviatedMode))
+                        .addContainerGap())
+                .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(LEADING)
+                                .addComponent(spaceUnities))
+                        .addContainerGap())
+                .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(LEADING)
+                                .addComponent(spaceValues))
+                        .addContainerGap()));
+        
+        layout.setVerticalGroup(layout.createParallelGroup(LEADING)
+                .addGroup(layout.createSequentialGroup()
+                        .addComponent(abbreviatedMode)
+                        .addComponent(spaceUnities)
+                        .addComponent(spaceValues)));
+        // @formatter:on
     }
 
     private void setHistoryLayout() {
@@ -243,23 +287,25 @@ public class PreferencesDialog extends JDialog implements Dialog {
         panel.setLayout(layout);
 
         // @formatter:off
-        layout.setHorizontalGroup(layout.createParallelGroup(LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(CENTER)
                 .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(LEADING)
                                 .addComponent(panelHistory)))
                 .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(LEADING)
+                                .addComponent(panelFormat)))
+                .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(LEADING)
                                 .addComponent(panelTheme)))
                 .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(LEADING)
                                 .addComponent(panelLanguage))));
         
         layout.setVerticalGroup(layout.createParallelGroup(LEADING)
                 .addGroup(TRAILING, layout.createSequentialGroup()
                         .addComponent(panelHistory)
+                        .addGap(10)
+                        .addComponent(panelFormat)
                         .addGap(10)
                         .addComponent(panelTheme)
                         .addGap(10)
@@ -300,6 +346,9 @@ public class PreferencesDialog extends JDialog implements Dialog {
     private void resetConf() {
         saveHistory.setSelected(Conf.HISTORY_SAVE.getBoolean().get());
         spinnerSize.setValue(Conf.HISTORY_MAX.getInt().get());
+        abbreviatedMode.setSelected(Conf.UNITY_ABBREV.getBoolean().get());
+        spaceUnities.setSelected(Conf.UNITY_SPACE.getBoolean().get());
+        spaceValues.setSelected(Conf.VALUE_SPACE.getBoolean().get());
         comboBoxTheme.setSelectedIndex(lookAndFeels.indexOf(laf));
         comboBoxLanguage.setSelectedIndex(I18n.SUPPORTED_LOCALES.indexOf(Locale.getDefault()));
     }
@@ -322,6 +371,9 @@ public class PreferencesDialog extends JDialog implements Dialog {
     private void buttonOkActionPerformed(ActionEvent evt) {
         Conf.HISTORY_SAVE.set(saveHistory.isSelected());
         Conf.HISTORY_MAX.set(spinnerSize.getValue());
+        Conf.UNITY_ABBREV.set(abbreviatedMode.isSelected());
+        Conf.UNITY_SPACE.set(spaceUnities.isSelected());
+        Conf.VALUE_SPACE.set(spaceValues.isSelected());
 
         this.laf = comboBoxTheme.getSelectedItem().toString();
         Conf.THEME.set(this.laf);
