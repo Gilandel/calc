@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,6 +36,11 @@ public final class Configuration extends ConcurrentHashMap<String, String> {
     private static final String COMMENT_PREFIX = "# ";
     private static final String KEY_VALUE_SEPARATOR = " = ";
 
+    private static final String HISTORY_FORMULA_PREFIX = StringUtils.inject(Conf.HISTORY_FORMULA.getKey(), StringUtils.EMPTY);
+    private static final String VARIABLE_PREFIX = "variable.";
+    private static final int HISTORY_FORMULA_PREFIX_LENGTH = HISTORY_FORMULA_PREFIX.length();
+    private static final int VARIABLE_PREFIX_LENGTH = VARIABLE_PREFIX.length();
+
     private static final String PATH = ".calculatrice";
     private static final String FILENAME = "cfg.properties";
 
@@ -47,26 +51,11 @@ public final class Configuration extends ConcurrentHashMap<String, String> {
         if (FILE.exists()) {
             PROPS.load();
 
-            // remove old keys
-            String key;
-            final Iterator<Entry<String, String>> keys = PROPS.entrySet().iterator();
-            while (keys.hasNext()) {
-                key = String.valueOf(keys.next());
-                if (Conf.getConf(key).isEmpty() && !key.startsWith(Conf.HISTORY_FORMULA.getKey())) {
-                    PROPS.remove(key);
-                }
-            }
-
             LOGGER.info("Configuration loaded");
         } else if (!DIRECTORY.exists() && !DIRECTORY.mkdirs()) {
             LOGGER.error("Cannot create configuration directory: {}", DIRECTORY.getAbsolutePath());
         }
     }
-
-    private static final String HISTORY_FORMULA_PREFIX = StringUtils.inject(Conf.HISTORY_FORMULA.getKey(), StringUtils.EMPTY);
-    private static final String VARIABLE_PREFIX = "variable.";
-    private static final int HISTORY_FORMULA_PREFIX_LENGTH = HISTORY_FORMULA_PREFIX.length();
-    private static final int VARIABLE_PREFIX_LENGTH = VARIABLE_PREFIX.length();
 
     private static final TriFunction<String, String, Integer, Integer> COMPARATOR_PREFIX = (a, b, l) -> {
         final String aSegment = a.substring(l);
@@ -125,11 +114,14 @@ public final class Configuration extends ConcurrentHashMap<String, String> {
         if (!line.isBlank() && line.indexOf(COMMENT_PREFIX) != 0) {
             final int len = KEY_VALUE_SEPARATOR.length();
             final int pos = line.indexOf(KEY_VALUE_SEPARATOR);
+
             if (pos > -1 && pos + len < line.length()) {
                 final String key = line.substring(0, pos).trim();
                 final String value = line.substring(pos + len);
 
-                this.put(key, value);
+                if (Conf.getConf(key).isPresent() || key.startsWith(HISTORY_FORMULA_PREFIX) || key.startsWith(VARIABLE_PREFIX)) {
+                    this.put(key, value);
+                }
             }
         }
     }

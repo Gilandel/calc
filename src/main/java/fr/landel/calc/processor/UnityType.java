@@ -114,17 +114,9 @@ public enum UnityType {
     private static String stringify(final double input, boolean intermediate) {
         double rounded = MathUtils.round(input, MainProcessor.getPrecision());
 
-        final String value = Double.toString(rounded);
+        final String value = removeExponent(Double.toString(rounded));
         final int dot = value.indexOf('.');
-        final int exp = Math.max(value.indexOf('E'), value.indexOf('e'));
-        if (exp > -1) {
-            final int nbExp = Integer.parseInt(value.substring(exp + 1));
-            char[] chars = new char[value.length() + nbExp];
-            Arrays.fill(chars, '0');
-
-            // FIXME manage 8.4E6
-        }
-        int length = dot + 1 + MainProcessor.getPrecision();
+        final int length = dot + 1 + MainProcessor.getPrecision();
         final String result;
 
         if (intermediate && !value.substring(dot + 1).chars().anyMatch(v -> v != '0')) {
@@ -146,5 +138,42 @@ public enum UnityType {
         }
 
         return result;
+    }
+
+    private static String removeExponent(final String input) {
+
+        final int exp = Math.max(input.indexOf('E'), input.indexOf('e'));
+
+        if (exp > -1) {
+            int dot = input.indexOf('.');
+
+            if (dot < 0) {
+                dot = exp;
+            }
+
+            final int nbExp = Integer.parseInt(input.substring(exp + 1));
+            char[] in = input.toCharArray();
+            char[] out = new char[in.length + nbExp];
+
+            Arrays.fill(out, '0');
+
+            System.arraycopy(in, 0, out, 0, dot);
+
+            int pos = 0;
+            if (exp > dot) {
+                pos = Math.min(exp - dot - 1, nbExp);
+                System.arraycopy(in, dot + 1, out, dot, pos);
+            }
+
+            if (exp - dot > nbExp) { // 1.657376E8 165737600
+                pos = dot + pos + 1;
+                System.arraycopy(in, pos, out, nbExp + dot + 1, exp - pos);
+            }
+
+            out[nbExp + dot] = '.';
+
+            return new String(out);
+        }
+        return input;
     }
 }

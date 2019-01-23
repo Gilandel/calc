@@ -32,8 +32,8 @@ import javax.swing.JTextField;
 import fr.landel.calc.config.I18n;
 import fr.landel.calc.config.Images;
 import fr.landel.calc.processor.Entity;
-import fr.landel.calc.processor.FormulaProcessor;
 import fr.landel.calc.processor.Functions;
+import fr.landel.calc.processor.MainProcessor;
 import fr.landel.calc.processor.ProcessorException;
 import fr.landel.calc.utils.FrameUtils;
 import fr.landel.calc.utils.StringUtils;
@@ -210,11 +210,12 @@ public class FunctionDialog extends JDialog implements Dialog {
     }
 
     public void show(final Functions function, final ActionEvent event) {
-        function.updateI18n();
-        labelFunction.setText(function.toString());
-        updateI18n(function.getI18n(), labelDescription::setText);
-
         if (function.hasParams()) {
+
+            function.updateI18n();
+            labelFunction.setText(function.toString());
+            updateI18n(function.getI18n(), labelDescription::setText);
+
             IntStream.range(0, Functions.MAX_PARAMS).forEach(i -> {
                 if (i < function.getParamsCount()) {
                     labels.get(i).setText(function.getParams()[i].getI18n().getI18n());
@@ -275,12 +276,13 @@ public class FunctionDialog extends JDialog implements Dialog {
         if (this.function != null) {
             final String[] params = fields.subList(0, this.function.getParamsCount()).stream().map(JTextField::getText).toArray(String[]::new);
 
-            List<I18n> errors;
+            List<I18n> errors = new ArrayList<>();
             int i = 0;
             try {
                 final Entity[] entities = new Entity[params.length];
+                final MainProcessor processor = new MainProcessor();
                 for (i = 0; i < params.length; ++i) {
-                    entities[i] = new FormulaProcessor(params[i]).process();
+                    entities[i] = processor.processToEntity(params[i]);
                 }
                 errors = this.function.check(entities);
 

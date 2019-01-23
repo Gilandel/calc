@@ -336,15 +336,27 @@ public class Entity {
     }
 
     public Double toUnity() {
-        return this.firstUnity().toUnity(this.value);
+        if (this.hasUnity()) {
+            return this.firstUnity().toUnity(this.value);
+        } else {
+            return this.value;
+        }
     }
 
     public Double toUnity(final Double value) {
-        return this.firstUnity().toUnity(value);
+        if (this.hasUnity()) {
+            return this.firstUnity().toUnity(value);
+        } else {
+            return value;
+        }
     }
 
     public Double fromUnity(final Double value) {
-        return this.firstUnity().fromUnity(value);
+        if (this.hasUnity()) {
+            return this.firstUnity().fromUnity(value);
+        } else {
+            return value;
+        }
     }
 
     public int getIndex() {

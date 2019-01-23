@@ -189,6 +189,9 @@ public final class DateUtils {
     }
 
     public static void main(String[] args) {
-        System.out.printf("%.6f", toZeroNanosecond(1000_000) / (24 * 60 * 60 * 1_000_000_000_000_000d));
+        // System.out.printf("%.6f%n", toZeroNanosecond(0) / (24 * 60 * 60 * 1_000_000_000d));
+        // System.out.printf("%.6f%n", toZeroNanosecond(-4) / (24 * 60 * 60 * 1_000_000_000d));
+        // System.out.printf("%.6f%n", toZeroNanosecond(4) / (24 * 60 * 60 * 1_000_000_000d));
+        System.out.printf("%.6f%n", toZeroNanosecond(2018) / (24 * 60 * 60 * 1_000_000_000d) / 365);
     }
 }

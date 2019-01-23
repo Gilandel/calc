@@ -100,11 +100,19 @@ public class MainProcessor {
 
         final long start = System.currentTimeMillis();
 
-        final Formula result = new Formula(input, true, processFormula(prepare(input)));
+        final Formula result = new Formula(input, true, processFormula(prepare(input)).toString());
 
         LOGGER.info("'{}' processed in {} ms", input, System.currentTimeMillis() - start);
 
         return result;
+    }
+
+    public Entity processToEntity(final String input) throws ProcessorException {
+        if (input == null || input.isBlank()) {
+            throw new ProcessorException("Input formula cannot be null, empty or blank");
+        }
+
+        return processFormula(prepare(input));
     }
 
     private String prepare(final String input) throws ProcessorException {
@@ -117,7 +125,7 @@ public class MainProcessor {
         return StringUtils.replaceCommaByDot(StringUtils.removeAllSpaces(input));
     }
 
-    private String processFormula(final String input) throws ProcessorException {
+    private Entity processFormula(final String input) throws ProcessorException {
         if (RESTRICTED_LIST.stream().filter(input::contains).findAny().isPresent()) {
             throw new ProcessorException(I18n.ERROR_CHARACTERS_RESTRICTED, input, RESTRICTED_TEXT);
         }
@@ -126,16 +134,16 @@ public class MainProcessor {
     }
 
     // must return an entity (3h/2)>>i
-    private String processFormula(final ResultBuilder input) throws ProcessorException {
+    private Entity processFormula(final ResultBuilder input) throws ProcessorException {
         int parenthesisOpen = input.lastIndexOf(StringUtils.PARENTHESIS_OPEN);
         int parenthesisClose = input.indexOf(StringUtils.PARENTHESIS_CLOSE, parenthesisOpen + 1);
 
         if (parenthesisOpen < 0 && parenthesisClose < 0) {
             final Optional<Entity> entity = input.firstEntity();
             if (input.innerLength() == 0 && entity.isPresent()) {
-                return entity.get().toString();
+                return entity.get();
             } else {
-                return new FormulaProcessor(input).process().toString();
+                return new FormulaProcessor(input).process();
             }
 
         } else if (parenthesisOpen < 0 || parenthesisClose <= parenthesisOpen) {

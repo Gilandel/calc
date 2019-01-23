@@ -35,10 +35,8 @@ public enum Functions implements FunctionConstants {
     SQR("sqr", I18n.DIALOG_FUNCTION_SQR, ONE_PARAM.apply(Math::sqrt), Params.VALUE),
     TAN("tan", I18n.DIALOG_FUNCTION_TAN, ONE_PARAM.apply(MathUtils.applyAngularFunction(Math::tan)), Params.ANGULAR),
 
-    // TODO use LocalDateTime to convert long to an entity with unity
-    YEARS("year", I18n.DIALOG_FUNCTION_YEAR, e -> {
-        return new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getYear()));
-    }, Params.DATE_DATE),
+    // FIXME date, 3>>M 2019Y>>y
+    YEARS("year", I18n.DIALOG_FUNCTION_YEAR, e -> new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getYear())), Params.DATE_DATE),
     MONTH(
             "month",
             I18n.DIALOG_FUNCTION_MONTH,
@@ -69,11 +67,12 @@ public enum Functions implements FunctionConstants {
     MICROSECONDS(
             "microsecond",
             I18n.DIALOG_FUNCTION_MICROSECONDS,
-            e -> new Entity(e[0].getIndex(), Math.floor(e[0].getDate().get().getNano() / DateUtils.NANO_PER_MICROSECOND)),
+            e -> new Entity(e[0].getIndex(), Math.floor(e[0].getDate().get().getNano() / DateUtils.NANO_PER_MICROSECOND))),
+    NANOSECONDS(
+            "nanosecond",
+            I18n.DIALOG_FUNCTION_NANOSECONDS,
+            e -> new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getNano())),
             Params.DATE_DATE),
-    NANOSECONDS("nanosecond", I18n.DIALOG_FUNCTION_NANOSECONDS, e -> {
-        return new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getNano()));
-    }, Params.DATE_DATE),
     NOW("now", e -> {
         return new Entity(0, System.currentTimeMillis() * DateUtils.NANO_PER_MILLISECOND + DateUtils.NANO_1970, LocalDateTime.now(),
                 Unity.DATE_NANOSECONDS);

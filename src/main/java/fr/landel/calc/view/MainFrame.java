@@ -219,6 +219,7 @@ public class MainFrame extends JFrame implements Dialog {
         final JPanel topPanel = new JPanel();
 
         final JScrollPane screen = new JScrollPane();
+        screen.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.GRAY));
 
         screenList = new JList<>();
         mainFrameList = new MainFrameList(this, screenList, formulas);
