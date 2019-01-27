@@ -28,12 +28,12 @@ public class Entity {
 
     public static final Pattern PATTERN_VARIABLE = Pattern.compile("^\\$[a-zA-Z_]+$");
 
-    private static final Pattern PATTERN_NUMBER = Pattern.compile("([+-]?(:?[0-9]+(:?\\.[0-9]+)?|\\.[0-9]+)([Ee][+-]?[0-9]+)?)([a-zA-Z]+)?");
+    private static final Pattern PATTERN_NUMBER = Pattern.compile("([+-]?(:?[0-9]+(:?\\.[0-9]+)?|\\.[0-9]+)([Ee][+-]?[0-9]+)?)([a-zA-Z°'\"]+)?");
     private static final int GROUP_NUMBER = 0;
     private static final int GROUP_NUMBER_DECIMAL = 1;
     private static final int GROUP_NUMBER_UNITY = 5;
 
-    private static final Pattern PATTERN_UNITY = Pattern.compile("^[a-zA-Z]+$");
+    private static final Pattern PATTERN_UNITY = Pattern.compile("^[a-zA-Z°'\"]+$");
 
     private final int index;
     private Double value;

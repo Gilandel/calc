@@ -63,6 +63,14 @@ public enum Unity {
             v -> (v - Unity.CELSIUS_ZERO_IN_KELVIN) * Unity.REAUMUR_DEVIDER,
             "Re",
             "reaumur"),
+    TEMP_NEWTON(
+            4,
+            UnityType.TEMPERATURE,
+            v -> v / Unity.NEWTON_DEVIDER + Unity.CELSIUS_ZERO_IN_KELVIN,
+            v -> (v - Unity.CELSIUS_ZERO_IN_KELVIN) * Unity.NEWTON_DEVIDER,
+            "°N",
+            "newtonDegree"),
+    TEMP_RANKINE(5, UnityType.TEMPERATURE, v -> v * 5 / 9, v -> v * 9 / 5, "°R", "rankine"),
 
     LENGTH_METER(0, UnityType.LENGTH, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "m", "meter"),
     LENGTH_IMPERIAL_LEAGUE(1, UnityType.LENGTH, v -> v * Unity.LEAGUE_M, v -> v / Unity.LEAGUE_M, "lea", "league"),
@@ -83,6 +91,7 @@ public enum Unity {
     public static final double FAHRENHEIT_ZERO = 32;
     public static final double FAHRENHEIT_DEVIDER = 1.8;
     public static final double REAUMUR_DEVIDER = 0.8;
+    public static final double NEWTON_DEVIDER = 0.33;
 
     public static final double FOOT_M = 1_200d / 3_937d;
     public static final double INCH_M = FOOT_M / 12;

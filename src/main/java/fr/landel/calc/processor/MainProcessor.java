@@ -18,10 +18,11 @@ public class MainProcessor {
 
     private static final List<String> RESTRICTED_LIST = Arrays.asList(StringUtils.ID_OPEN, StringUtils.ID_CLOSE);
     private static final String RESTRICTED_TEXT = RESTRICTED_LIST.stream().collect(StringUtils.COMMA_JOINING_COLLECTOR);
-    private static final char[] KNOWN_ARRAY = ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_" + StringUtils.COMMA + StringUtils.DOT
-            + StringUtils.SEMICOLON + StringUtils.SPACE + StringUtils.PARENTHESIS_OPEN + StringUtils.PARENTHESIS_CLOSE + Operators.ADD.getOperator()
-            + Operators.SUBSTRACT.getOperator() + Operators.MULTIPLY.getOperator() + Operators.DEVIDE.getOperator() + Operators.POWER.getOperator()
-            + Operators.MODULO.getOperator() + Operators.CONVERT.getOperator() + Operators.VARIABLE.getOperator() + StringUtils.DOLLAR).toCharArray();
+    private static final char[] KNOWN_ARRAY = ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_°'\"" + StringUtils.COMMA
+            + StringUtils.DOT + StringUtils.SEMICOLON + StringUtils.SPACE + StringUtils.PARENTHESIS_OPEN + StringUtils.PARENTHESIS_CLOSE
+            + Operators.ADD.getOperator() + Operators.SUBSTRACT.getOperator() + Operators.MULTIPLY.getOperator() + Operators.DEVIDE.getOperator()
+            + Operators.POWER.getOperator() + Operators.MODULO.getOperator() + Operators.CONVERT.getOperator() + Operators.VARIABLE.getOperator()
+            + StringUtils.DOLLAR).toCharArray();
     static {
         Arrays.sort(KNOWN_ARRAY);
     }

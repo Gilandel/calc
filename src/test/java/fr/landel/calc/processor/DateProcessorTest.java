@@ -32,6 +32,7 @@ public class DateProcessorTest extends AbstractProcessorTest {
         MainProcessor.setValuesSpace(true);
 
         check("($m-($m=19h30-12h35+11h56-8h12-10h))>>hi", "18h 51i");
+        check("(10h+19h30-(19h30-12h35+11h56-8h12))>>hi", "18h 51i");
 
         MainProcessor.setValuesSpace(false);
 
