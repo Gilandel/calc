@@ -35,13 +35,22 @@ public class ResultBuilder {
         return new StringBuilder(StringUtils.ID_OPEN).append(id).append(StringUtils.ID_CLOSE).toString();
     }
 
-    public ResultBuilder append(final String text) throws ProcessorException {
-        if (formula.length() > 0 && Arrays.binarySearch(NUMBER, formula.charAt(formula.length() - 1)) > -1
-                && Arrays.binarySearch(NUMBER, text.charAt(0)) > -1) {
-            throw new ProcessorException(I18n.ERROR_RESULT_EVAL, formula, text);
+    public ResultBuilder append(final String text, final ResultBuilder input) throws ProcessorException {
+        if (!text.isEmpty()) {
+            return from(this, text, input);
         }
-        formula.append(text);
-        length += text.length();
+        return this;
+    }
+
+    public ResultBuilder append(final String text) throws ProcessorException {
+        if (!text.isEmpty()) {
+            if (formula.length() > 0 && Arrays.binarySearch(NUMBER, formula.charAt(formula.length() - 1)) > -1
+                    && Arrays.binarySearch(NUMBER, text.charAt(0)) > -1) {
+                throw new ProcessorException(I18n.ERROR_RESULT_EVAL, formula, text);
+            }
+            formula.append(text);
+            length += text.length();
+        }
         return this;
     }
 
@@ -126,7 +135,10 @@ public class ResultBuilder {
     }
 
     public static ResultBuilder from(final String block, final ResultBuilder input) throws ProcessorException {
-        final ResultBuilder result = new ResultBuilder();
+        return from(new ResultBuilder(), block, input);
+    }
+
+    public static ResultBuilder from(final ResultBuilder result, final String block, final ResultBuilder input) throws ProcessorException {
 
         if (block.indexOf(StringUtils.ID_OPEN) < 0 || !input.hasEntities()) {
             return result.append(block);

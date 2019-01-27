@@ -2,7 +2,6 @@ package fr.landel.calc.processor;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,11 +34,6 @@ public class Entity {
     private static final int GROUP_NUMBER_UNITY = 5;
 
     private static final Pattern PATTERN_UNITY = Pattern.compile("^[a-zA-Z]+$");
-
-    private static final String ERROR_PARSE = "the following expression cannot be parsed: {}";
-    private static final String ERROR_BAD_FORMAT = "the following expression is not formatted correctly: {}";
-    private static final String ERROR_INCOMPATIBLE_UNITIES = "the following expression contains incompatible unities: {}";
-    private static final String ERROR_UNITY = "the following unity is unknown: {}";
 
     private final int index;
     private Double value;
@@ -124,17 +118,17 @@ public class Entity {
                         this.value = entity.value;
 
                     } else if (entity.unities.size() > 1) {
-                        throw new ProcessorException(ERROR_UNITY, unityGroup);
+                        throw new ProcessorException(I18n.ERROR_UNITY_UNKNOWN, unityGroup);
 
                     } else {
                         this.check(entity, input, inputs);
                     }
                 } catch (NumberFormatException e) {
-                    LOGGER.error(e, ERROR_PARSE, input);
-                    throw new ProcessorException(e, ERROR_PARSE, input);
+                    LOGGER.error(e, I18n.ERROR_FORMULA_PARSE.getI18n(), input);
+                    throw new ProcessorException(e, I18n.ERROR_FORMULA_PARSE, input);
                 }
             } else {
-                throw new ProcessorException(ERROR_BAD_FORMAT, input);
+                throw new ProcessorException(I18n.ERROR_FORMULA_FORMAT, input);
             }
         }
 
@@ -166,7 +160,7 @@ public class Entity {
     private void check(final EntityTmp entity, final String input, final SortedMap<Unity, Double> inputs) throws ProcessorException {
 
         if (entity.unities.isEmpty()) {
-            entity.unity = entity.unity.next().orElseThrow(() -> new ProcessorException(ERROR_BAD_FORMAT, input));
+            entity.unity = entity.unity.next().orElseThrow(() -> new ProcessorException(I18n.ERROR_FORMULA_FORMAT, input));
         } else {
             entity.unity = entity.unities.first();
         }
@@ -175,11 +169,11 @@ public class Entity {
         entity.accumulable = entity.unityType.isAccumulable();
 
         if (this.hasUnity() && !Objects.equals(this.getUnityType(), entity.unityType)) {
-            throw new ProcessorException(ERROR_BAD_FORMAT, input);
+            throw new ProcessorException(I18n.ERROR_FORMULA_FORMAT, input);
 
         } else if (inputs.containsKey(entity.unity) || (Unity.INCOMPATIBLE_UNITIES.containsKey(entity.unity)
                 && Unity.INCOMPATIBLE_UNITIES.get(entity.unity).stream().anyMatch(inputs::containsKey))) {
-            throw new ProcessorException(ERROR_INCOMPATIBLE_UNITIES, input);
+            throw new ProcessorException(I18n.ERROR_FORMULA_UNITIES, input);
 
         } else {
             inputs.put(entity.unity, entity.value);
@@ -213,8 +207,8 @@ public class Entity {
             }
         }
         if (!this.isVariable()) {
-            LOGGER.error(ERROR_PARSE, input);
-            throw new ProcessorException(ERROR_PARSE, input);
+            LOGGER.error(I18n.ERROR_FORMULA_PARSE.getI18n(), input);
+            throw new ProcessorException(I18n.ERROR_FORMULA_PARSE, input);
         }
     }
 
@@ -226,8 +220,8 @@ public class Entity {
             }
         }
         if (!this.hasUnity()) {
-            LOGGER.error(ERROR_PARSE, input);
-            throw new ProcessorException(ERROR_PARSE, input);
+            LOGGER.error(I18n.ERROR_FORMULA_PARSE.getI18n(), input);
+            throw new ProcessorException(I18n.ERROR_FORMULA_PARSE, input);
         }
     }
 
@@ -410,24 +404,5 @@ public class Entity {
         UnityType unityType;
         boolean accumulable;
         SortedSet<Unity> unities;
-    }
-
-    public static void main(String[] args) throws ProcessorException {
-        // LocalDateTime.parse("2007-12-03T10:15:30");
-        Entity entity1 = new Entity(0, "2007y 1M");
-        Entity entity2 = new Entity(0, "2007y 4M");
-
-        System.out.println((entity2.getValue() - entity1.getValue()) + " : " + DateUtils.NANO_PER_MONTHS_SUM.get(2));
-
-        double annee = DateUtils.toZeroNanosecond(2007) + DateUtils.NANO_PER_MONTHS_SUM.get(11);
-        double annee1 = LocalDateTime.of(2017, 1, 1, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1_000_0000_000d + DateUtils.NANO_1970;
-        double annee2 = LocalDateTime.of(2000, 1, 1, 0, 0).toEpochSecond(ZoneOffset.UTC) * 1_000_0000_000d + DateUtils.NANO_1970;
-
-        Double y = (annee1 - DateUtils.NANO_1970) / 1_000_0000_000d;
-        Double y1 = (annee1 - annee2) / 1_000_0000_000d;
-        // long s = y ;
-        LocalDateTime date = LocalDateTime.ofEpochSecond(y.longValue(), 0, ZoneOffset.UTC);
-
-        System.out.printf("%,.6f%n%,.6f%n%,.6f%n%,.6f%n%s", entity1.getValue(), annee, annee1, annee2, date);
     }
 }

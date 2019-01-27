@@ -15,7 +15,6 @@ import javax.swing.JButton;
 import javax.swing.SwingConstants;
 
 import fr.landel.calc.config.I18n;
-import fr.landel.calc.utils.StringUtils;
 
 public interface Dialog {
 
@@ -34,7 +33,7 @@ public interface Dialog {
             // by parameters
             for (Entry<String[], Set<Consumer<String>>> map : entry.getValue().entrySet()) {
 
-                text = StringUtils.inject(entry.getKey().getI18n(), map.getKey());
+                text = entry.getKey().getI18n(map.getKey());
 
                 // by consumer
                 for (Consumer<String> consumer : map.getValue()) {
@@ -82,7 +81,7 @@ public interface Dialog {
 
     default void updateI18n(final I18n i18n, final Consumer<String> setter, final String... params) {
         addI18nSetter(i18n, setter, params);
-        setter.accept(StringUtils.inject(i18n.getI18n(), params));
+        setter.accept(i18n.getI18n(params));
     }
 
     default JButton buildButton(final I18n i18n, final Dimension dimension, final ActionListener actionListener, final String... params) {

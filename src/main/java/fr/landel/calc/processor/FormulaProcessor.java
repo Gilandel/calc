@@ -173,35 +173,26 @@ public class FormulaProcessor implements Processor {
 
             final Map<Integer, Entity> used = new HashMap<>();
 
-            int index;
+            int index, leftIndex, rightIndex;
             Entity left, right;
-            Entity leftResult, rightResult;
 
             for (Entry<Integer, Operators> entry : sortedOperators.entrySet()) {
                 index = this.positions.indexOf(entry.getKey());
+
                 if (index > 0) {
-                    left = this.segments.get(this.positions.get(index - 1));
+                    leftIndex = this.positions.get(index - 1);
                 } else {
-                    left = this.segments.get(0);
+                    leftIndex = 0;
                 }
-                right = this.segments.get(entry.getKey());
+                rightIndex = entry.getKey();
 
-                leftResult = used.get(left.getIndex());
-                rightResult = used.get(right.getIndex());
+                left = Optional.ofNullable(used.get(leftIndex)).orElse(this.segments.get(leftIndex));
+                right = Optional.ofNullable(used.get(rightIndex)).orElse(this.segments.get(rightIndex));
 
-                if (leftResult == null && rightResult == null) {
-                    result = entry.getValue().process(left, right);
-                    used.put(left.getIndex(), result);
-                    used.put(right.getIndex(), result);
+                result = entry.getValue().process(left, right);
 
-                } else if (leftResult == null) {
-                    result = entry.getValue().process(left, rightResult);
-                    used.put(left.getIndex(), result);
-
-                } else {
-                    result = entry.getValue().process(leftResult, right);
-                    used.put(right.getIndex(), result);
-                }
+                used.put(leftIndex, result);
+                used.put(rightIndex, result);
             }
         } else if (this.result != null && this.result.hasEntities() && ResultBuilder.FIRST_ID.equals(this.formula)) {
             result = this.result.firstEntity().get();
@@ -210,11 +201,5 @@ public class FormulaProcessor implements Processor {
         }
 
         return Optional.ofNullable(result);
-    }
-
-    public static void main(String[] args) throws ProcessorException {
-        Processor processor = new FormulaProcessor("15");
-
-        System.out.println(processor.process());
     }
 }

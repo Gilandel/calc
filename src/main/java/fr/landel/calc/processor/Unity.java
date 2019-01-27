@@ -102,7 +102,7 @@ public enum Unity {
         DATES_AVG = Collections.unmodifiableSortedSet(unities);
     }
 
-    static final SortedMap<Unity, Double> UNITIES;
+    static final SortedMap<Unity, Double> UNITIES_DATE;
     static {
         final SortedMap<Unity, Double> map = new TreeMap<>();
         map.put(DATE_YEARS, DateUtils.NANO_PER_YEAR);
@@ -119,13 +119,13 @@ public enum Unity {
         map.put(DATE_MILLISECONDS, DateUtils.NANO_PER_MILLISECOND);
         map.put(DATE_MICROSECONDS, DateUtils.NANO_PER_MICROSECOND);
         map.put(DATE_NANOSECONDS, 1d);
-        UNITIES = Collections.unmodifiableSortedMap(map);
+        UNITIES_DATE = Collections.unmodifiableSortedMap(map);
     }
 
     private static final String ERROR_BOUNDS_SUB_SECONDS = Arrays.asList(DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS).stream()
             .map(String::valueOf).collect(Collectors.joining("' or '"));
 
-    private static final BinaryOperator<Unity> REDUCER = (a, b) -> {
+    static final BinaryOperator<Unity> REDUCER = (a, b) -> {
         if (COMPARATOR_UNITIES.compare(a, b) > -1) {
             return a;
         } else {
@@ -237,14 +237,6 @@ public enum Unity {
         return Optional.ofNullable(NEXT_UNITY.get(this));
     }
 
-    public static Unity min(final SortedSet<Unity> left, final SortedSet<Unity> right) {
-        if (left.isEmpty() && right.isEmpty()) {
-            return Unity.NUMBER;
-        } else {
-            return REDUCER.apply(left.last(), right.last());
-        }
-    }
-
     public static SortedSet<Unity> merge(final SortedSet<Unity> left, final SortedSet<Unity> right) {
         final SortedSet<Unity> unities = new TreeSet<>(Unity.COMPARATOR_UNITIES);
         unities.addAll(left);
@@ -305,7 +297,7 @@ public enum Unity {
             int value = input.getValue().intValue();
 
             unities.add(unity);
-            amount += value * UNITIES.get(unity);
+            amount += value * UNITIES_DATE.get(unity);
         }
 
         return Duration.of(amount.longValue(), ChronoUnit.NANOS);
@@ -370,17 +362,5 @@ public enum Unity {
         }
 
         return LocalDateTime.of(year, month, dayOfMonth, hour, minute, second, nanoOfSecond);
-    }
-
-    public static void main(String[] args) throws ProcessorException {
-        System.out.println(REDUCER.apply(DATE_HOURS, DATE_MICROSECONDS));
-
-        String[] tests = {"minutes", "minute", "mile", "mi", "m", "i", "his", "mi"};
-
-        for (String test : tests) {
-            System.out.println(getUnities(test).stream().map(Unity::longestSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
-        }
-
-        System.out.println(getUnities("mi", UnityType.DATE).stream().map(Unity::longestSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
     }
 }

@@ -21,6 +21,7 @@ public class Formula implements Serializable {
      */
     public Formula(final String formula) {
         this.formula = formula;
+        this.result = Optional.empty();
     }
 
     /**

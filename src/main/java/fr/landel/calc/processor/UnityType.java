@@ -3,6 +3,7 @@ package fr.landel.calc.processor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.function.Function;
 
@@ -10,8 +11,8 @@ import fr.landel.calc.utils.MathUtils;
 import fr.landel.calc.utils.StringUtils;
 
 public enum UnityType {
-    // TODO manage output conf (exact, scientific, precision) remove
-    // stringify
+    // TODO manage output conf (exact, scientific, precision)
+
     VARIABLE(false, v -> v.getVariable()),
     NUMBER(false, v -> stringify(v.getValue())),
     DATE(true, v -> {
@@ -26,14 +27,20 @@ public enum UnityType {
     TEMPERATURE(false, v -> {
         final StringBuilder builder = new StringBuilder();
         if (!v.isUnity()) {
-            builder.append(stringify(v.toUnity())).append(StringUtils.SPACE);
+            builder.append(stringify(v.toUnity()));
+            if (MainProcessor.isUnitiesSpace()) {
+                builder.append(StringUtils.SPACE);
+            }
         }
         return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityAbbrev())).toString();
     }),
     LENGTH(true, v -> {
         final StringBuilder builder = new StringBuilder();
         if (!v.isUnity()) {
-            builder.append(stringify(v.toUnity())).append(StringUtils.SPACE);
+            builder.append(stringify(v.toUnity()));
+            if (MainProcessor.isUnitiesSpace()) {
+                builder.append(StringUtils.SPACE);
+            }
         }
         return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityAbbrev())).toString();
     });
@@ -70,8 +77,13 @@ public enum UnityType {
     }
 
     private static void appendDate(final StringBuilder builder, final double value, final SortedSet<Unity> unities) {
-        final int nanosPrecision = 9;
-        if (!MathUtils.isEqualOrGreater(value, 0d, nanosPrecision)) {
+        append(builder, value, unities, Unity.UNITIES_DATE, Unity.DATES_AVG, 9);
+    }
+
+    private static void append(final StringBuilder builder, final double value, final SortedSet<Unity> unities,
+            final SortedMap<Unity, Double> valuesByUnity, final SortedSet<Unity> sortedUnities, final int maxPrecision) {
+
+        if (!MathUtils.isEqualOrGreater(value, 0d, maxPrecision)) {
             builder.append('-');
         }
         final int size = unities.size();
@@ -81,7 +93,7 @@ public enum UnityType {
         Double u;
         int i = 0;
         for (Unity unity : unities) {
-            u = Unity.UNITIES.get(unity);
+            u = valuesByUnity.get(unity);
             if (u != null && v > u) {
                 if (i < unities.size() - 1) {
                     intermediate = Math.floor(v / u);
@@ -102,8 +114,8 @@ public enum UnityType {
             ++i;
         }
 
-        if (intermediate == null && !Unity.DATES_AVG.equals(unities)) {
-            appendDate(builder, value, Unity.DATES_AVG);
+        if (intermediate == null && !sortedUnities.equals(unities)) {
+            append(builder, value, sortedUnities, valuesByUnity, sortedUnities, maxPrecision);
         }
     }
 

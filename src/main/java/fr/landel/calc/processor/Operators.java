@@ -10,6 +10,7 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
+import fr.landel.calc.config.I18n;
 import fr.landel.calc.utils.MapUtils;
 
 public enum Operators implements OperatorConstants {
@@ -93,7 +94,7 @@ public enum Operators implements OperatorConstants {
      */
     public Entity process(final Entity left, final Entity right) throws ProcessorException {
         if (!this.validator.test(left, right)) {
-            throw new ProcessorException("At least one value ({}, {}) doesn't match the predicate for operator {}", left, right, this.operator);
+            throw new ProcessorException(I18n.ERROR_OPERATOR, left, right, this.operator);
         }
         return this.processor.apply(left, right);
     }

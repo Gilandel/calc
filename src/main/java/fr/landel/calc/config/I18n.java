@@ -197,15 +197,22 @@ public enum I18n {
     ERROR_CHARACTERS_UNKNOWN("error.characters.unknown"),
     ERROR_RESULT_EVAL("error.result.eval"),
     ERROR_FUNCTION_PARSE("error.function.parse"),
+    ERROR_FUNCTION_UNKNOWN("error.function.unknown"),
+    ERROR_FORMULA_EMPTY("error.formula.empty"),
     ERROR_FORMULA_PARSE("error.formula.parse"),
     ERROR_FORMULA_OPERATOR_POSITION("error.formula.operator.position"),
     ERROR_FORMULA_OPERATOR_MISSING("error.formula.operator.missing"),
+    ERROR_FORMULA_FORMAT("error.formula.format"),
+    ERROR_FORMULA_UNITIES("error.formula.unities"),
+    ERROR_FORMULA_PARENTHESIS("error.formula.parenthesis"),
     ERROR_VARIABLE_VALUE_MISSING("error.variable.value.missing"),
     ERROR_UNITY_TYPE("error.unity.type"),
     ERROR_UNITY_PARSE("error.unity.parse"),
     ERROR_UNITY_PARSE_TYPE("error.unity.parse.type"),
     ERROR_UNITY_BOUNDS("error.unity.bounds"),
-    ERROR_UNITY_VALUE_MISSING("error.unity.value.missing");
+    ERROR_UNITY_UNKNOWN("error.unity.unknown"),
+    ERROR_UNITY_VALUE_MISSING("error.unity.value.missing"),
+    ERROR_OPERATOR("error.operator");
 
     private static final Logger LOGGER = new Logger(I18n.class);
 
@@ -300,12 +307,16 @@ public enum I18n {
         return this.image;
     }
 
-    public String getI18n() {
+    public String getI18n(final String... params) {
+        return getI18n((Object[]) params);
+    }
+
+    public String getI18n(final Object... params) {
         final Locale locale = Locale.getDefault();
         if (this.i18n == null || !locale.equals(this.locale)) {
             this.reload(locale);
         }
-        return this.i18n;
+        return StringUtils.inject(this.i18n, params);
     }
 
     private void reload(final Locale locale) {

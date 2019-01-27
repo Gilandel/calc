@@ -95,7 +95,7 @@ public class MainProcessor {
 
     public Formula process(final String input) throws ProcessorException {
         if (input == null || input.isBlank()) {
-            throw new ProcessorException("Input formula cannot be null, empty or blank");
+            throw new ProcessorException(I18n.ERROR_FORMULA_EMPTY);
         }
 
         final long start = System.currentTimeMillis();
@@ -109,7 +109,7 @@ public class MainProcessor {
 
     public Entity processToEntity(final String input) throws ProcessorException {
         if (input == null || input.isBlank()) {
-            throw new ProcessorException("Input formula cannot be null, empty or blank");
+            throw new ProcessorException(I18n.ERROR_FORMULA_EMPTY);
         }
 
         return processFormula(prepare(input));
@@ -133,7 +133,6 @@ public class MainProcessor {
         return processFormula(ResultBuilder.from(input));
     }
 
-    // must return an entity (3h/2)>>i
     private Entity processFormula(final ResultBuilder input) throws ProcessorException {
         int parenthesisOpen = input.lastIndexOf(StringUtils.PARENTHESIS_OPEN);
         int parenthesisClose = input.indexOf(StringUtils.PARENTHESIS_CLOSE, parenthesisOpen + 1);
@@ -147,7 +146,7 @@ public class MainProcessor {
             }
 
         } else if (parenthesisOpen < 0 || parenthesisClose <= parenthesisOpen) {
-            throw new ProcessorException("Parenthesis error");
+            throw new ProcessorException(I18n.ERROR_FORMULA_PARENTHESIS);
         }
 
         final ResultBuilder result = new ResultBuilder();
@@ -161,11 +160,11 @@ public class MainProcessor {
             if (function.isPresent()) {
 
                 final FunctionThrowable<String, Entity, ProcessorException> processor = s -> {
-                    final Optional<Entity> entity = input.getEntity(s);
-                    if (entity.isPresent()) {
-                        return entity.get();
+                    final ResultBuilder rb = ResultBuilder.from(s, input);
+                    if (rb.innerLength() == 0 && rb.getEntitiesSize() == 1) {
+                        return rb.firstEntity().get();
                     } else {
-                        return new FormulaProcessor(s).process();
+                        return new FormulaProcessor(rb).process();
                     }
                 };
 
@@ -173,10 +172,10 @@ public class MainProcessor {
                         .toArray(Entity[]::new);
 
                 final Entity entity = new FunctionProcessor(function.get(), entities).process();
-                result.append(input.substring(0, parenthesisOpen - function.get().getFunction().length()));
+                result.append(input.substring(0, parenthesisOpen - function.get().getFunction().length()), input);
                 result.append(entity);
             } else {
-                result.append(prefix).append(new FormulaProcessor(ResultBuilder.from(block, input)).process());
+                result.append(prefix, input).append(new FormulaProcessor(ResultBuilder.from(block, input)).process());
             }
         } else {
             result.append(block);
@@ -184,7 +183,7 @@ public class MainProcessor {
 
         if (++parenthesisClose > -1 && parenthesisClose < input.length()) {
             final String suffix = input.substring(parenthesisClose, input.length());
-            result.append(suffix);
+            result.append(suffix, input);
         }
         return processFormula(result);
     }
@@ -204,30 +203,10 @@ public class MainProcessor {
             if (function.isPresent()) {
                 return function;
             } else {
-                throw new ProcessorException("Function not found: {}", new String(inputFunction));
+                throw new ProcessorException(I18n.ERROR_FUNCTION_UNKNOWN, new String(inputFunction));
             }
         }
 
         return Optional.empty();
-    }
-
-    public static void main(String[] args) throws ProcessorException {
-        long start = System.currentTimeMillis();
-
-        MainProcessor processor = new MainProcessor();
-
-        System.out.println(processor.processFormula("2007y3M-2008y2M"));
-        System.out.println(processor.processFormula("100Y7M*2")); // bug > 293 ans (long)
-        System.out.println(processor.processFormula("3*(3+2)"));
-        System.out.println(processor.processFormula("((3+2)*pow(9/abs(3);1-5))-2"));
-        System.out.println(processor.processFormula("15in>>m"));
-        System.out.println(processor.processFormula("(15h+12s)>>his"));
-        System.out.println(processor.processFormula("5K>>C"));
-        System.out.println(processor.processFormula("5C>>K"));
-        System.out.println(processor.processFormula("15/(1200/3937/12)"));
-        System.out.println(processor.processFormula("15m>>in"));
-        System.out.println(processor.processFormula("2017y12M >>y")); // bug
-
-        System.out.printf("%n%d ms", System.currentTimeMillis() - start);
     }
 }
