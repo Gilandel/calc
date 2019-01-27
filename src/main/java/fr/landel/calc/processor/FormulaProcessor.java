@@ -25,8 +25,10 @@ public class FormulaProcessor implements Processor {
     // new Logger(SimpleFormulaProcessor.class);
 
     private static final char[] POW_10 = "eE".toCharArray();
+    private static final Operators[] POW_10_OPERATORS = {Operators.ADD, Operators.SUBSTRACT};
     static {
         Arrays.sort(POW_10);
+        Arrays.sort(POW_10_OPERATORS);
     }
     private static final Supplier<SortedSet<Integer>> SUPPLIER_SORTED_SET = () -> new TreeSet<>(Integer::compareTo);
     private static final Supplier<List<Integer>> SUPPLIER_LIST = ArrayList::new;
@@ -111,7 +113,9 @@ public class FormulaProcessor implements Processor {
                 operator = entry.getValue();
 
                 // remove false operators = +1, ++1, E+1, e+1
-                if (pos > 0 && (lastPos == -1 || lastPos + lastOperator.getLength() < pos) && Arrays.binarySearch(POW_10, this.chars[pos - 1]) < 0) {
+                if (pos > 0 && (lastPos == -1 || lastPos + lastOperator.getLength() < pos)
+                        && (Arrays.binarySearch(POW_10_OPERATORS, operator) < 0 || Arrays.binarySearch(POW_10, this.chars[pos - 1]) < 0)) {
+
                     this.positions.add(pos);
                     if (lastRealPos > -1) {
                         addSegment(lastRealPos, lastRealPos + lastRealOperator.getLength(), pos);

@@ -48,14 +48,21 @@ public enum Unity {
     DATE_NANOSECONDS(14, UnityType.DATE, "N", "nanosecond"),
 
     TEMP_KELVIN(0, UnityType.TEMPERATURE, "K", "kelvin"),
-    TEMP_CELCIUS(1, UnityType.TEMPERATURE, v -> v + Unity.CELCIUS_ZERO_IN_KELVIN, v -> v - Unity.CELCIUS_ZERO_IN_KELVIN, "C", "celcius"),
+    TEMP_CELSIUS(1, UnityType.TEMPERATURE, v -> v + Unity.CELSIUS_ZERO_IN_KELVIN, v -> v - Unity.CELSIUS_ZERO_IN_KELVIN, "C", "celsius"),
     TEMP_FARENHEIT(
             2,
             UnityType.TEMPERATURE,
-            v -> (v - Unity.FAHRENHEIT_ZERO) / Unity.FAHRENHEIT_DEVIDER + Unity.CELCIUS_ZERO_IN_KELVIN,
-            v -> (v - Unity.CELCIUS_ZERO_IN_KELVIN) * Unity.FAHRENHEIT_DEVIDER + Unity.FAHRENHEIT_ZERO,
+            v -> (v - Unity.FAHRENHEIT_ZERO) / Unity.FAHRENHEIT_DEVIDER + Unity.CELSIUS_ZERO_IN_KELVIN,
+            v -> (v - Unity.CELSIUS_ZERO_IN_KELVIN) * Unity.FAHRENHEIT_DEVIDER + Unity.FAHRENHEIT_ZERO,
             "F",
             "farhenheit"),
+    TEMP_REAUMUR(
+            3,
+            UnityType.TEMPERATURE,
+            v -> v / Unity.REAUMUR_DEVIDER + Unity.CELSIUS_ZERO_IN_KELVIN,
+            v -> (v - Unity.CELSIUS_ZERO_IN_KELVIN) * Unity.REAUMUR_DEVIDER,
+            "Re",
+            "reaumur"),
 
     LENGTH_METER(0, UnityType.LENGTH, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "m", "meter"),
     LENGTH_IMPERIAL_LEAGUE(1, UnityType.LENGTH, v -> v * Unity.LEAGUE_M, v -> v / Unity.LEAGUE_M, "lea", "league"),
@@ -66,13 +73,16 @@ public enum Unity {
     LENGTH_IMPERIAL_FOOT(6, UnityType.LENGTH, v -> v * Unity.FOOT_M, v -> v / Unity.FOOT_M, "ft", "foot"),
     LENGTH_IMPERIAL_INCH(7, UnityType.LENGTH, v -> v * Unity.INCH_M, v -> v / Unity.INCH_M, "in", "inch"),
     LENGTH_IMPERIAL_DIGIT(8, UnityType.LENGTH, v -> v * Unity.DIGIT_M, v -> v / Unity.DIGIT_M, "di", "digit"),
-    LENGTH_IMPERIAL_THOU(9, UnityType.LENGTH, v -> v * Unity.THOU_M, v -> v / Unity.THOU_M, "th", "thou");
+    LENGTH_IMPERIAL_THOU(9, UnityType.LENGTH, v -> v * Unity.THOU_M, v -> v / Unity.THOU_M, "th", "thou"),
+
+    ;
 
     public static final Comparator<Unity> COMPARATOR_UNITIES = (a, b) -> Integer.compare(a.index, b.index);
 
-    public static final double CELCIUS_ZERO_IN_KELVIN = 273.15;
+    public static final double CELSIUS_ZERO_IN_KELVIN = 273.15;
     public static final double FAHRENHEIT_ZERO = 32;
     public static final double FAHRENHEIT_DEVIDER = 1.8;
+    public static final double REAUMUR_DEVIDER = 0.8;
 
     public static final double FOOT_M = 1_200d / 3_937d;
     public static final double INCH_M = FOOT_M / 12;

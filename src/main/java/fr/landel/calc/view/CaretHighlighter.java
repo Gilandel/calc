@@ -17,6 +17,7 @@ public class CaretHighlighter {
 
     // TODO analyser le texte a la modification pas au deplacement du curseur
     // precalculer les zones a coloriser
+    // corriger e>>
 
     private static final Logger LOGGER = new Logger(CaretHighlighter.class);
 
