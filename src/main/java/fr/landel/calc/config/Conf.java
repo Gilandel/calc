@@ -130,11 +130,15 @@ public enum Conf {
     }
 
     public static void setFormula(final int index, final Formula formula) {
-        Configuration.set(Conf.HISTORY_FORMULA, index, formula.getFormula());
-        formula.getResult().ifPresent(result -> {
-            Configuration.set(Conf.HISTORY_FORMULA_STATUS, index, String.valueOf(result.isSuccess()));
-            Configuration.set(Conf.HISTORY_FORMULA_RESULT, index, result.getResult());
-        });
+        if (formula != null) {
+            Configuration.set(Conf.HISTORY_FORMULA, index, formula.getFormula());
+            formula.getResult().ifPresent(result -> {
+                Configuration.set(Conf.HISTORY_FORMULA_STATUS, index, String.valueOf(result.isSuccess()));
+                Configuration.set(Conf.HISTORY_FORMULA_RESULT, index, result.getResult());
+            });
+        } else {
+            Configuration.set(Conf.HISTORY_FORMULA, index, null);
+        }
     }
 
     public static List<Formula> getFormulas() {

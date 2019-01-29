@@ -42,7 +42,7 @@ public enum Unity {
     DATE_MONTHS_LEAP(6, UnityType.DATE, v -> v * DateUtils.NANO_PER_MONTH_LEAP, v -> v / DateUtils.NANO_PER_MONTH_LEAP, "ML", "monthLeap"),
     DATE_WEEKS(7, UnityType.DATE, v -> v * DateUtils.NANO_PER_WEEK, v -> v / DateUtils.NANO_PER_WEEK, "W", "week"),
     DATE_DAYS_MONTH(8, UnityType.DATE, v -> v * DateUtils.NANO_PER_DAY, v -> v / DateUtils.NANO_PER_DAY, new int[] {9}, "D", "day"),
-    DATE_DAYS_YEAR(9, UnityType.DATE, v -> v * DateUtils.NANO_PER_DAY, v -> v / DateUtils.NANO_PER_DAY, "d", "dayYear"),
+    DATE_DAYS_YEAR(9, UnityType.DATE, v -> v * DateUtils.NANO_PER_DAY, v -> v / DateUtils.NANO_PER_DAY, "d", "dayOfYear"),
     DATE_HOURS(10, UnityType.DATE, v -> v * DateUtils.NANO_PER_HOUR, v -> v / DateUtils.NANO_PER_HOUR, "h", "hour"),
     DATE_MINUTES(11, UnityType.DATE, v -> v * DateUtils.NANO_PER_MINUTE, v -> v / DateUtils.NANO_PER_MINUTE, "i", "minute"),
     DATE_SECONDS(12, UnityType.DATE, v -> v * DateUtils.NANO_PER_SECOND, v -> v / DateUtils.NANO_PER_SECOND, "s", "second"),
