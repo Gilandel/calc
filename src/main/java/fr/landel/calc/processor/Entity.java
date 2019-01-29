@@ -44,10 +44,14 @@ public class Entity {
     private boolean positive;
     private String variable;
 
-    public Entity(final int index, final String input) throws ProcessorException {
+    public Entity(final int index, final String input, final UnityType type) throws ProcessorException {
         this.index = index;
-        parse(input);
+        parse(input, type);
         prepare();
+    }
+
+    public Entity(final int index, final String input) throws ProcessorException {
+        this(index, input, null);
     }
 
     public Entity(final int index, final Double value, final Duration duration, final SortedSet<Unity> unities) {
@@ -98,7 +102,7 @@ public class Entity {
         this(index, value, Unity.NUMBER);
     }
 
-    private void parse(final String input) throws ProcessorException {
+    private void parse(final String input, final UnityType type) throws ProcessorException {
         final EntityTmp entity = new EntityTmp();
         final SortedMap<Unity, Double> inputs = new TreeMap<>(Unity.COMPARATOR_UNITIES);
 
@@ -112,7 +116,7 @@ public class Entity {
                     entity.value = Double.parseDouble(matcher.group(GROUP_NUMBER_DECIMAL));
 
                     final String unityGroup = matcher.group(GROUP_NUMBER_UNITY);
-                    entity.unities = Unity.getUnities(unityGroup);
+                    entity.unities = Unity.getUnities(unityGroup, type);
 
                     if (entity.unities.isEmpty() && !entity.accumulable) {
                         this.value = entity.value;
@@ -141,7 +145,7 @@ public class Entity {
             notParsedlength = 0;
 
         } else if (!this.isNumber() && !this.hasUnity()) {
-            loadUnities(input);
+            loadUnities(input, type);
             notParsedlength = 0;
         }
 
@@ -212,9 +216,9 @@ public class Entity {
         }
     }
 
-    private void loadUnities(final String input) throws ProcessorException {
+    private void loadUnities(final String input, final UnityType type) throws ProcessorException {
         if (PATTERN_UNITY.matcher(input).matches()) {
-            final SortedSet<Unity> list = Unity.getUnities(input);
+            final SortedSet<Unity> list = Unity.getUnities(input, type);
             if (!list.isEmpty() && !this.hasUnity()) {
                 this.setUnities(list.toArray(Unity[]::new));
             }

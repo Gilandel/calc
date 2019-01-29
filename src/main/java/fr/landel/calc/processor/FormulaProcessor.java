@@ -40,6 +40,7 @@ public class FormulaProcessor implements Processor {
     private final char[] chars;
     private final ResultBuilder result;
 
+    private UnityType type;
     private final List<Integer> positions = new ArrayList<>();
     private final Map<Integer, Entity> segments = new HashMap<>();
     private SortedMap<Integer, Operators> sortedOperators;
@@ -153,17 +154,26 @@ public class FormulaProcessor implements Processor {
     }
 
     private void addSegment(final int index, final int start, final int end) throws ProcessorException {
-        final Optional<Entity> entity;
+        final Optional<Entity> optionalEntity;
+        final Entity entity;
+
         if (result != null) {
-            entity = result.subEntity(start, end);
+            optionalEntity = result.subEntity(start, end);
         } else {
-            entity = Optional.empty();
+            optionalEntity = Optional.empty();
         }
-        if (entity.isPresent()) {
-            this.segments.put(index, entity.get());
+
+        if (optionalEntity.isPresent()) {
+            entity = optionalEntity.get();
         } else {
-            this.segments.put(index, new Entity(index, this.formula.substring(start, end)));
+            entity = new Entity(index, this.formula.substring(start, end), type);
         }
+
+        if (entity.getUnityType() != null && !UnityType.NUMBER.equals(entity.getUnityType())) {
+            this.type = entity.getUnityType();
+        }
+
+        this.segments.put(index, entity);
     }
 
     private Optional<Entity> calculate() throws ProcessorException {

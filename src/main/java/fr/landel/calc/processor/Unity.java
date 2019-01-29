@@ -2,7 +2,9 @@ package fr.landel.calc.processor;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,13 +41,14 @@ public enum Unity {
     DATE_MONTHS_AVG(5, UnityType.DATE, v -> v * DateUtils.NANO_PER_MONTH_AVG, v -> v / DateUtils.NANO_PER_MONTH_AVG, "MA", "monthAverage"),
     DATE_MONTHS_LEAP(6, UnityType.DATE, v -> v * DateUtils.NANO_PER_MONTH_LEAP, v -> v / DateUtils.NANO_PER_MONTH_LEAP, "ML", "monthLeap"),
     DATE_WEEKS(7, UnityType.DATE, v -> v * DateUtils.NANO_PER_WEEK, v -> v / DateUtils.NANO_PER_WEEK, "W", "week"),
-    DATE_DAYS(8, UnityType.DATE, v -> v * DateUtils.NANO_PER_DAY, v -> v / DateUtils.NANO_PER_DAY, "D", "day"),
-    DATE_HOURS(9, UnityType.DATE, v -> v * DateUtils.NANO_PER_HOUR, v -> v / DateUtils.NANO_PER_HOUR, "h", "hour"),
-    DATE_MINUTES(10, UnityType.DATE, v -> v * DateUtils.NANO_PER_MINUTE, v -> v / DateUtils.NANO_PER_MINUTE, "i", "minute"),
-    DATE_SECONDS(11, UnityType.DATE, v -> v * DateUtils.NANO_PER_SECOND, v -> v / DateUtils.NANO_PER_SECOND, "s", "second"),
-    DATE_MILLISECONDS(12, UnityType.DATE, v -> v * DateUtils.NANO_PER_MILLISECOND, v -> v / DateUtils.NANO_PER_MILLISECOND, "S", "millisecond"),
-    DATE_MICROSECONDS(13, UnityType.DATE, v -> v * DateUtils.NANO_PER_MICROSECOND, v -> v / DateUtils.NANO_PER_MICROSECOND, "O", "microsecond"),
-    DATE_NANOSECONDS(14, UnityType.DATE, "N", "nanosecond"),
+    DATE_DAYS_MONTH(8, UnityType.DATE, v -> v * DateUtils.NANO_PER_DAY, v -> v / DateUtils.NANO_PER_DAY, new int[] {9}, "D", "day"),
+    DATE_DAYS_YEAR(9, UnityType.DATE, v -> v * DateUtils.NANO_PER_DAY, v -> v / DateUtils.NANO_PER_DAY, "d", "dayYear"),
+    DATE_HOURS(10, UnityType.DATE, v -> v * DateUtils.NANO_PER_HOUR, v -> v / DateUtils.NANO_PER_HOUR, "h", "hour"),
+    DATE_MINUTES(11, UnityType.DATE, v -> v * DateUtils.NANO_PER_MINUTE, v -> v / DateUtils.NANO_PER_MINUTE, "i", "minute"),
+    DATE_SECONDS(12, UnityType.DATE, v -> v * DateUtils.NANO_PER_SECOND, v -> v / DateUtils.NANO_PER_SECOND, "s", "second"),
+    DATE_MILLISECONDS(13, UnityType.DATE, v -> v * DateUtils.NANO_PER_MILLISECOND, v -> v / DateUtils.NANO_PER_MILLISECOND, "S", "millisecond"),
+    DATE_MICROSECONDS(14, UnityType.DATE, v -> v * DateUtils.NANO_PER_MICROSECOND, v -> v / DateUtils.NANO_PER_MICROSECOND, "O", "microsecond"),
+    DATE_NANOSECONDS(15, UnityType.DATE, "N", "nanosecond"),
 
     TEMP_KELVIN(0, UnityType.TEMPERATURE, "K", "kelvin"),
     TEMP_CELSIUS(1, UnityType.TEMPERATURE, v -> v + Unity.CELSIUS_ZERO_IN_KELVIN, v -> v - Unity.CELSIUS_ZERO_IN_KELVIN, "C", "celsius"),
@@ -108,8 +111,8 @@ public enum Unity {
     static final SortedSet<Unity> DATES_AVG;
     static {
         final SortedSet<Unity> unities = new TreeSet<>(COMPARATOR_UNITIES);
-        unities.addAll(Arrays.asList(DATE_YEARS_AVG, DATE_MONTHS_AVG, DATE_WEEKS, DATE_DAYS, DATE_HOURS, DATE_MINUTES, DATE_SECONDS,
-                DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS));
+        unities.addAll(Arrays.asList(DATE_YEARS_AVG, DATE_MONTHS_AVG, DATE_WEEKS, DATE_DAYS_MONTH, DATE_DAYS_YEAR, DATE_HOURS, DATE_MINUTES,
+                DATE_SECONDS, DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS));
         DATES_AVG = Collections.unmodifiableSortedSet(unities);
     }
 
@@ -123,7 +126,8 @@ public enum Unity {
         map.put(DATE_MONTHS_AVG, DateUtils.NANO_PER_MONTH_AVG);
         map.put(DATE_MONTHS_LEAP, DateUtils.NANO_PER_MONTH_LEAP);
         map.put(DATE_WEEKS, DateUtils.NANO_PER_WEEK);
-        map.put(DATE_DAYS, DateUtils.NANO_PER_DAY);
+        map.put(DATE_DAYS_MONTH, DateUtils.NANO_PER_DAY);
+        map.put(DATE_DAYS_YEAR, DateUtils.NANO_PER_DAY);
         map.put(DATE_HOURS, DateUtils.NANO_PER_HOUR);
         map.put(DATE_MINUTES, DateUtils.NANO_PER_MINUTE);
         map.put(DATE_SECONDS, DateUtils.NANO_PER_SECOND);
@@ -131,6 +135,23 @@ public enum Unity {
         map.put(DATE_MICROSECONDS, DateUtils.NANO_PER_MICROSECOND);
         map.put(DATE_NANOSECONDS, 1d);
         UNITIES_DATE = Collections.unmodifiableSortedMap(map);
+    }
+
+    static final Map<Unity, TemporalField> UNITIES_DATE_TEMPORAL;
+    static {
+        final Map<Unity, TemporalField> map = new HashMap<>();
+        map.put(DATE_YEAR, ChronoField.YEAR);
+        map.put(DATE_MONTHS, ChronoField.MONTH_OF_YEAR);
+        map.put(DATE_WEEKS, ChronoField.ALIGNED_WEEK_OF_YEAR);
+        map.put(DATE_DAYS_MONTH, ChronoField.DAY_OF_MONTH);
+        map.put(DATE_DAYS_YEAR, ChronoField.DAY_OF_YEAR);
+        map.put(DATE_HOURS, ChronoField.HOUR_OF_DAY);
+        map.put(DATE_MINUTES, ChronoField.MINUTE_OF_HOUR);
+        map.put(DATE_SECONDS, ChronoField.SECOND_OF_MINUTE);
+        map.put(DATE_MILLISECONDS, ChronoField.MILLI_OF_SECOND);
+        map.put(DATE_MICROSECONDS, ChronoField.NANO_OF_DAY);
+        map.put(DATE_NANOSECONDS, ChronoField.NANO_OF_SECOND);
+        UNITIES_DATE_TEMPORAL = Collections.unmodifiableMap(map);
     }
 
     private static final String ERROR_BOUNDS_SUB_SECONDS = Arrays.asList(DATE_MILLISECONDS, DATE_MICROSECONDS, DATE_NANOSECONDS).stream()
@@ -255,10 +276,6 @@ public enum Unity {
         return unities;
     }
 
-    public static SortedSet<Unity> getUnities(final String text) throws ProcessorException {
-        return getUnities(text, null);
-    }
-
     public static SortedSet<Unity> getUnities(final String input, final UnityType requiredType) throws ProcessorException {
         final SortedSet<Unity> unities = new TreeSet<>(COMPARATOR_UNITIES);
 
@@ -315,7 +332,7 @@ public enum Unity {
     }
 
     public static LocalDateTime mapToLocalDateTime(final SortedMap<Unity, Double> inputs, final SortedSet<Unity> unities) throws ProcessorException {
-        int year = 0, month = 1, dayOfMonth = 1, hour = 0, minute = 0, second = 0, nanoOfSecond = 0;
+        int year = 0, month = 1, dayOfMonth = 1, dayOfYear = -1, hour = 0, minute = 0, second = 0, nanoOfSecond = 0;
 
         for (Entry<Unity, Double> input : inputs.entrySet()) {
             Unity unity = input.getKey();
@@ -334,9 +351,16 @@ public enum Unity {
                     throw new ProcessorException(I18n.ERROR_UNITY_BOUNDS, unity, value);
                 }
                 break;
-            case DATE_DAYS:
+            case DATE_DAYS_MONTH:
                 if (value > 0 && value < 32) {
                     dayOfMonth = value;
+                } else {
+                    throw new ProcessorException(I18n.ERROR_UNITY_BOUNDS, unity, value);
+                }
+                break;
+            case DATE_DAYS_YEAR:
+                if (value > 0 && value < 367) {
+                    dayOfYear = value;
                 } else {
                     throw new ProcessorException(I18n.ERROR_UNITY_BOUNDS, unity, value);
                 }
@@ -372,6 +396,10 @@ public enum Unity {
             throw new ProcessorException(I18n.ERROR_UNITY_BOUNDS, ERROR_BOUNDS_SUB_SECONDS, nanoOfSecond);
         }
 
-        return LocalDateTime.of(year, month, dayOfMonth, hour, minute, second, nanoOfSecond);
+        if (dayOfYear > 0) {
+            return LocalDateTime.of(year, month, 1, hour, minute, second, nanoOfSecond).plusDays(dayOfYear);
+        } else {
+            return LocalDateTime.of(year, month, dayOfMonth, hour, minute, second, nanoOfSecond);
+        }
     }
 }

@@ -185,7 +185,7 @@ public enum Conf {
 
             if (key != null && !key.isBlank()) {
                 if (value != null) {
-                    Entity.VARIABLES.put(key, Optional.ofNullable(new Entity(0, StringUtils.replaceCommaByDot(StringUtils.removeAllSpaces(value)))));
+                    Entity.VARIABLES.put(key, Optional.of(new Entity(0, StringUtils.replaceCommaByDot(StringUtils.removeAllSpaces(value)))));
                 } else {
                     Entity.VARIABLES.put(key, Optional.empty());
                 }

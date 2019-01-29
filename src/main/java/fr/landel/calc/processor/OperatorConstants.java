@@ -13,21 +13,23 @@ public interface OperatorConstants {
     BiPredicate<Integer, Integer> ALL_EXCEPT_LAST = (index, end) -> index > -1 && index < end;
     BiPredicate<Integer, Integer> ALL_EXCEPT_FIRST_AND_LAST = (index, end) -> index > 0 && index < end;
 
-    BiPredicate<Entity, Entity> IS_LEFT_NUMBER_AND_RIGHT_NOT_UNITY = (a, b) -> UnityType.NUMBER.equals(a.getUnityType()) && !b.isUnity()
-            && !b.isDate();
-    BiPredicate<Entity, Entity> IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER = (a, b) -> !a.isUnity() && !a.isDate()
-            && UnityType.NUMBER.equals(b.getUnityType());
+    BiPredicate<Entity, Entity> NONE_NULL = (a, b) -> a != null && b != null;
+
+    BiPredicate<Entity, Entity> IS_LEFT_NUMBER_AND_RIGHT_NOT_UNITY = NONE_NULL
+            .and((a, b) -> UnityType.NUMBER.equals(a.getUnityType()) && !b.isUnity() && !b.isDate());
+    BiPredicate<Entity, Entity> IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER = NONE_NULL
+            .and((a, b) -> !a.isUnity() && !a.isDate() && UnityType.NUMBER.equals(b.getUnityType()));
     BiPredicate<Entity, Entity> IS_ANY_NUMBER = IS_LEFT_NUMBER_AND_RIGHT_NOT_UNITY.or(IS_LEFT_NOT_UNITY_AND_RIGHT_NUMBER);
-    BiPredicate<Entity, Entity> CHECK_ADD = (a, b) -> {
+    BiPredicate<Entity, Entity> CHECK_ADD = NONE_NULL.and((a, b) -> {
         return !a.isUnity() && a.getUnityType().equals(b.getUnityType())
                 && (!UnityType.DATE.equals(a.getUnityType()) || (a.isDate() != b.isDate()) || (a.isDuration() && b.isDuration()));
-    };
-    BiPredicate<Entity, Entity> CHECK_SUBSTRACT = (a, b) -> {
+    });
+    BiPredicate<Entity, Entity> CHECK_SUBSTRACT = NONE_NULL.and((a, b) -> {
         return !a.isUnity() && a.getUnityType().equals(b.getUnityType())
                 && (!UnityType.DATE.equals(a.getUnityType()) || (a.isDuration() && b.isDuration()) || a.isDate());
-    };
-    BiPredicate<Entity, Entity> IS_CONVERTIBLE = (a, b) -> !a.isUnity() && b.isUnity() && a.getUnityType().equals(b.getUnityType());
-    BiPredicate<Entity, Entity> IS_VARIABLE = (a, b) -> a.isVariable() && !b.isUnity();
+    });
+    BiPredicate<Entity, Entity> IS_CONVERTIBLE = NONE_NULL.and((a, b) -> !a.isUnity() && b.isUnity() && a.getUnityType().equals(b.getUnityType()));
+    BiPredicate<Entity, Entity> IS_VARIABLE = NONE_NULL.and((a, b) -> a.isVariable() && !b.isUnity());
 
     // FUNCTIONS
 

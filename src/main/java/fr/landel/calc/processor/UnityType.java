@@ -1,5 +1,7 @@
 package fr.landel.calc.processor;
 
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalField;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,6 +9,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.function.Function;
 
+import fr.landel.calc.utils.DateUtils;
 import fr.landel.calc.utils.MathUtils;
 import fr.landel.calc.utils.StringUtils;
 
@@ -18,7 +21,7 @@ public enum UnityType {
     DATE(true, v -> {
         final StringBuilder builder = new StringBuilder();
         if (!v.isUnity()) {
-            appendDate(builder, v.getValue(), v.getUnities());
+            appendDate(builder, v);
         } else {
             builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityAbbrev()));
         }
@@ -76,8 +79,45 @@ public enum UnityType {
         return this.formatter.apply(entity);
     }
 
-    private static void appendDate(final StringBuilder builder, final double value, final SortedSet<Unity> unities) {
-        append(builder, value, unities, Unity.UNITIES_DATE, Unity.DATES_AVG, 9);
+    private static void appendDate(final StringBuilder builder, final Entity entity) {
+        if (entity.isDate() && entity.getUnities().contains(Unity.DATE_YEAR)) {
+            final LocalDateTime date = entity.getDate().get();
+
+            int value;
+            TemporalField field;
+            Unity previous = null;
+            for (Unity unity : entity.getUnities()) {
+
+                field = Unity.UNITIES_DATE_TEMPORAL.get(unity);
+                if (field != null) {
+
+                    if (previous != null && MainProcessor.isValuesSpace()) {
+                        builder.append(StringUtils.SPACE);
+                    }
+
+                    previous = unity;
+
+                    value = date.get(field);
+                    if (Unity.DATE_MICROSECONDS.equals(unity)) {
+                        builder.append(value % DateUtils.NANO_PER_MILLISECOND);
+
+                    } else if (Unity.DATE_NANOSECONDS.equals(unity)) {
+                        builder.append(value % DateUtils.NANO_PER_MICROSECOND);
+
+                    } else {
+                        builder.append(value);
+                    }
+
+                    if (MainProcessor.isUnitiesSpace()) {
+                        builder.append(StringUtils.SPACE);
+                    }
+
+                    builder.append(unity.getSymbol(MainProcessor.isUnityAbbrev()));
+                }
+            }
+        } else {
+            append(builder, entity.getValue(), entity.getUnities(), Unity.UNITIES_DATE, Unity.DATES_AVG, 9);
+        }
     }
 
     private static void append(final StringBuilder builder, final double value, final SortedSet<Unity> unities,
