@@ -59,6 +59,7 @@ public class ProcessorTest extends AbstractProcessorTest {
         check("5C>>K", "278.150 K");
         check("15/(1200/3937/12)", "590.550");
         check("15m>>in", "590.550 in");
-        check("2017y12M >>y", "2017 YA 11 MA 1 h 43 i 29 s 999 S 995 O 904 N"); // XXX bug
+        check("2017y12M >>y", "2017 y");
+        check("2017y12M >>yd", "2017 y 335 d");
     }
 }

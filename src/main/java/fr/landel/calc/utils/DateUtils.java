@@ -29,7 +29,7 @@ public final class DateUtils {
     public static final double NANO_PER_MONTH_AVG = NANO_PER_YEAR_AVG / 12;
     public static final double NANO_PER_MONTH_LEAP = NANO_PER_YEAR_LEAP / 12;
 
-    public static final double NANO_1970 = toZeroNanosecond(1970);
+    public static final double NANO_EPOCH = toZeroNanosecond(1970);
 
     public static final int DAYS_JANUARY = 31;
     public static final int DAYS_FEBRUARY = 28;
@@ -164,7 +164,7 @@ public final class DateUtils {
     }
 
     public static double toZeroNanosecond(final LocalDateTime date) {
-        return date.toEpochSecond(ZoneOffset.UTC) * DateUtils.NANO_PER_SECOND + DateUtils.NANO_1970;
+        return date.toEpochSecond(ZoneOffset.UTC) * DateUtils.NANO_PER_SECOND + DateUtils.NANO_EPOCH;
     }
 
     public static double toZeroNanosecond(final Double year) {

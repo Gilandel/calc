@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.TemporalField;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -18,6 +19,7 @@ public enum UnityType {
 
     VARIABLE(false, v -> v.getVariable()),
     NUMBER(false, v -> stringify(v.getValue())),
+    
     DATE(true, v -> {
         final StringBuilder builder = new StringBuilder();
         if (!v.isUnity()) {
@@ -47,6 +49,8 @@ public enum UnityType {
         }
         return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityAbbrev())).toString();
     });
+	
+	public static final List<UnityType> TYPED_UNITIES = Arrays.asList(DATE, TEMPERATURE, LENGTH);
 
     private final boolean accumulable;
     private final Function<Entity, String> formatter;

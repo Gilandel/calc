@@ -74,7 +74,7 @@ public enum Functions implements FunctionConstants {
             e -> new Entity(e[0].getIndex(), Double.valueOf(e[0].getDate().get().getNano())),
             Params.DATE_DATE),
     NOW("now", e -> {
-        return new Entity(0, System.currentTimeMillis() * DateUtils.NANO_PER_MILLISECOND + DateUtils.NANO_1970, LocalDateTime.now(),
+        return new Entity(0, System.currentTimeMillis() * DateUtils.NANO_PER_MILLISECOND + DateUtils.NANO_EPOCH, LocalDateTime.now(),
                 Unity.DATE_NANOSECONDS);
     });
 

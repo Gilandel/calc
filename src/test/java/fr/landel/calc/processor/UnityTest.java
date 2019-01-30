@@ -33,7 +33,7 @@ public class UnityTest {
         String[] expected = {"minute; second", "minute", "mile", "mile", "meter", "minute", "hour; minute; second", "mile"};
 
         for (int i = 0; i < tests.length; ++i) {
-            assertEquals(expected[i], Unity.getUnities(tests[i]).stream().map(Unity::longestSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
+            assertEquals(expected[i], Unity.getUnities(tests[i], null).stream().map(Unity::longestSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
         }
 
         try {
@@ -44,6 +44,6 @@ public class UnityTest {
             assertEquals(I18n.ERROR_UNITY_PARSE_TYPE.getI18n("mi", UnityType.DATE), e.getMessage());
         }
 
-        assertEquals("mile", Unity.getUnities("mi").stream().map(Unity::longestSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
+        assertEquals("mile", Unity.getUnities("mi", null).stream().map(Unity::longestSymbol).collect(StringUtils.SEMICOLON_JOINING_COLLECTOR));
     }
 }
