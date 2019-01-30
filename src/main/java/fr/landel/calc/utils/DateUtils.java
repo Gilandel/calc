@@ -113,7 +113,8 @@ public final class DateUtils {
             Duration bDuration = b.getDuration().get();
             Duration duration = aDuration.plus(bDuration);
 
-            Double diff = Double.valueOf(duration.toNanos());
+            // don't use toNanos to avoid long overflow
+            Double diff = Double.valueOf(duration.getSeconds() * DateUtils.NANO_PER_SECOND + duration.getNano());
 
             return new Entity(a.getIndex(), diff, duration, unity);
         }
