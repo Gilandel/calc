@@ -19,7 +19,7 @@ public enum UnityType {
 
     VARIABLE(false, v -> v.getVariable()),
     NUMBER(false, v -> stringify(v.getValue())),
-    
+
     DATE(true, v -> {
         final StringBuilder builder = new StringBuilder();
         if (!v.isUnity()) {
@@ -29,28 +29,12 @@ public enum UnityType {
         }
         return builder.toString();
     }),
-    TEMPERATURE(false, v -> {
-        final StringBuilder builder = new StringBuilder();
-        if (!v.isUnity()) {
-            builder.append(stringify(v.toUnity()));
-            if (MainProcessor.isUnitiesSpace()) {
-                builder.append(StringUtils.SPACE);
-            }
-        }
-        return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityAbbrev())).toString();
-    }),
-    LENGTH(true, v -> {
-        final StringBuilder builder = new StringBuilder();
-        if (!v.isUnity()) {
-            builder.append(stringify(v.toUnity()));
-            if (MainProcessor.isUnitiesSpace()) {
-                builder.append(StringUtils.SPACE);
-            }
-        }
-        return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityAbbrev())).toString();
-    });
-	
-	public static final List<UnityType> TYPED_UNITIES = Arrays.asList(DATE, TEMPERATURE, LENGTH);
+    TEMPERATURE(false),
+    LENGTH(true),
+    DATA(true),
+    VOLUME(true);
+
+    public static final List<UnityType> TYPED_UNITIES = Arrays.asList(DATE, TEMPERATURE, LENGTH);
 
     private final boolean accumulable;
     private final Function<Entity, String> formatter;
@@ -59,6 +43,19 @@ public enum UnityType {
     private UnityType(final boolean accumulable, final Function<Entity, String> formatter) {
         this.accumulable = accumulable;
         this.formatter = formatter;
+    }
+
+    private UnityType(final boolean accumulable) {
+        this(accumulable, v -> {
+            final StringBuilder builder = new StringBuilder();
+            if (!v.isUnity()) {
+                builder.append(stringify(v.toUnity()));
+                if (MainProcessor.isUnitiesSpace()) {
+                    builder.append(StringUtils.SPACE);
+                }
+            }
+            return builder.append(v.firstUnity().getSymbol(MainProcessor.isUnityAbbrev())).toString();
+        });
     }
 
     public boolean isAccumulable() {

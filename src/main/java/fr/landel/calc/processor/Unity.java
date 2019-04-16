@@ -34,20 +34,20 @@ public enum Unity {
     NUMBER(0, UnityType.NUMBER, "d"),
 
     DATE_YEAR(0, UnityType.DATE, DateUtils::toZeroNanosecond, DateUtils::fromZeroNanosecond, new int[] {1, 2, 3, 5, 6}, "y", "year"),
-    DATE_YEARS(1, UnityType.DATE, v -> v * DateUtils.NANO_PER_YEAR, v -> v / DateUtils.NANO_PER_YEAR, "Y", "year"),
-    DATE_YEARS_LEAP(2, UnityType.DATE, v -> v * DateUtils.NANO_PER_YEAR_LEAP, v -> v / DateUtils.NANO_PER_YEAR_LEAP, "YL", "yearLeap"),
-    DATE_YEARS_AVG(3, UnityType.DATE, v -> v * DateUtils.NANO_PER_YEAR_AVG, v -> v / DateUtils.NANO_PER_YEAR_AVG, "YA", "yearAverage"),
-    DATE_MONTHS(4, UnityType.DATE, v -> v * DateUtils.NANO_PER_MONTH, v -> v / DateUtils.NANO_PER_MONTH, new int[] {5, 6}, "M", "month"),
-    DATE_MONTHS_AVG(5, UnityType.DATE, v -> v * DateUtils.NANO_PER_MONTH_AVG, v -> v / DateUtils.NANO_PER_MONTH_AVG, "MA", "monthAverage"),
-    DATE_MONTHS_LEAP(6, UnityType.DATE, v -> v * DateUtils.NANO_PER_MONTH_LEAP, v -> v / DateUtils.NANO_PER_MONTH_LEAP, "ML", "monthLeap"),
-    DATE_WEEKS(7, UnityType.DATE, v -> v * DateUtils.NANO_PER_WEEK, v -> v / DateUtils.NANO_PER_WEEK, "W", "week"),
-    DATE_DAYS_MONTH(8, UnityType.DATE, v -> v * DateUtils.NANO_PER_DAY, v -> v / DateUtils.NANO_PER_DAY, new int[] {9}, "D", "day"),
-    DATE_DAYS_YEAR(9, UnityType.DATE, v -> v * DateUtils.NANO_PER_DAY, v -> v / DateUtils.NANO_PER_DAY, "d", "dayOfYear"),
-    DATE_HOURS(10, UnityType.DATE, v -> v * DateUtils.NANO_PER_HOUR, v -> v / DateUtils.NANO_PER_HOUR, "h", "hour"),
-    DATE_MINUTES(11, UnityType.DATE, v -> v * DateUtils.NANO_PER_MINUTE, v -> v / DateUtils.NANO_PER_MINUTE, "i", "minute"),
-    DATE_SECONDS(12, UnityType.DATE, v -> v * DateUtils.NANO_PER_SECOND, v -> v / DateUtils.NANO_PER_SECOND, "s", "second"),
-    DATE_MILLISECONDS(13, UnityType.DATE, v -> v * DateUtils.NANO_PER_MILLISECOND, v -> v / DateUtils.NANO_PER_MILLISECOND, "S", "millisecond"),
-    DATE_MICROSECONDS(14, UnityType.DATE, v -> v * DateUtils.NANO_PER_MICROSECOND, v -> v / DateUtils.NANO_PER_MICROSECOND, "O", "microsecond"),
+    DATE_YEARS(1, UnityType.DATE, DateUtils.NANO_PER_YEAR, "Y", "year"),
+    DATE_YEARS_LEAP(2, UnityType.DATE, DateUtils.NANO_PER_YEAR_LEAP, "YL", "yearLeap"),
+    DATE_YEARS_AVG(3, UnityType.DATE, DateUtils.NANO_PER_YEAR_AVG, "YA", "yearAverage"),
+    DATE_MONTHS(4, UnityType.DATE, DateUtils.NANO_PER_MONTH, new int[] {5, 6}, "M", "month"),
+    DATE_MONTHS_AVG(5, UnityType.DATE, DateUtils.NANO_PER_MONTH_AVG, "MA", "monthAverage"),
+    DATE_MONTHS_LEAP(6, UnityType.DATE, DateUtils.NANO_PER_MONTH_LEAP, "ML", "monthLeap"),
+    DATE_WEEKS(7, UnityType.DATE, DateUtils.NANO_PER_WEEK, "W", "week"),
+    DATE_DAYS_MONTH(8, UnityType.DATE, DateUtils.NANO_PER_DAY, new int[] {9}, "D", "day"),
+    DATE_DAYS_YEAR(9, UnityType.DATE, DateUtils.NANO_PER_DAY, "d", "dayOfYear"),
+    DATE_HOURS(10, UnityType.DATE, DateUtils.NANO_PER_HOUR, "h", "hour"),
+    DATE_MINUTES(11, UnityType.DATE, DateUtils.NANO_PER_MINUTE, "i", "minute"),
+    DATE_SECONDS(12, UnityType.DATE, DateUtils.NANO_PER_SECOND, "s", "second"),
+    DATE_MILLISECONDS(13, UnityType.DATE, DateUtils.NANO_PER_MILLISECOND, "S", "millisecond"),
+    DATE_MICROSECONDS(14, UnityType.DATE, DateUtils.NANO_PER_MICROSECOND, "O", "microsecond"),
     DATE_NANOSECONDS(15, UnityType.DATE, "N", "nanosecond"),
 
     TEMP_KELVIN(0, UnityType.TEMPERATURE, "K", "kelvin"),
@@ -76,17 +76,39 @@ public enum Unity {
     TEMP_RANKINE(5, UnityType.TEMPERATURE, v -> v * Unity.RANKINE_KELVIN, v -> v * Unity.KELVIN_RANKINE, "°R", "rankine"),
 
     LENGTH_METER(0, UnityType.LENGTH, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "m", "meter"),
-    LENGTH_IMPERIAL_LEAGUE(1, UnityType.LENGTH, v -> v * Unity.LEAGUE_M, v -> v / Unity.LEAGUE_M, "lea", "league"),
-    LENGTH_IMPERIAL_MILE(2, UnityType.LENGTH, v -> v * Unity.MILE_M, v -> v / Unity.MILE_M, "mi", "mile"),
-    LENGTH_IMPERIAL_FURLONG(3, UnityType.LENGTH, v -> v * Unity.FURLONG_M, v -> v / Unity.FURLONG_M, "fur", "furlong"),
-    LENGTH_IMPERIAL_CHAIN(4, UnityType.LENGTH, v -> v * Unity.CHAIN_M, v -> v / Unity.CHAIN_M, "ch", "chain"),
-    LENGTH_IMPERIAL_YARD(5, UnityType.LENGTH, v -> v * Unity.YARD_M, v -> v / Unity.YARD_M, "yd", "yard"),
-    LENGTH_IMPERIAL_FOOT(6, UnityType.LENGTH, v -> v * Unity.FOOT_M, v -> v / Unity.FOOT_M, "ft", "foot"),
-    LENGTH_IMPERIAL_INCH(7, UnityType.LENGTH, v -> v * Unity.INCH_M, v -> v / Unity.INCH_M, "in", "inch"),
-    LENGTH_IMPERIAL_DIGIT(8, UnityType.LENGTH, v -> v * Unity.DIGIT_M, v -> v / Unity.DIGIT_M, "di", "digit"),
-    LENGTH_IMPERIAL_THOU(9, UnityType.LENGTH, v -> v * Unity.THOU_M, v -> v / Unity.THOU_M, "th", "thou"),
+    LENGTH_DM(1, UnityType.LENGTH, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "dm", "decimeter"),
+    LENGTH_CM(2, UnityType.LENGTH, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "cm", "centimeter"),
+    LENGTH_MM(3, UnityType.LENGTH, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "mm", "millimeter"),
 
-    ;
+    LENGTH_IMPERIAL_LEAGUE(1, UnityType.LENGTH, Unity.LEAGUE_M, "lea", "league"),
+    LENGTH_IMPERIAL_MILE(2, UnityType.LENGTH, Unity.MILE_M, "mi", "mile"),
+    LENGTH_IMPERIAL_FURLONG(3, UnityType.LENGTH, Unity.FURLONG_M, "fur", "furlong"),
+    LENGTH_IMPERIAL_CHAIN(4, UnityType.LENGTH, Unity.CHAIN_M, "ch", "chain"),
+    LENGTH_IMPERIAL_YARD(5, UnityType.LENGTH, Unity.YARD_M, "yd", "yard"),
+    LENGTH_IMPERIAL_FOOT(6, UnityType.LENGTH, Unity.FOOT_M, "ft", "foot"),
+    LENGTH_IMPERIAL_INCH(7, UnityType.LENGTH, Unity.INCH_M, "in", "inch"),
+    LENGTH_IMPERIAL_DIGIT(8, UnityType.LENGTH, Unity.DIGIT_M, "di", "digit"),
+    LENGTH_IMPERIAL_THOU(9, UnityType.LENGTH, Unity.THOU_M, "th", "thou"),
+
+    DATA_O(0, UnityType.DATA, "o", "octet"),
+    DATA_KIO(1, UnityType.DATA, Unity.KIO, "Kio", "kibioctet"),
+    DATA_MIO(2, UnityType.DATA, Unity.MIO, "Mio", "mebioctet"),
+    DATA_GIO(3, UnityType.DATA, Unity.GIO, "Gio", "gibioctet"),
+    DATA_TIO(4, UnityType.DATA, Unity.TIO, "Tio", "tebioctet"),
+    DATA_PIO(5, UnityType.DATA, Unity.PIO, "Pio", "pebioctet"),
+    DATA_EIO(6, UnityType.DATA, Unity.EIO, "Eio", "exbioctet"),
+    DATA_ZIO(7, UnityType.DATA, Unity.ZIO, "Zio", "zebioctet"),
+    DATA_YIO(8, UnityType.DATA, Unity.YIO, "Yio", "yobioctet"),
+
+    VOLUME_CUBE_M(0, UnityType.VOLUME, "m³", "cubicMeter"),
+    VOLUME_CUBE_DM(1, UnityType.VOLUME, v -> v / 1_000d, v -> v * 1_000d, "dm³", "cubicDecimeter"),
+    VOLUME_CUBE_CM(2, UnityType.VOLUME, v -> v / 1_000_000d, v -> v * 1_000_000d, "cm³", "cubicCentimeter"),
+    VOLUME_L(3, UnityType.VOLUME, v -> v / 1_000d, v -> v * 1_000d, "l", "liter"),
+    VOLUME_DL(4, UnityType.VOLUME, v -> v / 10_000d, v -> v * 10_000d, "dl", "deciliter"),
+    VOLUME_CL(5, UnityType.VOLUME, v -> v / 100_000d, v -> v * 100_000d, "cl", "centiliter"),
+    VOLUME_ML(6, UnityType.VOLUME, v -> v / 1_000_000d, v -> v * 1_000_000d, "ml", "milliliter");
+
+    // geo distance
 
     public static final Comparator<Unity> COMPARATOR_UNITIES = (a, b) -> Integer.compare(a.index, b.index);
 
@@ -107,6 +129,15 @@ public enum Unity {
     public static final double FURLONG_M = FOOT_M * 660;
     public static final double MILE_M = FOOT_M * 5_280;
     public static final double LEAGUE_M = FOOT_M * 15_840;
+
+    private static final double KIO = 1024d;
+    private static final double MIO = KIO * KIO;
+    private static final double GIO = MIO * KIO;
+    private static final double TIO = GIO * KIO;
+    private static final double PIO = TIO * KIO;
+    private static final double EIO = PIO * KIO;
+    private static final double ZIO = EIO * KIO;
+    private static final double YIO = ZIO * KIO;
 
     static final SortedSet<Unity> DATES_AVG;
     static {
@@ -218,6 +249,14 @@ public enum Unity {
         this.symbols = symbols;
         Arrays.sort(this.symbols, StringUtils.COMPARATOR_LENGTH_DESC);
         this.type.add(this);
+    }
+
+    private Unity(final int index, final UnityType type, final Double unityConverter, final int[] incompatibleUnities, final String... symbols) {
+        this(index, type, v -> v * unityConverter, v -> v / unityConverter, incompatibleUnities, symbols);
+    }
+
+    private Unity(final int index, final UnityType type, final Double unityConverter, final String... symbols) {
+        this(index, type, unityConverter, new int[0], symbols);
     }
 
     private Unity(final int index, final UnityType type, final Function<Double, Double> fromUnity, final Function<Double, Double> toUnity,
