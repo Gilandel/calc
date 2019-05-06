@@ -18,8 +18,7 @@ public final class MapUtils {
     public static <K, V> V getOrPutIfAbsent(final Map<K, V> map, final K key, final Supplier<V> supplier) {
         V value = Objects.requireNonNull(map, ERROR_MAP_NULL).get(key);
         if (value == null) {
-            value = Objects.requireNonNull(supplier, ERROR_VALUE_SUPPLIER_NULL).get();
-            map.put(key, value);
+            map.put(key, value = Objects.requireNonNull(supplier, ERROR_VALUE_SUPPLIER_NULL).get());
         }
         return value;
     }

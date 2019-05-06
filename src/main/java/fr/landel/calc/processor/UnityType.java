@@ -193,7 +193,7 @@ public enum UnityType {
         return result;
     }
 
-    private static String removeExponent(final String input) {
+    private static String removeExponent(String input) {
 
         final int exp = Math.max(input.indexOf('E'), input.indexOf('e'));
 
@@ -204,26 +204,57 @@ public enum UnityType {
                 dot = exp;
             }
 
+            final boolean positive = input.indexOf('-') != 0;
             final int nbExp = Integer.parseInt(input.substring(exp + 1));
+            final boolean posExp = nbExp > 0;
+
             char[] in = input.toCharArray();
-            char[] out = new char[in.length + nbExp];
+            char[] out;
+
+            if (posExp) { // prepare array
+                out = new char[in.length + nbExp];
+            } else {
+                out = new char[in.length + -1 * nbExp];
+            }
 
             Arrays.fill(out, '0');
 
-            System.arraycopy(in, 0, out, 0, dot);
-
             int pos = 0;
-            if (exp > dot) {
-                pos = Math.min(exp - dot - 1, nbExp);
-                System.arraycopy(in, dot + 1, out, dot, pos);
+
+            if (posExp) { // fill digits in front of dot
+                System.arraycopy(in, 0, out, pos, dot);
+            } else {
+                pos = -1 * nbExp + 2;
+                if (positive) {
+                    System.arraycopy(in, 0, out, pos - 1, dot);
+                } else {
+                    System.arraycopy(in, 1, out, pos, dot - 1);
+                }
             }
 
-            if (exp - dot > nbExp) { // 1.657376E8 165737600
+            if (exp > dot) { // fill digits after dot
+                if (posExp) {
+                    pos = Math.min(exp - dot - 1, nbExp);
+                    System.arraycopy(in, dot + 1, out, dot, pos);
+                } else {
+                    pos += dot - 1;
+                    System.arraycopy(in, dot + 1, out, pos, exp - dot - 1);
+                }
+            }
+
+            if (posExp && exp - dot > nbExp) { // append digit after dot
                 pos = dot + pos + 1;
                 System.arraycopy(in, pos, out, nbExp + dot + 1, exp - pos);
             }
 
-            out[nbExp + dot] = '.';
+            if (posExp) { // set dot
+                out[nbExp + dot] = '.';
+            } else if (positive) {
+                out[1] = '.';
+            } else {
+                out[0] = '-';
+                out[2] = '.';
+            }
 
             return new String(out);
         }
