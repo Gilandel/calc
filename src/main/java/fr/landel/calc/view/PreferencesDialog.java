@@ -350,7 +350,7 @@ public class PreferencesDialog extends JDialog implements Dialog {
         spaceUnities.setSelected(Conf.UNITY_SPACE.getBoolean().get());
         spaceValues.setSelected(Conf.VALUE_SPACE.getBoolean().get());
         comboBoxTheme.setSelectedIndex(lookAndFeels.indexOf(laf));
-        comboBoxLanguage.setSelectedIndex(I18n.SUPPORTED_LOCALES.indexOf(Locale.getDefault()));
+        comboBoxLanguage.setSelectedIndex(I18n.SUPPORTED_LOCALES.indexOf(Conf.getLocale()));
     }
 
     @Override

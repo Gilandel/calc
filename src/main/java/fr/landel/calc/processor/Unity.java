@@ -76,9 +76,9 @@ public enum Unity {
     TEMP_RANKINE(5, UnityType.TEMPERATURE, v -> v * Unity.RANKINE_KELVIN, v -> v * Unity.KELVIN_RANKINE, "°R", "rankine"),
 
     LENGTH_METER(0, UnityType.LENGTH, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "m", "meter"),
-    LENGTH_DM(1, UnityType.LENGTH, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "dm", "decimeter"),
-    LENGTH_CM(2, UnityType.LENGTH, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "cm", "centimeter"),
-    LENGTH_MM(3, UnityType.LENGTH, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "mm", "millimeter"),
+    LENGTH_DM(1, UnityType.LENGTH, v -> v / 10d, v -> v * 10d, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "dm", "decimeter"),
+    LENGTH_CM(2, UnityType.LENGTH, v -> v / 100d, v -> v * 100d, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "cm", "centimeter"),
+    LENGTH_MM(3, UnityType.LENGTH, v -> v / 1_000d, v -> v * 1_000d, new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9}, "mm", "millimeter"),
 
     LENGTH_IMPERIAL_LEAGUE(1, UnityType.LENGTH, Unity.LEAGUE_M, "lea", "league"),
     LENGTH_IMPERIAL_MILE(2, UnityType.LENGTH, Unity.MILE_M, "mi", "mile"),
@@ -106,7 +106,25 @@ public enum Unity {
     VOLUME_L(3, UnityType.VOLUME, v -> v / 1_000d, v -> v * 1_000d, "l", "liter"),
     VOLUME_DL(4, UnityType.VOLUME, v -> v / 10_000d, v -> v * 10_000d, "dl", "deciliter"),
     VOLUME_CL(5, UnityType.VOLUME, v -> v / 100_000d, v -> v * 100_000d, "cl", "centiliter"),
-    VOLUME_ML(6, UnityType.VOLUME, v -> v / 1_000_000d, v -> v * 1_000_000d, "ml", "milliliter");
+    VOLUME_ML(6, UnityType.VOLUME, v -> v / 1_000_000d, v -> v * 1_000_000d, "ml", "milliliter"),
+
+    WEIGHT_G(0, UnityType.WEIGHT, new int[] {1, 2, 3, 4, 5, 6, 7}, "g", "gramme"),
+    WEIGHT_DG(1, UnityType.WEIGHT, v -> v / 10d, v -> v * 10d, new int[] {1, 2, 3, 4, 5, 6, 7}, "dg", "decigramme"),
+    WEIGHT_CG(2, UnityType.WEIGHT, v -> v / 100d, v -> v * 100d, new int[] {1, 2, 3, 4, 5, 6, 7}, "cg", "centigramme"),
+    WEIGHT_MG(3, UnityType.WEIGHT, v -> v / 1_000d, v -> v * 1_000d, new int[] {1, 2, 3, 4, 5, 6, 7}, "mg", "milligramme"),
+    WEIGHT_DAG(4, UnityType.WEIGHT, 10d, new int[] {1, 2, 3, 4, 5, 6, 7}, "dag", "decagramme"),
+    WEIGHT_HG(5, UnityType.WEIGHT, 100d, new int[] {1, 2, 3, 4, 5, 6, 7}, "hg", "hectogramme"),
+    WEIGHT_KG(6, UnityType.WEIGHT, 1_000d, new int[] {1, 2, 3, 4, 5, 6, 7}, "kg", "kilogramme"),
+
+    WEIGHT_MT(1, UnityType.WEIGHT, 1_000d, "mt", "millitonne"),
+    WEIGHT_CT(2, UnityType.WEIGHT, 10_000d, "ct", "centitonne"),
+    WEIGHT_DT(3, UnityType.WEIGHT, 100_000d, "dt", "decitonne"),
+    WEIGHT_T(4, UnityType.WEIGHT, 1_000_000d, "t", "tonne"),
+    WEIGHT_DAT(5, UnityType.WEIGHT, 10_000_000d, "dat", "decatonne"),
+    WEIGHT_HT(6, UnityType.WEIGHT, 100_000_000d, "ht", "hectotonne"),
+    WEIGHT_KT(7, UnityType.WEIGHT, 1_000_000_000d, "kt", "kilotonne"),
+
+    WEIGHT_LB(1, UnityType.WEIGHT, Unity.LB_G, "lb", "pound");
 
     // geo distance
 
@@ -138,6 +156,8 @@ public enum Unity {
     private static final double EIO = PIO * KIO;
     private static final double ZIO = EIO * KIO;
     private static final double YIO = ZIO * KIO;
+
+    private static final double LB_G = 453.59237;
 
     static final SortedSet<Unity> DATES_AVG;
     static {

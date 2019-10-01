@@ -32,7 +32,8 @@ public enum UnityType {
     TEMPERATURE(false),
     LENGTH(true),
     DATA(true),
-    VOLUME(true);
+    VOLUME(true),
+    WEIGHT(true);
 
     public static final List<UnityType> TYPED_UNITIES = Arrays.asList(DATE, TEMPERATURE, LENGTH);
 
